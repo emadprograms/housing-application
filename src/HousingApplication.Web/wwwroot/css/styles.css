@@ -1396,4 +1396,34 @@ html.dark .compliance-item {
     -webkit-backdrop-filter: blur(20px);
 }
 
+/* ── Login Screen Input Styling & Edge Duplicate Eye Suppression ────── */
+#login-screen input[type="text"],
+#login-screen input[type="password"] {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    caret-color: #38bdf8 !important;
+}
 
+#login-screen input[type="text"]:focus,
+#login-screen input[type="password"]:focus {
+    background-color: rgba(255, 255, 255, 0.12) !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.35) !important;
+}
+
+#login-screen input::placeholder {
+    color: #94a3b8 !important;
+    -webkit-text-fill-color: #94a3b8 !important;
+}
+
+/* Eliminate Microsoft Edge / IE duplicate password reveal / clear icons */
+#login-screen input[type="password"]::-ms-reveal,
+#login-screen input[type="password"]::-ms-clear,
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
