@@ -27,13 +27,20 @@
 - Created `src/HousingApplication.Web/wwwroot/pictures/` and `dist/win-x64/wwwroot/pictures/`.
 - Placed `logo.png` into both directories as `pictures/logo.png`.
 
-### B. Animated Login Home Page (`index.html`)
-- Replaced the compact modal `#login-screen` with a full-screen, entertaining Login Home Page:
-  - **Background Ambience:** Multi-layered glowing gradient orbs in emerald, blue, and indigo with floating keyframe animations, overlaid with a subtle dot/grid pattern.
-  - **Animated Branding:** Floating logo container with a pulsing halo effect, high-resolution `pictures/logo.png`, and a bold gradient title `Housing Application` alongside Arabic subtitle `نظام إدارة الوثائق السكنية`.
-  - **Interactive Feature Highlights:** Interactive badges for House Records, Document Archiving, and Secure Access.
-  - **Credentials Form:** Modern glassmorphism card with manual inputs for username and password, toggleable password visibility, and animated submit button.
-  - **Preset Removal:** Completely removed `#login-presets-container` and all quick-login chips.
+### B. Animated Open Login Home Page (`index.html`)
+- Replaced the congested small card with an expansive, open two-column layout (`max-w-5xl` with `gap-16`):
+  - **Left Side (Open Brand Experience):**
+    - Large floating animated logo (`pictures/logo.png`) with ambient glowing radiant halo (`animate-halo-pulse` and `animate-login-float`).
+    - Striking modern typography: large `Housing Application` with gradient styling and clean, understated subtitle (`نظام إدارة الوثائق السكنية`).
+    - Full breathing room with generous margins, eliminating all congested pills and redundant explanatory paragraphs.
+  - **Right Side (Clean, Spacious Sign-In):**
+    - Sleek, spacious glassmorphic card with generous padding (`p-10`).
+    - Clean, minimal labels and inputs ("Username", "Password") with smooth focus rings and password toggle.
+    - Minimalist "Sign In" button with spinner.
+  - **Ambient Background:**
+    - Expansive soft glowing ambient orbs and subtle grid pattern spanning the viewport.
+  - **Preset & Wordiness Removal:**
+    - Completely removed `#login-presets-container`, all user chips, all feature pills (`🏛️ سجلات المنازل`, etc.), and verbose footer text.
   - Mirrored across `src/HousingApplication.Web/wwwroot/index.html` and `dist/win-x64/wwwroot/index.html`.
 
 ### C. CSS Animations (`styles.css`)

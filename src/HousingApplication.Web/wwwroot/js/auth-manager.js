@@ -401,7 +401,7 @@
                 const spinner = submitBtn.querySelector('.login-spinner');
                 const btnText = submitBtn.querySelector('.login-btn-text');
                 if (spinner) spinner.classList.toggle('hidden', !loading);
-                if (btnText) btnText.textContent = loading ? 'جاري التحقق...' : 'تسجيل الدخول • Sign In';
+                if (btnText) btnText.textContent = loading ? 'Signing in...' : 'Sign In';
             }
         }
 
