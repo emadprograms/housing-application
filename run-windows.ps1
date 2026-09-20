@@ -5,15 +5,18 @@ $ErrorActionPreference = "Stop"
 $DefaultDb = "D:\areas_v11\organizer.db"
 $DefaultAreas = "D:\areas_v11"
 
-if (Test-Path $DefaultDb) {
-    $DbPath = $DefaultDb
-    $AreasRoot = $DefaultAreas
+if (Test-Path "D:\areas_v11\organizer.db") {
+    $DbPath = "D:\areas_v11\organizer.db"
+    $AreasRoot = "D:\areas_v11"
 } elseif (Test-Path "$PSScriptRoot\organizer.db") {
     $DbPath = "$PSScriptRoot\organizer.db"
     $AreasRoot = "$PSScriptRoot\areas"
+} elseif (Test-Path "D:\areas_v11") {
+    $DbPath = "D:\areas_v11\organizer.db"
+    $AreasRoot = "D:\areas_v11"
 } else {
-    $DbPath = $DefaultDb
-    $AreasRoot = $DefaultAreas
+    $DbPath = "$PSScriptRoot\organizer.db"
+    $AreasRoot = "$PSScriptRoot\areas"
 }
 
 $Port = 5000
@@ -43,9 +46,19 @@ if ($TailscaleIp) {
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host "Press Ctrl+C to stop the server.`n" -ForegroundColor DarkGray
 
-Set-Location -Path "$PSScriptRoot\src\HousingApplication.Web"
-
-dotnet run `
-    --urls "http://0.0.0.0:$Port" `
-    --ORGANIZER_DB_PATH "$DbPath" `
-    --AREAS_ROOT_PATH "$AreasRoot"
+if (Get-Command dotnet -ErrorAction SilentlyContinue) {
+    Set-Location -Path "$PSScriptRoot\src\HousingApplication.Web"
+    dotnet run `
+        --urls "http://0.0.0.0:$Port" `
+        --ORGANIZER_DB_PATH "$DbPath" `
+        --AREAS_ROOT_PATH "$AreasRoot"
+} elseif (Test-Path "$PSScriptRoot\dist\win-x64\FileOrganizer.Web.exe") {
+    Write-Host "Running standalone executable from dist\win-x64 (no .NET installation required)..." -ForegroundColor Green
+    Set-Location -Path "$PSScriptRoot\dist\win-x64"
+    .\FileOrganizer.Web.exe `
+        --urls "http://0.0.0.0:$Port" `
+        --ORGANIZER_DB_PATH "$DbPath" `
+        --AREAS_ROOT_PATH "$AreasRoot"
+} else {
+    Write-Error "Neither .NET SDK ('dotnet') nor standalone executable ('dist\win-x64\FileOrganizer.Web.exe') was found."
+}
