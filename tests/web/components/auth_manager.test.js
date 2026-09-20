@@ -5,8 +5,10 @@ import path from 'path';
 describe('AuthManager, Login Screen & Session UI (Phase 117)', () => {
     const htmlPath = path.resolve(__dirname, '../../../src/HousingApplication.Web/wwwroot/index.html');
     const authJsPath = path.resolve(__dirname, '../../../src/HousingApplication.Web/wwwroot/js/auth-manager.js');
+    const cssPath = path.resolve(__dirname, '../../../src/HousingApplication.Web/wwwroot/css/styles.css');
     const htmlContent = fs.readFileSync(htmlPath, 'utf8');
     const authJsContent = fs.readFileSync(authJsPath, 'utf8');
+    const cssContent = fs.readFileSync(cssPath, 'utf8');
 
     let originalFetch;
 
@@ -121,6 +123,87 @@ describe('AuthManager, Login Screen & Session UI (Phase 117)', () => {
         expect(passwordInput.type).toBe('text');
         toggleBtn.click();
         expect(passwordInput.type).toBe('password');
+    });
+
+    it('verifies login-screen is placed before the main workspace without transition delay to prevent reload flash', () => {
+        const loginScreen = document.getElementById('login-screen');
+        expect(loginScreen).not.toBeNull();
+        expect(loginScreen.classList.contains('transition-all')).toBe(false);
+        expect(loginScreen.classList.contains('duration-500')).toBe(false);
+        expect(loginScreen.classList.contains('bg-[#090d16]')).toBe(true);
+
+        // Verify in HTML structure that login-screen is parsed before main-sidebar/workspace
+        const bodyPos = htmlContent.indexOf('<body');
+        const loginPos = htmlContent.indexOf('id="login-screen"');
+        const sidebarPos = htmlContent.indexOf('id="main-sidebar"');
+
+        expect(loginPos).toBeGreaterThan(bodyPos);
+        expect(loginPos).toBeLessThan(sidebarPos);
+    });
+
+    it('verifies lively motion canvas is present with non-blocking pointer events', () => {
+        const canvas = document.getElementById('login-motion-canvas');
+        expect(canvas).not.toBeNull();
+        expect(canvas.classList.contains('pointer-events-none')).toBe(true);
+        expect(canvas.classList.contains('absolute')).toBe(true);
+    });
+
+    it('verifies floating logo has transparent styling without an enclosing bordered box', () => {
+        const logo = document.getElementById('login-app-logo');
+        expect(logo).not.toBeNull();
+        expect(logo.getAttribute('src')).toBe('pictures/logo.png');
+
+        const parent = logo.parentElement;
+        expect(parent.classList.contains('animate-login-float')).toBe(true);
+        // Ensure no box borders or white background around the logo
+        expect(parent.classList.contains('border')).toBe(false);
+        expect(parent.classList.contains('bg-white/10')).toBe(false);
+    });
+
+    it('verifies styles.css enforces high-contrast input styling and suppresses Edge duplicate password eye', () => {
+        // High-contrast login input styling
+        expect(cssContent).toContain('#login-screen input[type="text"]');
+        expect(cssContent).toContain('#login-screen input[type="password"]');
+        expect(cssContent).toContain('color: #ffffff !important');
+        expect(cssContent).toContain('-webkit-text-fill-color: #ffffff !important');
+        expect(cssContent).toContain('caret-color: #38bdf8 !important');
+
+        // Microsoft Edge duplicate password reveal eye suppression
+        expect(cssContent).toContain('#login-screen input[type="password"]::-ms-reveal');
+        expect(cssContent).toContain('display: none !important');
+    });
+
+    it('verifies all 10 seeded users authenticate with default password password123', async () => {
+        const mgr = window.authManager;
+        const allUsers = [
+            { username: 'Emad', role: 'Admin', canDelete: true },
+            { username: 'Bubshait', role: 'Admin', canDelete: true },
+            { username: 'Ehtezaz', role: 'Admin', canDelete: true },
+            { username: 'Mustafa', role: 'Admin', canDelete: true },
+            { username: 'Nawaf', role: 'Contributor', canDelete: false },
+            { username: 'Naseem', role: 'Contributor', canDelete: false },
+            { username: 'Mulla', role: 'Contributor', canDelete: false },
+            { username: 'Mariam', role: 'Contributor', canDelete: false },
+            { username: 'Shaima', role: 'Contributor', canDelete: false },
+            { username: 'Mona', role: 'Contributor', canDelete: false }
+        ];
+
+        for (const u of allUsers) {
+            window.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                status: 200,
+                json: async () => ({
+                    status: 'success',
+                    user: { id: 1, username: u.username, displayName: u.username, role: u.role, can_delete: u.canDelete }
+                })
+            });
+
+            const success = await mgr.login(u.username, 'password123');
+            expect(success).toBe(true);
+            expect(mgr.currentUser.username).toBe(u.username);
+            expect(mgr.currentUser.role).toBe(u.role);
+            expect(mgr.hasDeletePermission()).toBe(u.canDelete);
+        }
     });
 
     it('authenticates Admin user (Emad) and sets full access permissions', async () => {
