@@ -1985,8 +1985,11 @@
         </div>
     </div>
 
-    <!-- Animated Open Login Home Page -->
-    <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center p-6 sm:p-10 lg:p-16 bg-slate-900/95 dark:bg-slate-950 text-slate-100 transition-all duration-500 overflow-y-auto" aria-hidden="true" role="dialog" aria-modal="true">
+    <!-- Animated Open Login Home Page (Opaque with Lively Motion) -->
+    <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center p-6 sm:p-10 lg:p-16 bg-[#090d16] text-slate-100 transition-all duration-500 overflow-y-auto" aria-hidden="true" role="dialog" aria-modal="true">
+        <!-- Lively Motion Canvas (Constellation & Floating Luminous Nodes) -->
+        <canvas id="login-motion-canvas" class="absolute inset-0 w-full h-full pointer-events-none z-0"></canvas>
+
         <!-- Close Button (Only active when switching user while already logged in) -->
         <button id="btn-close-login" type="button" class="absolute top-6 right-6 z-20 w-10 h-10 rounded-2xl text-slate-400 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all cursor-pointer hidden" title="Close">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -2002,18 +2005,16 @@
         <div class="relative z-10 w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
             
             <!-- Left Side: Brand Experience (Spacious, Uncluttered, Entertaining) -->
-            <div class="lg:col-span-7 flex flex-col items-center lg:items-start text-center lg:text-left space-y-6">
-                <!-- Floating Animated Logo with Radiant Glow -->
-                <div class="relative w-32 h-32 sm:w-40 sm:h-40 flex items-center justify-center">
-                    <div class="absolute inset-0 rounded-3xl bg-gradient-to-tr from-blue-500/40 via-indigo-500/40 to-cyan-400/30 blur-2xl animate-halo-pulse"></div>
-                    <div class="relative w-28 h-28 sm:w-36 sm:h-36 rounded-3xl p-4 bg-white/10 border border-white/15 backdrop-blur-xl shadow-2xl shadow-blue-500/20 flex items-center justify-center animate-login-float">
-                        <img src="pictures/logo.png" alt="Housing Application Logo" class="max-w-full max-h-full object-contain filter drop-shadow-md" id="login-app-logo" />
-                    </div>
+            <div class="lg:col-span-7 flex flex-col items-center lg:items-start text-center lg:text-left space-y-8 z-10">
+                <!-- Floating Transparent Logo with Radiant Halo (No box, zero white borders) -->
+                <div class="relative w-36 h-36 sm:w-48 sm:h-48 flex items-center justify-center animate-login-float">
+                    <div class="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-500/30 via-indigo-500/30 to-cyan-400/25 blur-3xl animate-halo-pulse pointer-events-none"></div>
+                    <img src="pictures/logo.png" alt="Housing Application Logo" class="w-full h-full object-contain filter drop-shadow-2xl relative z-10" id="login-app-logo" />
                 </div>
 
                 <!-- Minimal, Striking Brand Typography -->
-                <div class="space-y-2">
-                    <h1 id="login-app-title" class="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white">
+                <div class="space-y-3">
+                    <h1 id="login-app-title" class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white">
                         Housing <span class="bg-gradient-to-r from-blue-400 via-sky-300 to-indigo-300 bg-clip-text text-transparent">Application</span>
                     </h1>
                     <p class="text-base sm:text-lg text-slate-400 font-light tracking-wide">
@@ -2023,7 +2024,7 @@
             </div>
 
             <!-- Right Side: Clean, Open Sign-In Card -->
-            <div class="lg:col-span-5 w-full max-w-md mx-auto lg:max-w-none">
+            <div class="lg:col-span-5 w-full max-w-md mx-auto lg:max-w-none z-10">
                 <div class="login-home-card bg-white/[0.07] border border-white/10 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/40">
                     <h2 class="text-xl font-bold text-white mb-6 text-left">
                         Sign In
@@ -2074,6 +2075,7 @@
     <!-- Modular Application Scripts -->
     <script src="js/api.js?v=260911-29"></script>
     <script src="js/auth-manager.js?v=260917-01"></script>
+    <script src="js/login-motion.js?v=260920-01"></script>
     <script src="js/resizer.js?v=260911-29"></script>
     <script src="js/pdf-preview.js?v=260911-34"></script>
     <script src="js/command-palette.js?v=260911-34"></script>

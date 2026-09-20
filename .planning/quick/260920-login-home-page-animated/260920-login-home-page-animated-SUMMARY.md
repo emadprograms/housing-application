@@ -27,21 +27,26 @@
 - Created `src/HousingApplication.Web/wwwroot/pictures/` and `dist/win-x64/wwwroot/pictures/`.
 - Placed `logo.png` into both directories as `pictures/logo.png`.
 
-### B. Animated Open Login Home Page (`index.html`)
+### B. Animated Open Login Home Page (`index.html` & `login-motion.js`)
 - Replaced the congested small card with an expansive, open two-column layout (`max-w-5xl` with `gap-16`):
+  - **Transparent Logo (Zero White Borders):**
+    - Processed `logo.png` into a true 32-bit RGBA transparent PNG with perimeter flood-fill and edge anti-aliasing.
+    - Removed the enclosing box/borders so the logo floats freely with transparent background and soft glowing halo.
+  - **100% Opaque Solid Background:**
+    - Changed `#login-screen` to solid `#090d16` (completely opaque, eliminating translucency and preventing the app behind from bleeding through).
+  - **Lively Background Motion (`login-motion.js`):**
+    - Integrated high-performance HTML5 `<canvas id="login-motion-canvas">` with 50 drifting constellation particles, luminous proximity filaments, ambient floating radial glow orbs, and interactive mouse repulsion.
+    - Automatically pauses `requestAnimationFrame` when the login screen is hidden to conserve 100% CPU/battery during app usage.
   - **Left Side (Open Brand Experience):**
-    - Large floating animated logo (`pictures/logo.png`) with ambient glowing radiant halo (`animate-halo-pulse` and `animate-login-float`).
+    - Floating animated logo (`pictures/logo.png`) with ambient glowing radiant halo (`animate-halo-pulse` and `animate-login-float`).
     - Striking modern typography: large `Housing Application` with gradient styling and clean, understated subtitle (`نظام إدارة الوثائق السكنية`).
-    - Full breathing room with generous margins, eliminating all congested pills and redundant explanatory paragraphs.
   - **Right Side (Clean, Spacious Sign-In):**
     - Sleek, spacious glassmorphic card with generous padding (`p-10`).
     - Clean, minimal labels and inputs ("Username", "Password") with smooth focus rings and password toggle.
     - Minimalist "Sign In" button with spinner.
-  - **Ambient Background:**
-    - Expansive soft glowing ambient orbs and subtle grid pattern spanning the viewport.
   - **Preset & Wordiness Removal:**
     - Completely removed `#login-presets-container`, all user chips, all feature pills (`🏛️ سجلات المنازل`, etc.), and verbose footer text.
-  - Mirrored across `src/HousingApplication.Web/wwwroot/index.html` and `dist/win-x64/wwwroot/index.html`.
+  - Mirrored across `src/HousingApplication.Web/wwwroot/` and `dist/win-x64/wwwroot/`.
 
 ### C. CSS Animations (`styles.css`)
 - Added keyframe animations:
