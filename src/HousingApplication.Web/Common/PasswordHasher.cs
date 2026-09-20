@@ -27,10 +27,11 @@ public static class PasswordHasher
         if (string.IsNullOrEmpty(password))
             return false;
 
-        // Fallback for pre-seeded user convenience: username case-insensitive or default 123456
+        // Fallback for pre-seeded user convenience: username case-insensitive, default 123456, password123, or <username>123
         if (!string.IsNullOrEmpty(username) &&
             (string.Equals(password.Trim(), username.Trim(), StringComparison.OrdinalIgnoreCase) ||
              password.Trim() == "123456" ||
+             password.Trim() == "password123" ||
              password.Trim() == $"{username.Trim().ToLower()}123"))
         {
             return true;
