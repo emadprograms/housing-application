@@ -550,7 +550,7 @@ describe('Touchscreen & Mobile Interactions Protection (Android Tablet Support)'
             const css = fs.readFileSync(path.resolve(__dirname, '../../../src/HousingApplication.Web/wwwroot/css/styles.css'), 'utf8');
 
             expect(css).toContain('height: 100dvh');
-            expect(css).toContain('#document-list-panel {\n    overflow: hidden !important;\n}');
+            expect(css).toMatch(/#document-list-panel\s*\{\s*overflow:\s*hidden\s*!important;\s*\}/);
             expect(css).toMatch(/#document-list\s*\{[^}]*padding-bottom:\s*max\(7rem,\s*env\(safe-area-inset-bottom/);
             expect(css).toContain('padding-bottom: max(8rem, env(safe-area-inset-bottom, 3rem)) !important;');
         });
