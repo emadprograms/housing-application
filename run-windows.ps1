@@ -2,21 +2,36 @@
 $ErrorActionPreference = "Stop"
 
 # Detect database and vault directories
-$DefaultDb = "D:\areas_v11\organizer.db"
-$DefaultAreas = "D:\areas_v11"
+$DbPath = ""
+$AreasRoot = ""
 
-if (Test-Path "D:\areas_v11\organizer.db") {
-    $DbPath = "D:\areas_v11\organizer.db"
-    $AreasRoot = "D:\areas_v11"
-} elseif (Test-Path "$PSScriptRoot\organizer.db") {
-    $DbPath = "$PSScriptRoot\organizer.db"
-    $AreasRoot = "$PSScriptRoot\areas"
-} elseif (Test-Path "D:\areas_v11") {
-    $DbPath = "D:\areas_v11\organizer.db"
-    $AreasRoot = "D:\areas_v11"
-} else {
-    $DbPath = "$PSScriptRoot\organizer.db"
-    $AreasRoot = "$PSScriptRoot\areas"
+$ConfigFilePath = "$PSScriptRoot\config.paths.json"
+if (Test-Path $ConfigFilePath) {
+    try {
+        $cfg = Get-Content $ConfigFilePath -Raw | ConvertFrom-Json
+        if ($cfg.organizer_db_path -and (Test-Path $cfg.organizer_db_path)) {
+            $DbPath = $cfg.organizer_db_path
+        }
+        if ($cfg.areas_root_path -and (Test-Path $cfg.areas_root_path)) {
+            $AreasRoot = $cfg.areas_root_path
+        }
+    } catch {}
+}
+
+if (-not $DbPath -or -not $AreasRoot) {
+    if (Test-Path "D:\areas_v11\organizer.db") {
+        $DbPath = "D:\areas_v11\organizer.db"
+        $AreasRoot = "D:\areas_v11"
+    } elseif (Test-Path "$PSScriptRoot\organizer.db") {
+        $DbPath = "$PSScriptRoot\organizer.db"
+        $AreasRoot = "$PSScriptRoot\areas"
+    } elseif (Test-Path "D:\areas_v11") {
+        $DbPath = "D:\areas_v11\organizer.db"
+        $AreasRoot = "D:\areas_v11"
+    } else {
+        $DbPath = "$PSScriptRoot\organizer.db"
+        $AreasRoot = "$PSScriptRoot\areas"
+    }
 }
 
 $Port = 5000
