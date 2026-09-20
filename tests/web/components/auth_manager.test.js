@@ -173,6 +173,17 @@ describe('AuthManager, Login Screen & Session UI (Phase 117)', () => {
         expect(cssContent).toContain('display: none !important');
     });
 
+    it('verifies styles.css preserves dark background and white text during browser autofill', () => {
+        expect(cssContent).toContain('#login-screen,');
+        expect(cssContent).toContain('#login-screen input');
+        expect(cssContent).toContain('color-scheme: dark');
+
+        expect(cssContent).toContain('#login-screen input:-webkit-autofill');
+        expect(cssContent).toContain('box-shadow: 0 0 0 1000px #0f172a inset !important');
+        expect(cssContent).toContain('-webkit-text-fill-color: #ffffff !important');
+        expect(cssContent).toContain('#login-screen input:-moz-autofill');
+    });
+
     it('verifies all 10 seeded users authenticate with default password password123', async () => {
         const mgr = window.authManager;
         const allUsers = [

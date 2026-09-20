@@ -1,14 +1,18 @@
 # Phase 117 Summary: Login Screen, Session Management & Navbar User Profile
 
 ## Executed Work
-- **Bilingual Login Screen Modal**:
-  - Added `#login-screen` full-screen modal overlay in `index.html` with backdrop blur, title and app icon.
-  - Added quick user picker preset chips (`#login-presets-container`) cleanly separating the 10 users:
-    - 4 Admins (Full Access): `Emad`, `Bubshait`, `Ehtezaz`, `Mustafa`
-    - 6 Contributors (Read & Upload Only): `Nawaf`, `Naseem`, `Mulla`, `Mariam`, `Shaima`, `Mona`
-  - Clicking any user chip auto-fills username and default demo password `password123`.
-  - Manual username and password inputs with show/hide password toggle (`#btn-toggle-password`).
-  - Clear error banner (`#login-error`) with bilingual messages.
+- **Animated Open Login Home Page & Brand Experience**:
+  - Replaced the compact modal with an open, spacious, and opaque animated login home page (`#login-screen`) at the top of the DOM.
+  - Implemented interactive constellation motion canvas (`#login-motion-canvas` via `login-motion.js`) with floating luminous nodes and ambient glowing orbs (`animate-orb-1`, `animate-orb-2`, `animate-orb-3`).
+  - Integrated transparent floating logo (`pictures/logo.png`) with radiant halo (`animate-halo-pulse`, `animate-login-float`) and Arabic/English brand typography.
+  - Removed user preset chips to provide a clean, uncluttered, and open sign-in experience.
+  - Eliminated reload flash by parsing `#login-screen` at the very top of `<body>` without initial CSS transition delays, ensuring instant frame 0 rendering.
+- **High-Contrast Input Usability & Autofill Protection**:
+  - High-contrast dark input styling with `-webkit-text-fill-color: #ffffff !important`, `caret-color: #38bdf8 !important`, and `pointer-events: auto`.
+  - Suppressed Microsoft Edge duplicate password reveal and clear icons (`::-ms-reveal`, `::-ms-clear`).
+  - Added `color-scheme: dark;` and dedicated browser autofill styling (`:-webkit-autofill`, `:-moz-autofill`) with `#0f172a` inset box shadow and white text, preventing white-on-white text during credential autofill.
+  - Show/hide password visibility toggle (`#btn-toggle-password`).
+  - Bilingual error alert banner (`#login-error`) with subtle error shake animation (`animate-shake`).
 - **Top Navbar User Profile Card & Dropdown**:
   - Added `#user-profile-wrapper` to the top navbar with avatar initial badge, display name, and role pill (`صلاحيات كاملة • Full Access` vs `قراءة ورفع فقط • Read & Upload`).
   - Added dropdown menu (`#user-profile-dropdown`) showing user details, role permissions overview, switch user button (`#btn-switch-user`), and logout button (`#btn-logout`).
@@ -18,8 +22,18 @@
   - Set up fetch interceptor ensuring same-origin credentials for cookies and forwarding role/user headers.
   - Implemented automatic 403 Forbidden interceptor notifying users of restricted delete actions.
   - Dispatches `auth:user-changed` custom DOM events upon session updates.
-- **Synchronization**:
-  - Synchronized `index.html` and `auth-manager.js` to `dist/win-x64/wwwroot/`.
+- **Dual-Asset Synchronization**:
+  - Maintained 100% parity across `src/HousingApplication.Web/wwwroot/` and `dist/win-x64/wwwroot/` for `index.html`, `css/styles.css`, `js/auth-manager.js`, `js/login-motion.js`, and `pictures/logo.png`.
 - **Automated Verification**:
-  - Created `tests/web/components/auth_manager.test.js` covering modal structure, navbar card, preset user chips, login flow, logout flow, password visibility toggle, error display, role evaluation across all 10 users, and fetch interceptors.
-  - All 12 Vitest tests passed.
+  - Comprehensive test suite in `tests/web/components/auth_manager.test.js` covering:
+    - Navbar components & user profile dropdown.
+    - Animated login home page structure & non-blocking motion canvas.
+    - Preset chips removal and graceful `renderUserChips` no-op.
+    - Password visibility toggle.
+    - Reload flash prevention & parse order.
+    - High-contrast input styling & Edge duplicate eye suppression.
+    - Browser autofill dark styling (`:-webkit-autofill`, `color-scheme: dark`).
+    - Authentication for all 10 seeded users with `password123`.
+    - Permission evaluation (4 Admins full access, 6 Contributors read/upload only).
+    - Session check, logout flow, and 403 Forbidden interceptor.
+  - All 18 Vitest tests passed.
