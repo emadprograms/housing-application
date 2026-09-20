@@ -21,14 +21,56 @@
                 
                 const tenantDocCounts = {};
                 const tenantCatSets = {};
+                const tenantCatCounts = {};
+                let unassignedDocCount = 0;
+                const unassignedCatCounts = {};
+                const unassignedCatSet = new Set();
+
                 groups.forEach(g => {
                     const t = g.primary_tenant;
+                    const c = g.category || g.folder_path;
                     if (t) {
                         tenantDocCounts[t] = (tenantDocCounts[t] || 0) + 1;
                         if (!tenantCatSets[t]) tenantCatSets[t] = new Set();
-                        if (g.category || g.folder_path) tenantCatSets[t].add(g.category || g.folder_path);
+                        if (!tenantCatCounts[t]) tenantCatCounts[t] = {};
+                        if (c) {
+                            tenantCatSets[t].add(c);
+                            const clean = c.replace(/^\d+\s*-\s*/, '').trim();
+                            tenantCatCounts[t][c] = (tenantCatCounts[t][c] || 0) + 1;
+                            if (clean !== c) {
+                                tenantCatCounts[t][clean] = (tenantCatCounts[t][clean] || 0) + 1;
+                            }
+                        }
+                    } else {
+                        unassignedDocCount++;
+                        if (c) {
+                            unassignedCatSet.add(c);
+                            const clean = c.replace(/^\d+\s*-\s*/, '').trim();
+                            unassignedCatCounts[c] = (unassignedCatCounts[c] || 0) + 1;
+                            if (clean !== c) {
+                                unassignedCatCounts[clean] = (unassignedCatCounts[clean] || 0) + 1;
+                            }
+                        }
                     }
                 });
+
+                // Find active tenant candidate
+                const activeCandidate = knownTenants.find(kt => {
+                    const eDate = kt.end_date || null;
+                    return (!eDate || eDate === 'PRESENT' || eDate === '');
+                }) || (knownTenants.length > 0 ? knownTenants[0] : null);
+
+                // If active candidate exists and there are unassigned documents, attribute them
+                if (activeCandidate && unassignedDocCount > 0) {
+                    const tName = activeCandidate.name;
+                    tenantDocCounts[tName] = (tenantDocCounts[tName] || 0) + unassignedDocCount;
+                    if (!tenantCatSets[tName]) tenantCatSets[tName] = new Set();
+                    if (!tenantCatCounts[tName]) tenantCatCounts[tName] = {};
+                    unassignedCatSet.forEach(c => tenantCatSets[tName].add(c));
+                    for (const [k, count] of Object.entries(unassignedCatCounts)) {
+                        tenantCatCounts[tName][k] = (tenantCatCounts[tName][k] || 0) + count;
+                    }
+                }
 
                 const tenants = knownTenants.map((kt, idx) => {
                     const sDate = kt.start_date || '2020-01-01';
@@ -45,7 +87,8 @@
                         duration_str_ar: isActive ? `بدء الإيجار ${sDate.substring(0, 4)} (مستمر)` : `فترة الإيجار: ${sDate.substring(0, 4)} – ${eDate.substring(0, 4)}`,
                         document_count: tenantDocCounts[kt.name] || 0,
                         category_count: (tenantCatSets[kt.name] || new Set()).size,
-                        categories: Array.from(tenantCatSets[kt.name] || [])
+                        categories: Array.from(tenantCatSets[kt.name] || []),
+                        category_counts: tenantCatCounts[kt.name] || {}
                     };
                 });
                 tenants.sort((a, b) => {
@@ -63,15 +106,25 @@
                     });
                     const cat = g.folder_path || g.category || 'غير مصنف';
                     catCounts[cat] = (catCounts[cat] || 0) + 1;
+                    const clean = cat.replace(/^\d+\s*-\s*/, '').trim();
+                    if (clean !== cat) {
+                        catCounts[clean] = (catCounts[clean] || 0) + 1;
+                    }
                 });
 
                 validDates.sort();
                 const oldest = validDates.length ? validDates[0] : null;
                 const newest = validDates.length ? validDates[validDates.length - 1] : null;
 
+                const activeResident = tenants.find(t => (t.is_resident !== 0 && t.is_resident !== false) && t.is_active) 
+                    || (tenants.length > 0 ? tenants[0] : null);
+
                 currentHouseProfile = {
                     house_id: houseId,
                     area_id: areaId,
+                    active_resident: activeResident ? activeResident.name : null,
+                    category_counts: catCounts,
+                    active_tenant_category_counts: activeResident ? (tenantCatCounts[activeResident.name] || null) : null,
                     tenants: tenants,
                     archive: {
                         total_documents: groups.length,
@@ -207,6 +260,51 @@
         const tenantCats = (activeTenant.categories && Array.isArray(activeTenant.categories)) ? activeTenant.categories : [];
         const catCounts = activeTenant.category_counts || activeTenant.categoryCounts || {};
 
+        // Collect category counts claimed explicitly by other tenants in the same house
+        // to prevent leaking past tenants' documents to the active tenant (e.g. House 500 scenario).
+        const allTenants = (profile && Array.isArray(profile.tenants)) ? profile.tenants : [];
+        const otherTenants = allTenants.filter(t => t !== activeTenant && t.name !== activeTenant.name);
+        const otherTenantsClaimedCounts = {};
+        otherTenants.forEach(ot => {
+            const otCounts = ot.category_counts || ot.categoryCounts || {};
+            for (const [k, count] of Object.entries(otCounts)) {
+                if (count > 0) {
+                    const clean = k.replace(/^\d+\s*-\s*/, '').trim();
+                    otherTenantsClaimedCounts[clean] = (otherTenantsClaimedCounts[clean] || 0) + count;
+                    otherTenantsClaimedCounts[k] = (otherTenantsClaimedCounts[k] || 0) + count;
+                }
+            }
+            if (Array.isArray(ot.categories)) {
+                ot.categories.forEach(c => {
+                    const clean = String(c).replace(/^\d+\s*-\s*/, '').trim();
+                    if (!otherTenantsClaimedCounts[clean]) otherTenantsClaimedCounts[clean] = 1;
+                    if (!otherTenantsClaimedCounts[c]) otherTenantsClaimedCounts[c] = 1;
+                });
+            }
+        });
+
+        // Resolve fallback sources: profile active tenant counts, profile house category counts, archive categories, globalTreeData
+        const profileActiveCounts = profile.active_tenant_category_counts || profile.activeTenantCategoryCounts || null;
+        const profileHouseCounts = profile.category_counts || profile.categoryCounts || null;
+        const archiveCategories = (profile.archive && Array.isArray(profile.archive.categories)) ? profile.archive.categories : [];
+
+        // Also check window.globalTreeData if available
+        let treeHouse = null;
+        if (typeof window !== 'undefined' && Array.isArray(window.globalTreeData) && (profile.house_id || profile.name)) {
+            const hId = String(profile.house_id || profile.name);
+            for (const area of window.globalTreeData) {
+                if (Array.isArray(area.children)) {
+                    const match = area.children.find(h => String(h.id) === hId || String(h.name) === hId);
+                    if (match) {
+                        treeHouse = match;
+                        break;
+                    }
+                }
+            }
+        }
+        const treeActiveCounts = treeHouse ? (treeHouse.active_tenant_category_counts || treeHouse.activeTenantCategoryCounts || null) : null;
+        const treeHouseCounts = treeHouse ? (treeHouse.category_counts || treeHouse.categoryCounts || null) : null;
+
         const presentCategories = [];
         const missingCategories = [];
 
@@ -214,7 +312,7 @@
             let exists = false;
             let docCount = 0;
 
-            // Check in activeTenant.category_counts first
+            // 1. Check in activeTenant.category_counts first
             if (catCounts && typeof catCounts === 'object' && Object.keys(catCounts).length > 0) {
                 if ((catCounts[cat.key] || 0) > 0) {
                     exists = true;
@@ -239,7 +337,7 @@
                 }
             }
 
-            // Fallback to activeTenant.categories
+            // 2. Fallback to activeTenant.categories
             if (!exists && tenantCats.length > 0) {
                 for (const c of tenantCats) {
                     const clean = String(c).replace(/^\d+\s*-\s*/, '').trim();
@@ -248,6 +346,80 @@
                         docCount = 1;
                         break;
                     }
+                }
+            }
+
+            // 3. Fallback: profile active tenant category counts or tree active tenant counts
+            const activeFallback = profileActiveCounts || treeActiveCounts;
+            if (!exists && activeFallback && typeof activeFallback === 'object') {
+                if ((activeFallback[cat.key] || 0) > 0) {
+                    exists = true;
+                    docCount = activeFallback[cat.key];
+                } else if ((activeFallback[cat.prefix] || 0) > 0) {
+                    exists = true;
+                    docCount = activeFallback[cat.prefix];
+                } else if ((activeFallback[cat.id] || 0) > 0) {
+                    exists = true;
+                    docCount = activeFallback[cat.id];
+                } else {
+                    for (const [k, count] of Object.entries(activeFallback)) {
+                        if (count > 0) {
+                            const cleanK = k.replace(/^\d+\s*-\s*/, '').trim();
+                            if (cleanK === cat.key || cleanK === cat.label || k.includes(cat.prefix) || k.startsWith(cat.id)) {
+                                exists = true;
+                                docCount = count;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 4. Fallback: House-level unassigned documents (from profile.category_counts, treeHouse.category_counts, or archive.categories)
+            // Only attribute if NOT claimed by other tenants (protecting House 500 anti-leakage guarantee)
+            if (!exists) {
+                let houseDocCount = 0;
+                const houseFallback = profileHouseCounts || treeHouseCounts;
+                if (houseFallback && typeof houseFallback === 'object') {
+                    if ((houseFallback[cat.key] || 0) > 0) {
+                        houseDocCount = houseFallback[cat.key];
+                    } else if ((houseFallback[cat.prefix] || 0) > 0) {
+                        houseDocCount = houseFallback[cat.prefix];
+                    } else if ((houseFallback[cat.id] || 0) > 0) {
+                        houseDocCount = houseFallback[cat.id];
+                    } else {
+                        for (const [k, count] of Object.entries(houseFallback)) {
+                            if (count > 0) {
+                                const cleanK = k.replace(/^\d+\s*-\s*/, '').trim();
+                                if (cleanK === cat.key || cleanK === cat.label || k.includes(cat.prefix) || k.startsWith(cat.id)) {
+                                    houseDocCount = count;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (houseDocCount === 0 && archiveCategories.length > 0) {
+                    for (const item of archiveCategories) {
+                        const raw = item.category || '';
+                        const clean = raw.replace(/^\d+\s*-\s*/, '').trim();
+                        if (clean === cat.key || clean === cat.label || raw.includes(cat.prefix) || raw.startsWith(cat.id)) {
+                            houseDocCount += (item.document_count || 1);
+                        }
+                    }
+                }
+
+                // Check how many were claimed by other tenants
+                const otherClaimed = otherTenantsClaimedCounts[cat.key]
+                    || otherTenantsClaimedCounts[cat.prefix]
+                    || otherTenantsClaimedCounts[cat.id]
+                    || 0;
+
+                const unclaimed = Math.max(0, houseDocCount - otherClaimed);
+                if (unclaimed > 0) {
+                    exists = true;
+                    docCount = unclaimed;
                 }
             }
 
@@ -298,7 +470,9 @@
         const applicants = allTenants.filter(t => t.is_resident === 0 || t.is_resident === false);
 
         // Section 0: Tenant File Compliance Checklist (Idea C)
-        const activeTenant = residents.find(t => t.is_active) || (residents.length > 0 ? residents[0] : null);
+        const activeTenant = residents.find(t => t.is_active)
+            || residents.find(t => profile && profile.active_resident && t.name === profile.active_resident)
+            || (residents.length > 0 ? residents[0] : null);
         const compliance = computeTenantCompliance(profile, activeTenant);
         const complianceSection = document.createElement('div');
 

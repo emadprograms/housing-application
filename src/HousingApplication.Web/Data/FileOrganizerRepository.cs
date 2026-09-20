@@ -554,6 +554,35 @@ public class FileOrganizerRepository : IFileOrganizerRepository
                 t.EndDate.ToLowerInvariant() == "present" ||
                 string.Compare(t.EndDate, DateTime.Today.ToString("yyyy-MM-dd"), StringComparison.Ordinal) >= 0));
 
+        // If there are unassigned documents (tenant_id == 0) and an active resident exists,
+        // attribute unassigned documents to the active resident so they are reflected in compliance checks
+        if (activeTenant != null && tenantCatCounts.TryGetValue(0, out var unassignedCatCounts))
+        {
+            if (!tenantCatCounts.TryGetValue(activeTenant.Id, out var atCatCounts))
+            {
+                atCatCounts = new Dictionary<string, int>();
+                tenantCatCounts[activeTenant.Id] = atCatCounts;
+            }
+            if (!tenantCatSets.TryGetValue(activeTenant.Id, out var atCatSet))
+            {
+                atCatSet = new HashSet<string>();
+                tenantCatSets[activeTenant.Id] = atCatSet;
+            }
+
+            foreach (var kv in unassignedCatCounts)
+            {
+                atCatCounts[kv.Key] = atCatCounts.GetValueOrDefault(kv.Key) + kv.Value;
+            }
+            if (tenantCatSets.TryGetValue(0, out var unassignedCatSet))
+            {
+                foreach (var cat in unassignedCatSet)
+                {
+                    atCatSet.Add(cat);
+                }
+            }
+            tenantDocCounts[activeTenant.Id] = tenantDocCounts.GetValueOrDefault(activeTenant.Id) + tenantDocCounts.GetValueOrDefault(0);
+        }
+
         foreach (var t in tenants)
         {
             var isActive = (activeTenant != null && t.Id == activeTenant.Id);
@@ -629,11 +658,17 @@ public class FileOrganizerRepository : IFileOrganizerRepository
             Categories = catItems
         };
 
+        var activeTenantCatCounts = (activeTenant != null && tenantCatCounts.TryGetValue(activeTenant.Id, out var atCounts))
+            ? atCounts
+            : null;
+
         return new HouseProfileDto
         {
             HouseId = dbHouseId,
             AreaId = areaId,
             ActiveResident = activeTenant?.Name,
+            CategoryCounts = catCounts,
+            ActiveTenantCategoryCounts = activeTenantCatCounts,
             Tenants = tenantProfiles,
             Archive = archive
         };

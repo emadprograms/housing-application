@@ -139,6 +139,12 @@ public record HouseProfileDto
     [JsonPropertyName("active_resident")]
     public string? ActiveResident { get; init; }
 
+    [JsonPropertyName("category_counts")]
+    public Dictionary<string, int>? CategoryCounts { get; init; }
+
+    [JsonPropertyName("active_tenant_category_counts")]
+    public Dictionary<string, int>? ActiveTenantCategoryCounts { get; init; }
+
     [JsonPropertyName("tenants")]
     public List<HouseTenantProfileDto> Tenants { get; init; } = new();
 

@@ -633,6 +633,115 @@ describe('Tenant File Integrity & Compliance Check (Idea B + Idea C)', () => {
             expect(item07.documentCount).toBe(0);
         });
 
+        it('resolves compliance accurately (4/5) when activeTenant has no direct category counts but profile has active_tenant_category_counts', () => {
+            const mockProfile = {
+                area_id: 'Safra',
+                house_id: '202',
+                active_tenant_category_counts: {
+                    '02 - بيانات شخصية': 1,
+                    '03 - أمر تخصيص': 1,
+                    '04 - محضر تسليم مفتاح': 1,
+                    '05 - عقود': 2
+                },
+                tenants: [
+                    {
+                        name: 'سالم الكعبي',
+                        is_active: true,
+                        is_resident: 1,
+                        categories: [],
+                        category_counts: {}
+                    }
+                ],
+                archive: { categories: [] }
+            };
+
+            const tenant = mockProfile.tenants[0];
+            const comp = houseProfile.computeTenantCompliance(mockProfile, tenant);
+
+            expect(comp.isOccupied).toBe(true);
+            expect(comp.presentCount).toBe(4);
+            expect(comp.missingCount).toBe(1);
+            expect(comp.isComplete).toBe(false);
+            expect(comp.missingCategories.map(c => c.id)).toEqual(['07']);
+            expect(comp.items.find(i => i.id === '05').documentCount).toBe(2);
+        });
+
+        it('resolves compliance accurately (4/5) when activeTenant has no direct counts but profile has unclaimed house category_counts', () => {
+            const mockProfile = {
+                area_id: 'Safra',
+                house_id: '203',
+                category_counts: {
+                    'بيانات شخصية': 1,
+                    'أمر تخصيص': 1,
+                    'محضر تسليم مفتاح': 1,
+                    'عقود': 1
+                },
+                tenants: [
+                    {
+                        name: 'طارق الدوسري',
+                        is_active: true,
+                        is_resident: 1,
+                        categories: [],
+                        category_counts: {}
+                    }
+                ],
+                archive: { categories: [] }
+            };
+
+            const tenant = mockProfile.tenants[0];
+            const comp = houseProfile.computeTenantCompliance(mockProfile, tenant);
+
+            expect(comp.isOccupied).toBe(true);
+            expect(comp.presentCount).toBe(4);
+            expect(comp.missingCount).toBe(1);
+            expect(comp.isComplete).toBe(false);
+            expect(comp.missingCategories.map(c => c.id)).toEqual(['07']);
+        });
+
+        it('resolves compliance accurately (4/5) using window.globalTreeData fallback when profile has no counts', () => {
+            window.globalTreeData = [
+                {
+                    name: 'Safra',
+                    children: [
+                        {
+                            id: '204',
+                            name: '204',
+                            category_counts: {
+                                '02 - بيانات شخصية': 1,
+                                '03 - أمر تخصيص': 1,
+                                '04 - محضر تسليم مفتاح': 1,
+                                '05 - عقود': 1
+                            }
+                        }
+                    ]
+                }
+            ];
+
+            const mockProfile = {
+                area_id: 'Safra',
+                house_id: '204',
+                tenants: [
+                    {
+                        name: 'منصور الغامدي',
+                        is_active: true,
+                        is_resident: 1,
+                        categories: [],
+                        category_counts: {}
+                    }
+                ],
+                archive: { categories: [] }
+            };
+
+            const tenant = mockProfile.tenants[0];
+            const comp = houseProfile.computeTenantCompliance(mockProfile, tenant);
+
+            expect(comp.isOccupied).toBe(true);
+            expect(comp.presentCount).toBe(4);
+            expect(comp.missingCount).toBe(1);
+            expect(comp.isComplete).toBe(false);
+            expect(comp.missingCategories.map(c => c.id)).toEqual(['07']);
+        });
+
         it('returns vacant structure when no active resident tenant is provided', () => {
             const comp = houseProfile.computeTenantCompliance({ area_id: 'Safra', house_id: '102' }, null);
             expect(comp.isVacant).toBe(true);
@@ -790,6 +899,46 @@ describe('Tenant File Integrity & Compliance Check (Idea B + Idea C)', () => {
             expect(card.textContent).toContain('مكتمل 5/5 ✓');
             expect(card.querySelectorAll('.btn-compliance-upload').length).toBe(0);
             expect(card.querySelectorAll('.compliance-item[data-category-prefix]').length).toBe(5);
+        });
+
+        it('renders 4/5 in the tenant UI checklist when house card has 4/5 but active tenant has empty direct category counts', () => {
+            const mockProfile = {
+                area_id: 'Safra',
+                house_id: '106',
+                category_counts: {
+                    '02 - بيانات شخصية': 1,
+                    '03 - أمر تخصيص': 1,
+                    '04 - محضر تسليم مفتاح': 1,
+                    '05 - عقود': 1
+                },
+                tenants: [
+                    {
+                        name: 'سلطان الشمري',
+                        is_active: true,
+                        is_resident: 1,
+                        categories: [],
+                        category_counts: {}
+                    }
+                ],
+                archive: { categories: [] }
+            };
+
+            houseProfile.renderHouseProfile(mockProfile);
+
+            const card = document.querySelector('.tenant-compliance-card');
+            expect(card).not.toBeNull();
+            expect(card.textContent).toContain('فحص اكتمال ملف الساكن');
+            expect(card.textContent).toContain('سلطان الشمري');
+            expect(card.textContent).toContain('4/5 ناقص ⚠️');
+
+            // 4 present items with checkmarks
+            const presentItems = card.querySelectorAll('.compliance-item[data-category-prefix]');
+            expect(presentItems.length).toBe(4);
+
+            // Exactly 1 upload button for the missing category (07 - استقطاع إيجار)
+            const uploadButtons = card.querySelectorAll('.btn-compliance-upload');
+            expect(uploadButtons.length).toBe(1);
+            expect(uploadButtons[0].dataset.catPrefix).toBe('07 - استقطاع إيجار');
         });
     });
 
