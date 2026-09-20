@@ -431,7 +431,11 @@
 
             const closeBtn = document.getElementById('btn-close-login');
             if (closeBtn) {
-                closeBtn.classList.remove('hidden');
+                if (this.currentUser) {
+                    closeBtn.classList.remove('hidden');
+                } else {
+                    closeBtn.classList.add('hidden');
+                }
             }
 
             if (notice) {

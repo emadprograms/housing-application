@@ -1307,3 +1307,93 @@ html.dark .compliance-item {
     transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ── Animated Login Home Page ────────────────────────────────────────────── */
+@keyframes loginFloat {
+    0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-8px) rotate(1deg);
+    }
+}
+
+@keyframes orbFloat1 {
+    0%, 100% {
+        transform: translate(0px, 0px) scale(1);
+    }
+    33% {
+        transform: translate(35px, -45px) scale(1.15);
+    }
+    66% {
+        transform: translate(-25px, 25px) scale(0.92);
+    }
+}
+
+@keyframes orbFloat2 {
+    0%, 100% {
+        transform: translate(0px, 0px) scale(1);
+    }
+    33% {
+        transform: translate(-45px, 35px) scale(1.18);
+    }
+    66% {
+        transform: translate(25px, -25px) scale(0.88);
+    }
+}
+
+@keyframes orbFloat3 {
+    0%, 100% {
+        transform: translate(0px, 0px) scale(1);
+    }
+    50% {
+        transform: translate(30px, 30px) scale(1.12);
+    }
+}
+
+@keyframes haloPulse {
+    0%, 100% {
+        opacity: 0.45;
+        transform: scale(0.96);
+    }
+    50% {
+        opacity: 0.85;
+        transform: scale(1.08);
+    }
+}
+
+@keyframes errorShake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+}
+
+.animate-login-float {
+    animation: loginFloat 4s ease-in-out infinite;
+}
+
+.animate-orb-1 {
+    animation: orbFloat1 14s ease-in-out infinite;
+}
+
+.animate-orb-2 {
+    animation: orbFloat2 18s ease-in-out infinite;
+}
+
+.animate-orb-3 {
+    animation: orbFloat3 12s ease-in-out infinite;
+}
+
+.animate-halo-pulse {
+    animation: haloPulse 3.5s ease-in-out infinite;
+}
+
+.animate-shake {
+    animation: errorShake 0.4s ease-in-out;
+}
+
+.login-home-card {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+

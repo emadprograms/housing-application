@@ -54,10 +54,20 @@ describe('AuthManager, Login Screen & Session UI (Phase 117)', () => {
         expect(btnLogout).not.toBeNull();
     });
 
-    it('verifies index.html has full login screen overlay with preset user chips and form', () => {
+    it('verifies index.html has animated login home page with logo, Housing Application title, and form without preset chips', () => {
         const loginScreen = document.getElementById('login-screen');
         expect(loginScreen).not.toBeNull();
 
+        // Animated Logo & Housing Application branding
+        const appLogo = document.getElementById('login-app-logo');
+        expect(appLogo).not.toBeNull();
+        expect(appLogo.getAttribute('src')).toBe('pictures/logo.png');
+
+        const appTitle = document.getElementById('login-app-title');
+        expect(appTitle).not.toBeNull();
+        expect(appTitle.textContent).toContain('Housing Application');
+
+        // Form controls
         const loginForm = document.getElementById('login-form');
         expect(loginForm).not.toBeNull();
 
@@ -73,47 +83,30 @@ describe('AuthManager, Login Screen & Session UI (Phase 117)', () => {
         const submitBtn = document.getElementById('btn-login-submit');
         expect(submitBtn).not.toBeNull();
 
-        const presetsContainer = document.getElementById('login-presets-container');
-        expect(presetsContainer).not.toBeNull();
-
         const errorBox = document.getElementById('login-error');
         expect(errorBox).not.toBeNull();
+
+        // Preset user chips container must NOT exist
+        const presetsContainer = document.getElementById('login-presets-container');
+        expect(presetsContainer).toBeNull();
+        expect(document.querySelectorAll('.btn-user-chip').length).toBe(0);
     });
 
-    it('renders all 10 seeded users split into Admins and Contributors chips', () => {
+    it('verifies user presets are completely removed and renderUserChips gracefully no-ops', () => {
         const mgr = window.authManager;
-        mgr.renderUserChips();
+        expect(() => mgr.renderUserChips()).not.toThrow();
 
         const container = document.getElementById('login-presets-container');
-        expect(container).not.toBeNull();
-
-        // 4 Admins
-        const adminNames = ['Emad', 'Bubshait', 'Ehtezaz', 'Mustafa'];
-        for (const name of adminNames) {
-            const chip = container.querySelector(`button[data-username="${name}"]`);
-            expect(chip, `Missing admin chip for ${name}`).not.toBeNull();
-        }
-
-        // 6 Contributors
-        const contribNames = ['Nawaf', 'Naseem', 'Mulla', 'Mariam', 'Shaima', 'Mona'];
-        for (const name of contribNames) {
-            const chip = container.querySelector(`button[data-username="${name}"]`);
-            expect(chip, `Missing contributor chip for ${name}`).not.toBeNull();
-        }
+        expect(container).toBeNull();
+        expect(document.querySelectorAll('.btn-user-chip').length).toBe(0);
     });
 
-    it('clicking preset user chip automatically pre-fills username and demo password', () => {
-        const mgr = window.authManager;
-        mgr.renderUserChips();
-
-        const container = document.getElementById('login-presets-container');
-        const emadChip = container.querySelector('button[data-username="Emad"]');
-        expect(emadChip).not.toBeNull();
-
-        emadChip.click();
-
+    it('allows manual credential entry into the login home page form', () => {
         const usernameInput = document.getElementById('login-username');
         const passwordInput = document.getElementById('login-password');
+
+        usernameInput.value = 'Emad';
+        passwordInput.value = 'password123';
 
         expect(usernameInput.value).toBe('Emad');
         expect(passwordInput.value).toBe('password123');
