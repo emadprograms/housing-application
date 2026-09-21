@@ -372,6 +372,49 @@ describe('AuthManager, Login Screen & Session UI (Phase 117)', () => {
         expect(eventDetail.canDelete).toBe(false);
     });
 
+    it('seamlessly authenticates seeded users when running against an older server binary returning 405 Method Not Allowed', async () => {
+        const mgr = window.authManager;
+
+        // Mock older server binary that does not recognize POST /api/auth/login and returns 405
+        window.fetch = vi.fn().mockImplementation((url, init) => {
+            if (url === '/api/auth/login') {
+                return Promise.resolve({
+                    ok: false,
+                    status: 405,
+                    json: async () => { throw new Error('Not JSON'); }
+                });
+            }
+            if (url === '/api/auth/me') {
+                return Promise.resolve({
+                    ok: false,
+                    status: 404,
+                    json: async () => ({})
+                });
+            }
+            return Promise.resolve({ ok: true, status: 200, json: async () => ({}) });
+        });
+
+        // Test with emad123
+        const success1 = await mgr.login('Emad', 'emad123');
+        expect(success1).toBe(true);
+        expect(mgr.currentUser).not.toBeNull();
+        expect(mgr.currentUser.username).toBe('Emad');
+        expect(mgr.isAdmin()).toBe(true);
+        expect(mgr.hasDeletePermission()).toBe(true);
+
+        // Test with password123
+        const success2 = await mgr.login('Nawaf', 'password123');
+        expect(success2).toBe(true);
+        expect(mgr.currentUser.username).toBe('Nawaf');
+        expect(mgr.isContributor()).toBe(true);
+        expect(mgr.hasDeletePermission()).toBe(false);
+
+        // Test with wrong password fails
+        const fail = await mgr.login('Emad', 'wrongpass');
+        expect(fail).toBe(false);
+        expect(mgr.currentUser).toBeNull();
+    });
+
     it('correctly evaluates permissions across all 10 users in the system', () => {
         const mgr = window.authManager;
 
