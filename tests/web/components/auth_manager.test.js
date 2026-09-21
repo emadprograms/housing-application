@@ -160,6 +160,25 @@ describe('AuthManager, Login Screen & Session UI (Phase 117)', () => {
         expect(parent.classList.contains('bg-white/10')).toBe(false);
     });
 
+    it('verifies favicon and app icon link tags are configured in index.html and icon files exist on disk', () => {
+        expect(htmlContent).toContain('<link rel="icon" type="image/x-icon" href="favicon.ico">');
+        expect(htmlContent).toContain('<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">');
+        expect(htmlContent).toContain('<link rel="icon" type="image/png" sizes="32x32" href="pictures/favicon-32x32.png">');
+        expect(htmlContent).toContain('<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">');
+
+        const icoPath = path.resolve(__dirname, '../../../src/HousingApplication.Web/wwwroot/favicon.ico');
+        expect(fs.existsSync(icoPath)).toBe(true);
+
+        const icoBuffer = fs.readFileSync(icoPath);
+        // Verify ICO magic bytes (0x00, 0x00, 0x01, 0x00)
+        expect(icoBuffer[0]).toBe(0);
+        expect(icoBuffer[1]).toBe(0);
+        expect(icoBuffer[2]).toBe(1);
+        expect(icoBuffer[3]).toBe(0);
+        // Expect 6 multi-resolution icon frames
+        expect(icoBuffer.readUInt16LE(4)).toBe(6);
+    });
+
     it('verifies styles.css enforces high-contrast input styling and suppresses Edge duplicate password eye', () => {
         // High-contrast login input styling
         expect(cssContent).toContain('#login-screen input[type="text"]');
