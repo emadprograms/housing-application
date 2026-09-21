@@ -2705,6 +2705,116 @@ public class RepositoryTests : IDisposable
         Assert.Equal("2021-10-15", reloadedPast.EndDate);
         Assert.Equal(false, reloadedPast.IsPresent);
     }
+
+    [Fact]
+    public async Task BulkUpdateTenantsAsync_SaveApplicant_PersistsAsApplicantAndExcludesFromReallocation()
+    {
+        // Arrange
+        const string areaId = "Safra C";
+        const string houseId = "700";
+        await _repo.AddAreaAsync(areaId, "SC");
+        await _repo.AddHouseAsync(houseId, areaId);
+
+        // 1. Add an existing resident
+        var resident = await _repo.AddTenantAsync(houseId, "سالم المقيم", "2020-01-01", null, isResident: 1);
+
+        // Add a general document for the house
+        await _repo.AddManualDocumentAsync(new IngestRequestDto
+        {
+            AreaId = areaId,
+            HouseId = houseId,
+            TenantId = resident.Id,
+            Category = "05 - عقود",
+            ArabicTitle = "عقد إيجار",
+            PrimaryDate = "2022-05-10",
+            PageCount = 1
+        });
+
+        // 2. User adds an applicant in settings
+        var updatePayload = new List<TenantDto>
+        {
+            new TenantDto
+            {
+                Id = resident.Id,
+                Name = resident.Name,
+                HouseId = houseId,
+                IsResident = 1,
+                IsPresent = true,
+                EndDate = null
+            },
+            new TenantDto
+            {
+                Id = null, // New applicant
+                Name = "خالد المتقدم",
+                HouseId = houseId,
+                IsResident = 0,
+                IsPresent = false,
+                StartDate = "2023-01-01",
+                EndDate = null
+            }
+        };
+
+        var result = await _repo.BulkUpdateTenantsAsync(houseId, updatePayload, reallocate: true);
+        Assert.Equal("success", result.Status);
+
+        // Act: Query tenants via GetTenantsAsync
+        var tenants = await _repo.GetTenantsAsync(houseId);
+
+        // Assert: 2 tenants exist; resident is present, applicant is NOT present and has IsResident = 0
+        Assert.Equal(2, tenants.Count);
+        var fetchedRes = tenants.FirstOrDefault(t => t.Name == "سالم المقيم");
+        var fetchedApp = tenants.FirstOrDefault(t => t.Name == "خالد المتقدم");
+
+        Assert.NotNull(fetchedRes);
+        Assert.NotNull(fetchedApp);
+
+        Assert.Equal(1, fetchedRes.IsResident);
+        Assert.Equal(true, fetchedRes.IsPresent);
+
+        Assert.Equal(0, fetchedApp.IsResident);
+        Assert.Equal(false, fetchedApp.IsPresent);
+        Assert.Null(fetchedApp.EndDate);
+
+        // 3. Convert the resident to an applicant
+        var convertPayload = new List<TenantDto>
+        {
+            new TenantDto
+            {
+                Id = fetchedRes.Id,
+                Name = fetchedRes.Name,
+                HouseId = houseId,
+                IsResident = 0, // Converted to applicant!
+                IsPresent = false,
+                StartDate = "2020-01-01",
+                EndDate = null
+            },
+            new TenantDto
+            {
+                Id = fetchedApp.Id,
+                Name = fetchedApp.Name,
+                HouseId = houseId,
+                IsResident = 0,
+                IsPresent = false,
+                StartDate = "2023-01-01",
+                EndDate = null
+            }
+        };
+
+        var convertResult = await _repo.BulkUpdateTenantsAsync(houseId, convertPayload, reallocate: true);
+        Assert.Equal("success", convertResult.Status);
+
+        var reloadedTenants = await _repo.GetTenantsAsync(houseId);
+        Assert.All(reloadedTenants, t =>
+        {
+            Assert.Equal(0, t.IsResident);
+            Assert.Equal(false, t.IsPresent);
+        });
+
+        // House profile should show no active resident
+        var profile = await _repo.GetHouseProfileAsync(areaId, houseId);
+        Assert.NotNull(profile);
+        Assert.Null(profile.ActiveResident);
+    }
 }
 
 

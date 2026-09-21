@@ -978,6 +978,7 @@
                 opt.value = String(t.id != null ? t.id : t.name);
                 opt.dataset.name = t.name || '';
                 opt.dataset.endDate = t.end_date || '';
+                opt.dataset.isResident = String((t.is_resident === 0 || t.is_resident === false || t.isResident === 0 || t.isResident === false) ? 0 : 1);
                 if (t.is_resident === 0 || t.is_resident === false) {
                     opt.textContent = `📋 ${t.name} (متقدم - لم يسكن)`;
                 } else {
@@ -1176,7 +1177,8 @@
                     id: t.id != null ? t.id : t.name,
                     name: t.name || '',
                     start_date: t.start_date || '',
-                    end_date: t.end_date || ''
+                    end_date: t.end_date || '',
+                    is_resident: t.is_resident != null ? t.is_resident : (t.isResident != null ? t.isResident : 1)
                 }));
             }
         }
@@ -1406,6 +1408,7 @@
                     opt.dataset.name = t.name || '';
                     opt.dataset.endDate = t.end_date || '';
                     opt.dataset.startDate = t.start_date || '';
+                    opt.dataset.isResident = String((t.is_resident === 0 || t.is_resident === false || t.isResident === 0 || t.isResident === false) ? 0 : 1);
                     if (t.is_resident === 0 || t.is_resident === false) {
                         opt.textContent = `📋 ${t.name} (متقدم - لم يسكن)`;
                     } else {
@@ -1450,6 +1453,7 @@
                     opt.dataset.name = tNode.name || '';
                     opt.dataset.endDate = tNode.end_date || '';
                     opt.dataset.startDate = tNode.start_date || '';
+                    opt.dataset.isResident = String((tNode.is_resident === 0 || tNode.is_resident === false || tNode.isResident === 0 || tNode.isResident === false) ? 0 : 1);
                     if (tNode.is_resident === 0 || tNode.is_resident === false) {
                         opt.textContent = `📋 ${tNode.name} (متقدم - لم يسكن)`;
                     } else {
@@ -1568,8 +1572,11 @@
     function openIngestStation(initialFiles = null, preset = null) {
         if (!ingestModal) return;
 
-        // Support passing preset as first argument: openIngestStation({ area, house, ... })
-        if (initialFiles && !Array.isArray(initialFiles) && !(typeof File !== 'undefined' && initialFiles instanceof File) && !(typeof FileList !== 'undefined' && initialFiles instanceof FileList) && (initialFiles.area || initialFiles.house || initialFiles.tenant || initialFiles.category)) {
+        // Support passing area, house as strings: openIngestStation('Area', '500')
+        if (typeof initialFiles === 'string') {
+            preset = { area: initialFiles, house: typeof preset === 'string' ? preset : null };
+            initialFiles = null;
+        } else if (initialFiles && !Array.isArray(initialFiles) && !(typeof File !== 'undefined' && initialFiles instanceof File) && !(typeof FileList !== 'undefined' && initialFiles instanceof FileList) && (initialFiles.area || initialFiles.house || initialFiles.tenant || initialFiles.category)) {
             preset = initialFiles;
             initialFiles = null;
         }
@@ -1697,11 +1704,21 @@
 
         const isNewTenantVisible = newTenantContainer && !newTenantContainer.classList.contains('hidden');
         const newTenantName = newTenantInput ? newTenantInput.value.trim() : '';
+        const newTenantTypeSelect = document.getElementById('ingest-new-tenant-type');
+        const selectedOpt = tenantSelect && tenantSelect.selectedIndex >= 0 ? tenantSelect.options[tenantSelect.selectedIndex] : null;
 
         if (isNewTenantVisible && newTenantName) {
             formData.append('tenant_name', newTenantName);
+            if (newTenantTypeSelect && newTenantTypeSelect.value === 'applicant') {
+                formData.append('is_resident', '0');
+            } else {
+                formData.append('is_resident', '1');
+            }
         } else if (tenantSelect && tenantSelect.value) {
             formData.append('tenant_id', tenantSelect.value);
+            if (selectedOpt && selectedOpt.dataset && selectedOpt.dataset.isResident !== undefined) {
+                formData.append('is_resident', selectedOpt.dataset.isResident);
+            }
         }
 
         if (categorySelect && categorySelect.value) {
@@ -1717,7 +1734,6 @@
             formData.append('notes', notesInput.value.trim());
         }
 
-        const selectedOpt = tenantSelect && tenantSelect.selectedIndex >= 0 ? tenantSelect.options[tenantSelect.selectedIndex] : null;
         const tenantEndDate = selectedOpt?.dataset?.endDate;
         const tenantName = selectedOpt?.dataset?.name || (selectedOpt ? selectedOpt.textContent.trim() : 'هذا الشخص');
         const docDate = (dateInput && dateInput.value) ? dateInput.value.trim() : '';
@@ -2003,6 +2019,10 @@
             formData.append('house_id', house);
             if (tenantId) {
                 formData.append('tenant_id', tenantId);
+                const selectedBatchOpt = housebatchTenantSelect && housebatchTenantSelect.selectedIndex >= 0 ? housebatchTenantSelect.options[housebatchTenantSelect.selectedIndex] : null;
+                if (selectedBatchOpt && selectedBatchOpt.dataset && selectedBatchOpt.dataset.isResident !== undefined) {
+                    formData.append('is_resident', selectedBatchOpt.dataset.isResident);
+                }
             }
             formData.append('category', item.category || '13 - رسائل متنوعة');
             formData.append('arabic_title', item.title || item.name.replace(/\.pdf$/i, '').replace(/[-_]+/g, ' ').trim());

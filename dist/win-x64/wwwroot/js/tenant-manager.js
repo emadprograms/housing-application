@@ -192,7 +192,7 @@
         const nameVal = t ? (t.name || '') : '';
         const startVal = t ? (t.start_date || '') : '';
         const endVal = t ? (t.end_date || '') : '';
-        const isApplicant = Boolean(t && (t.is_resident === 0 || t.is_resident === false));
+        const isApplicant = Boolean(t && (t.is_resident === 0 || t.is_resident === false || t.isResident === 0 || t.isResident === false));
 
         // Only one tenant can be present at a time
         const alreadyHasPresent = tenantModalRows ? tenantModalRows.querySelector('.tenant-present-check:checked') : null;
@@ -377,9 +377,9 @@
             if (!start || start.includes('تلقائي') || start.toLowerCase().includes('auto')) {
                 start = null;
             }
-            const isPresent = r.querySelector('.tenant-present-check').checked;
             const typeVal = r.querySelector('.tenant-type-select')?.value || 'resident';
             const isResident = typeVal === 'applicant' ? 0 : 1;
+            const isPresent = isResident === 0 ? false : r.querySelector('.tenant-present-check').checked;
             let end = (isResident === 0 || isPresent) ? null : (r.querySelector('.tenant-end-input').value || null);
 
             // If an end date of the previous tenant is not mentioned in the settings and he isn't marked as present

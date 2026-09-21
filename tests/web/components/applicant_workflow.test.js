@@ -27,6 +27,10 @@ describe('Applicant Integrated Workflows Suite (Phase 113)', () => {
     path.resolve(__dirname, '../../../src/HousingApplication.Web/wwwroot/js/command-palette.js'),
     'utf8'
   );
+  const ingestStationCode = fs.readFileSync(
+    path.resolve(__dirname, '../../../src/HousingApplication.Web/wwwroot/js/ingest-station.js'),
+    'utf8'
+  );
 
   beforeEach(() => {
     document.body.innerHTML = htmlContent;
@@ -48,11 +52,20 @@ describe('Applicant Integrated Workflows Suite (Phase 113)', () => {
       json: async () => []
     });
 
+    if (!window.URL) window.URL = {};
+    window.URL.createObjectURL = vi.fn(() => 'blob:mock-url');
+    window.URL.revokeObjectURL = vi.fn();
+
     eval(houseProfileCode);
     eval(tenantManagerCode);
     eval(categoriesViewCode);
     eval(timelineViewCode);
     eval(commandPaletteCode);
+    eval(ingestStationCode);
+
+    if (typeof window.initIngestStation === 'function') {
+      window.initIngestStation();
+    }
   });
 
   afterEach(() => {
@@ -384,5 +397,235 @@ describe('Applicant Integrated Workflows Suite (Phase 113)', () => {
     expect(badge.className).toContain('text-purple-700');
     expect(badge.className).toContain('bg-purple-50');
     expect(badge.className).toContain('border-purple-300');
+  });
+
+  it('Test 7: Converting an existing resident to applicant preserves applicant state in House Settings', async () => {
+    global.fetch = vi.fn().mockImplementation((url) => {
+      if (url.includes('/tenants')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => [
+            { id: 42, name: 'فهد المقيم', start_date: '2021-01-01', end_date: null, is_resident: 1, is_present: true }
+          ]
+        });
+      }
+      return Promise.resolve({ ok: true, json: async () => [] });
+    });
+
+    const manageBtn = document.getElementById('btn-manage-tenants');
+    manageBtn.click();
+    await new Promise(r => setTimeout(r, 20));
+
+    const row = document.querySelector('.tenant-row');
+    expect(row).not.toBeNull();
+    const typeSelect = row.querySelector('.tenant-type-select');
+    const presentCheck = row.querySelector('.tenant-present-check');
+    const endInput = row.querySelector('.tenant-end-input');
+
+    // Initially loaded as resident
+    expect(typeSelect.value).toBe('resident');
+    expect(presentCheck.checked).toBe(true);
+
+    // Convert to applicant
+    typeSelect.value = 'applicant';
+    typeSelect.dispatchEvent(new Event('change'));
+
+    expect(presentCheck.checked).toBe(false);
+    expect(presentCheck.disabled).toBe(true);
+    expect(endInput.disabled).toBe(true);
+    expect(endInput.value).toBe('');
+
+    // Save and verify POST payload
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ status: 'success', reallocated_count: 0, tenants_count: 1 })
+    });
+
+    const saveBtn = document.getElementById('tenant-modal-save');
+    saveBtn.click();
+    await new Promise(r => setTimeout(r, 20));
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      '/api/areas/Safra%20C/houses/500/tenants',
+      expect.objectContaining({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenants: [
+            {
+              id: 42,
+              name: 'فهد المقيم',
+              start_date: '2021-01-01',
+              end_date: null,
+              house_id: '500',
+              is_resident: 0,
+              notes: null
+            }
+          ],
+          reallocate: true
+        })
+      })
+    );
+  });
+
+  it('Test 8: House Profile with ONLY applicants renders house as Vacant without false compliance checklist alarms', () => {
+    const mockProfile = {
+      area_id: 'Safra C',
+      house_id: '500',
+      active_resident: null,
+      tenants: [
+        {
+          name: 'خالد عبد الله',
+          is_active: false,
+          is_resident: 0,
+          start_date: '2024-03-15',
+          category_count: 2,
+          document_count: 3
+        }
+      ],
+      archive: { total_documents: 3, total_pages: 5, categories: [] }
+    };
+
+    window.renderHouseProfile(mockProfile);
+
+    const docList = document.getElementById('document-list');
+    expect(docList).not.toBeNull();
+
+    // Compliance card must render vacant state
+    const compCard = docList.querySelector('.tenant-compliance-card');
+    expect(compCard).not.toBeNull();
+    expect(compCard.textContent).toContain('فحص اكتمال ملف الساكن');
+    expect(compCard.textContent).toContain('المنزل شاغر حالياً — لا يوجد ساكن حالي لإجراء فحص الوثائق الإلزامية');
+    expect(compCard.textContent).toContain('شاغر');
+
+    // Residents section shows empty note
+    const residentsSection = docList.querySelector('.residents-section');
+    expect(residentsSection).not.toBeNull();
+    expect(residentsSection.textContent).toContain('لا يوجد مستأجرون مسجلون لهذا المنزل حالياً.');
+
+    // Applicants section exists and is segregated
+    const applicantsSection = docList.querySelector('.applicants-section');
+    expect(applicantsSection).not.toBeNull();
+    expect(applicantsSection.textContent).toContain('المتقدمون');
+    expect(applicantsSection.textContent).toContain('خالد عبد الله');
+  });
+
+  it('Test 9: Ingest Station attaches is_resident in upload payload when selecting an applicant', async () => {
+    const treeData = [
+      {
+        name: 'Safra C',
+        children: [
+          {
+            name: '500',
+            children: [
+              { id: 88, name: 'خالد متقدم', is_resident: 0, start_date: '2024-01-01', end_date: '' },
+              { id: 89, name: 'سالم مقيم', is_resident: 1, start_date: '2022-01-01', end_date: '' }
+            ]
+          }
+        ]
+      }
+    ];
+    window.globalTreeData = treeData;
+    global.globalTreeData = treeData;
+
+    global.fetch = vi.fn().mockImplementation((url) => {
+      if (url.includes('/tenants')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => [
+            { id: 88, name: 'خالد متقدم', is_resident: 0, start_date: '2024-01-01', end_date: '' },
+            { id: 89, name: 'سالم مقيم', is_resident: 1, start_date: '2022-01-01', end_date: '' }
+          ]
+        });
+      }
+      return Promise.resolve({ ok: true, json: async () => ({ status: 'success', vault_id: 'test_vault' }) });
+    });
+
+    if (typeof window.openIngestStation === 'function') {
+      window.openIngestStation('Safra C', '500');
+      await new Promise(r => setTimeout(r, 50));
+
+      const tenantSelect = document.getElementById('ingest-tenant-select');
+      expect(tenantSelect).not.toBeNull();
+
+      // Find applicant option
+      const applicantOpt = Array.from(tenantSelect.options).find(o => o.value === '88');
+      expect(applicantOpt).toBeDefined();
+      expect(applicantOpt.dataset.isResident).toBe('0');
+      expect(applicantOpt.textContent).toContain('📋 خالد متقدم (متقدم - لم يسكن)');
+
+      // Select applicant and simulate file submission
+      tenantSelect.value = '88';
+      const file = new File(['%PDF-1.4 test'], 'order.pdf', { type: 'application/pdf' });
+      if (typeof window.handleFileSelected === 'function') {
+        window.handleFileSelected(file);
+      }
+
+      const submitBtn = document.getElementById('btn-ingest-submit');
+      if (submitBtn) {
+        submitBtn.click();
+        await new Promise(r => setTimeout(r, 50));
+
+        const ingestCall = global.fetch.mock.calls.find(c => c[0] === '/api/ingest');
+        expect(ingestCall).toBeDefined();
+        const formData = ingestCall[1].body;
+        expect(formData.get('is_resident')).toBe('0');
+        expect(formData.get('tenant_id')).toBe('88');
+      }
+    }
+  });
+
+  it('Test 10: Ingest Station supports registering brand new tenant as applicant via new tenant type select', async () => {
+    const treeData = [
+      {
+        name: 'Safra C',
+        children: [
+          {
+            name: '500',
+            children: []
+          }
+        ]
+      }
+    ];
+    window.globalTreeData = treeData;
+    global.globalTreeData = treeData;
+
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ status: 'success', vault_id: 'test_vault_2' })
+    });
+
+    if (typeof window.openIngestStation === 'function') {
+      window.openIngestStation('Safra C', '500');
+      await new Promise(r => setTimeout(r, 50));
+
+      const toggleBtn = document.getElementById('btn-toggle-new-tenant');
+      if (toggleBtn) toggleBtn.click();
+
+      const newTenantInput = document.getElementById('ingest-new-tenant-input');
+      const newTenantType = document.getElementById('ingest-new-tenant-type');
+      expect(newTenantInput).not.toBeNull();
+      expect(newTenantType).not.toBeNull();
+
+      newTenantInput.value = 'متقدم جديد بالكامل';
+      newTenantType.value = 'applicant';
+
+      const file = new File(['%PDF-1.4 test'], 'app.pdf', { type: 'application/pdf' });
+      if (typeof window.handleFileSelected === 'function') {
+        window.handleFileSelected(file);
+      }
+
+      const submitBtn = document.getElementById('btn-ingest-submit');
+      if (submitBtn) {
+        submitBtn.click();
+        await new Promise(r => setTimeout(r, 50));
+
+        const ingestCall = global.fetch.mock.calls.find(c => c[0] === '/api/ingest');
+        expect(ingestCall).toBeDefined();
+        const formData = ingestCall[1].body;
+        expect(formData.get('tenant_name')).toBe('متقدم جديد بالكامل');
+        expect(formData.get('is_resident')).toBe('0');
+      }
+    }
   });
 });

@@ -499,23 +499,23 @@ public class FileOrganizerRepository : IFileOrganizerRepository
                 WHERE is_timeline_visible = 1 AND primary_date IS NOT NULL AND primary_date != ''
                 GROUP BY tenant_id
             ) d ON t.id = d.tenant_id
-            WHERE t.house_id = @DbHouseId
+            WHERE t.house_id = @DbHouseId OR t.house_id = @HouseId OR t.house_id = @CleanHouseId
             ORDER BY StartDate ASC, t.id ASC;",
-            new { DbHouseId = dbHouseId })).ToList();
+            new { DbHouseId = dbHouseId, HouseId = houseId, CleanHouseId = cleanHouseId })).ToList();
 
         var docs = (await conn.QueryAsync<Document>(@"
             SELECT vault_id AS VaultId, house_id AS HouseId, tenant_id AS TenantId, batch_id AS BatchId,
                    primary_date AS PrimaryDate, arabic_title AS ArabicTitle, category AS Category,
                    page_count AS PageCount, is_manual AS IsManual, notes AS Notes
             FROM documents 
-            WHERE house_id = @DbHouseId;",
-            new { DbHouseId = dbHouseId })).ToList();
+            WHERE house_id = @DbHouseId OR house_id = @HouseId OR house_id = @CleanHouseId;",
+            new { DbHouseId = dbHouseId, HouseId = houseId, CleanHouseId = cleanHouseId })).ToList();
 
         var batches = (await conn.QueryAsync<Batch>(@"
             SELECT id, page_count AS PageCount 
             FROM batches 
-            WHERE house_id = @DbHouseId;",
-            new { DbHouseId = dbHouseId })).ToList();
+            WHERE house_id = @DbHouseId OR house_id = @HouseId OR house_id = @CleanHouseId;",
+            new { DbHouseId = dbHouseId, HouseId = houseId, CleanHouseId = cleanHouseId })).ToList();
 
         var tenantDocCounts = new Dictionary<int, int>();
         var tenantCatSets = new Dictionary<int, HashSet<string>>();
@@ -821,13 +821,14 @@ public class FileOrganizerRepository : IFileOrganizerRepository
                 GROUP BY tenant_id
             ) d ON t.id = d.tenant_id
             WHERE t.house_id = @HouseId OR house_id = @CleanHouseId
-            ORDER BY t.is_resident DESC,
+            ORDER BY t.id DESC,
+                     t.is_resident DESC,
                      (CASE WHEN t.end_date IS NULL OR t.end_date = '' OR LOWER(t.end_date) = 'present' OR t.end_date >= DATE('now') THEN 1 ELSE 0 END) DESC, 
-                     t.end_date DESC, StartDate DESC, t.id DESC;";
+                     t.end_date DESC, StartDate DESC;";
 
         var rows = (await conn.QueryAsync<TenantDto>(sql, new { HouseId = houseId, CleanHouseId = cleanHouseId })).ToList();
 
-        // Deduplicate by tenant name (preserve active / latest)
+        // Deduplicate by tenant name (preserve latest record by id)
         var seenNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var deduped = new List<TenantDto>();
         foreach (var t in rows)
@@ -867,6 +868,18 @@ public class FileOrganizerRepository : IFileOrganizerRepository
                 finalTenants.Add(t with { IsPresent = false, EndDate = null, LastDocDate = t.LastDocDate });
             }
         }
+
+        // Segregate: Residents first (Present first, then by end date DESC), Applicants after
+        finalTenants.Sort((a, b) =>
+        {
+            if (a.IsResident != b.IsResident) return b.IsResident.CompareTo(a.IsResident);
+            var aPres = a.IsPresent == true ? 1 : 0;
+            var bPres = b.IsPresent == true ? 1 : 0;
+            if (aPres != bPres) return bPres.CompareTo(aPres);
+            var endCmp = string.Compare(b.EndDate, a.EndDate, StringComparison.Ordinal);
+            if (endCmp != 0) return endCmp;
+            return string.Compare(b.StartDate, a.StartDate, StringComparison.Ordinal);
+        });
 
         return finalTenants;
     }
@@ -2168,6 +2181,15 @@ public class FileOrganizerRepository : IFileOrganizerRepository
         if (tenants.Count > 0)
         {
             var payloadIds = tenants.Where(t => t.Id.HasValue).Select(t => t.Id!.Value).ToHashSet();
+            // Retain existing tenants that are matched by name
+            foreach (var t in tenants.Where(t => !t.Id.HasValue))
+            {
+                var existingByName = currentTenants.FirstOrDefault(ct => string.Equals(ct.Name.Trim(), t.Name.Trim(), StringComparison.OrdinalIgnoreCase));
+                if (existingByName != null)
+                {
+                    payloadIds.Add(existingByName.Id);
+                }
+            }
 
             // 1. Insert or update tenants first
             int? presentTenantIndex = null;
@@ -2242,11 +2264,21 @@ public class FileOrganizerRepository : IFileOrganizerRepository
                     }
                 }
 
+                var existingByName = !t.Id.HasValue 
+                    ? currentTenants.FirstOrDefault(ct => string.Equals(ct.Name.Trim(), t.Name.Trim(), StringComparison.OrdinalIgnoreCase))
+                    : null;
+
                 if (t.Id.HasValue && currentTenants.Any(ct => ct.Id == t.Id.Value))
                 {
                     await conn.ExecuteAsync(
                         "UPDATE tenants SET name = @Name, start_date = @StartDate, end_date = @EndDate, is_resident = @IsResident, notes = @Notes WHERE id = @Id;",
                         new { Name = t.Name.Trim(), StartDate = (object?)sDate ?? DBNull.Value, EndDate = (object?)eDate ?? DBNull.Value, IsResident = t.IsResident, Notes = t.Notes, Id = t.Id.Value }, tx);
+                }
+                else if (existingByName != null)
+                {
+                    await conn.ExecuteAsync(
+                        "UPDATE tenants SET name = @Name, start_date = @StartDate, end_date = @EndDate, is_resident = @IsResident, notes = @Notes WHERE id = @Id;",
+                        new { Name = t.Name.Trim(), StartDate = (object?)sDate ?? DBNull.Value, EndDate = (object?)eDate ?? DBNull.Value, IsResident = t.IsResident, Notes = t.Notes, Id = existingByName.Id }, tx);
                 }
                 else
                 {
@@ -2256,7 +2288,7 @@ public class FileOrganizerRepository : IFileOrganizerRepository
                 }
             }
 
-            // 2. Identify removed tenants and reassign documents/pages to surviving fallback before deletion
+            // 2. Identify removed tenants and reassign documents/pages to surviving resident fallback before deletion
             var removedTenants = currentTenants.Where(ct => !payloadIds.Contains(ct.Id)).ToList();
             if (removedTenants.Count > 0)
             {
@@ -2266,7 +2298,7 @@ public class FileOrganizerRepository : IFileOrganizerRepository
                     .Where(st => !removedTenants.Any(rt => rt.Id == st.Id))
                     .ToList();
 
-                var fallbackTenant = survivingTenants.FirstOrDefault(st => st.IsResident == 1) ?? survivingTenants.FirstOrDefault();
+                var fallbackTenant = survivingTenants.FirstOrDefault(st => st.IsResident == 1);
 
                 foreach (var rt in removedTenants)
                 {
@@ -2279,6 +2311,16 @@ public class FileOrganizerRepository : IFileOrganizerRepository
                         await conn.ExecuteAsync(
                             "UPDATE pages SET tenant_id = @FallbackTenantId WHERE tenant_id = @RemovedTenantId;",
                             new { FallbackTenantId = fallbackTenant.Id, RemovedTenantId = rt.Id }, tx);
+                    }
+                    else
+                    {
+                        await conn.ExecuteAsync(
+                            "UPDATE documents SET tenant_id = 0, is_manual = 0 WHERE tenant_id = @RemovedTenantId;",
+                            new { RemovedTenantId = rt.Id }, tx);
+
+                        await conn.ExecuteAsync(
+                            "UPDATE pages SET tenant_id = 0 WHERE tenant_id = @RemovedTenantId;",
+                            new { RemovedTenantId = rt.Id }, tx);
                     }
 
                     await conn.ExecuteAsync("DELETE FROM tenants WHERE id = @Id;", new { Id = rt.Id }, tx);

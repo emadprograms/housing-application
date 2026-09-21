@@ -54,11 +54,13 @@
                     }
                 });
 
-                // Find active tenant candidate
+                // Find active tenant candidate (residents only)
                 const activeCandidate = knownTenants.find(kt => {
+                    const isRes = kt.is_resident !== 0 && kt.is_resident !== false && kt.isResident !== 0 && kt.isResident !== false;
+                    if (!isRes) return false;
                     const eDate = kt.end_date || null;
                     return (!eDate || eDate === 'PRESENT' || eDate === '');
-                }) || (knownTenants.length > 0 ? knownTenants[0] : null);
+                }) || knownTenants.find(kt => kt.is_resident !== 0 && kt.is_resident !== false && kt.isResident !== 0 && kt.isResident !== false) || null;
 
                 // If active candidate exists and there are unassigned documents, attribute them
                 if (activeCandidate && unassignedDocCount > 0) {
@@ -73,18 +75,19 @@
                 }
 
                 const tenants = knownTenants.map((kt, idx) => {
+                    const isRes = (kt.is_resident !== 0 && kt.is_resident !== false && kt.isResident !== 0 && kt.isResident !== false);
                     const sDate = kt.start_date || '2020-01-01';
-                    const eDate = kt.end_date || null;
-                    const isActive = (!eDate || eDate === 'PRESENT' || eDate === '');
+                    const eDate = isRes ? (kt.end_date || null) : null;
+                    const isActive = isRes && (!eDate || eDate === 'PRESENT' || eDate === '');
                     return {
                         id: idx + 1,
                         name: kt.name,
                         start_date: sDate,
                         end_date: isActive ? null : eDate,
                         is_active: isActive,
-                        is_resident: (kt.is_resident !== undefined) ? kt.is_resident : 1,
+                        is_resident: isRes ? 1 : 0,
                         notes: kt.notes || null,
-                        duration_str_ar: isActive ? `بدء الإيجار ${sDate.substring(0, 4)} (مستمر)` : `فترة الإيجار: ${sDate.substring(0, 4)} – ${eDate.substring(0, 4)}`,
+                        duration_str_ar: !isRes ? 'متقدم (لم يسكن)' : (isActive ? `بدء الإيجار ${sDate.substring(0, 4)} (مستمر)` : `فترة الإيجار: ${sDate.substring(0, 4)} – ${eDate.substring(0, 4)}`),
                         document_count: tenantDocCounts[kt.name] || 0,
                         category_count: (tenantCatSets[kt.name] || new Set()).size,
                         categories: Array.from(tenantCatSets[kt.name] || []),
@@ -116,8 +119,7 @@
                 const oldest = validDates.length ? validDates[0] : null;
                 const newest = validDates.length ? validDates[validDates.length - 1] : null;
 
-                const activeResident = tenants.find(t => (t.is_resident !== 0 && t.is_resident !== false) && t.is_active) 
-                    || (tenants.length > 0 ? tenants[0] : null);
+                const activeResident = tenants.find(t => (t.is_resident !== 0 && t.is_resident !== false) && t.is_active) || null;
 
                 currentHouseProfile = {
                     house_id: houseId,

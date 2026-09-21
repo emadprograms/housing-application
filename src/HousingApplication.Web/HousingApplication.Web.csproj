@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>FileOrganizer.Web</RootNamespace>
-    <AssemblyName>HousingApplication.Web</AssemblyName>
+    <AssemblyName>FileOrganizer.Web</AssemblyName>
     <ApplicationIcon>wwwroot\favicon.ico</ApplicationIcon>
   </PropertyGroup>
 

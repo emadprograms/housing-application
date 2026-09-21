@@ -1487,6 +1487,12 @@ app.MapPost("/api/ingest", async (
     var primaryDate = form["primary_date"].FirstOrDefault();
     var notes = form["notes"].FirstOrDefault();
 
+    int? isResidentParam = null;
+    if (int.TryParse(form["is_resident"].FirstOrDefault(), out var ir))
+        isResidentParam = ir;
+    else if (bool.TryParse(form["is_resident"].FirstOrDefault(), out var irb))
+        isResidentParam = irb ? 1 : 0;
+
     // Resolve tenant
     int resolvedTenantId;
     TenantDto? resolvedTenant = null;
@@ -1510,7 +1516,8 @@ app.MapPost("/api/ingest", async (
         }
         else
         {
-            var newT = await repo.AddTenantAsync(cleanHouseId, tenantName.Trim(), primaryDate);
+            var isRes = isResidentParam.GetValueOrDefault(1);
+            var newT = await repo.AddTenantAsync(cleanHouseId, tenantName.Trim(), primaryDate, isResident: isRes);
             resolvedTenantId = newT.Id;
             resolvedTenant = new TenantDto { Id = newT.Id, Name = newT.Name, StartDate = newT.StartDate, EndDate = newT.EndDate, HouseId = cleanHouseId, IsResident = newT.IsResident, Notes = newT.Notes };
         }
@@ -1531,7 +1538,8 @@ app.MapPost("/api/ingest", async (
         }
         else
         {
-            var defT = await repo.AddTenantAsync(cleanHouseId, "Default Tenant", primaryDate);
+            var isRes = isResidentParam.GetValueOrDefault(1);
+            var defT = await repo.AddTenantAsync(cleanHouseId, "Default Tenant", primaryDate, isResident: isRes);
             resolvedTenantId = defT.Id;
             resolvedTenant = new TenantDto { Id = defT.Id, Name = defT.Name, StartDate = defT.StartDate, EndDate = defT.EndDate, HouseId = cleanHouseId, IsResident = defT.IsResident, Notes = defT.Notes };
         }

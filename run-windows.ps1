@@ -61,6 +61,10 @@ if ($TailscaleIp) {
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host "Press Ctrl+C to stop the server.`n" -ForegroundColor DarkGray
 
+if (-not (Get-Command dotnet -ErrorAction SilentlyContinue) -and (Test-Path "$env:USERPROFILE\.dotnet\dotnet.exe")) {
+    $env:PATH = "$env:USERPROFILE\.dotnet;" + $env:PATH
+}
+
 if (Get-Command dotnet -ErrorAction SilentlyContinue) {
     Set-Location -Path "$PSScriptRoot\src\HousingApplication.Web"
     dotnet run `

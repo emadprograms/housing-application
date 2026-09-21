@@ -1058,8 +1058,14 @@
                         
                         <!-- New Tenant Input (Toggled) -->
                         <div id="ingest-new-tenant-container" class="mt-2 hidden">
-                            <input id="ingest-new-tenant-input" type="text" placeholder="Enter new tenant name (الاسم)..." class="w-full px-3 py-1.5 text-xs border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-blue-50/40 text-slate-800 font-medium" />
-                            <p class="text-[10px] text-slate-400 mt-1">Will be automatically registered as a tenant in this house.</p>
+                            <div class="flex items-center gap-2">
+                                <input id="ingest-new-tenant-input" type="text" placeholder="Enter new tenant name (الاسم)..." class="w-full px-3 py-1.5 text-xs border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-blue-50/40 text-slate-800 font-medium" />
+                                <select id="ingest-new-tenant-type" class="px-2 py-1.5 text-xs border border-blue-200 rounded-xl bg-blue-50/40 text-slate-700 font-medium focus:outline-none flex-shrink-0" title="Tenant Type • نوع المستأجر">
+                                    <option value="resident">🏠 Resident</option>
+                                    <option value="applicant">📋 Applicant</option>
+                                </select>
+                            </div>
+                            <p class="text-[10px] text-slate-400 mt-1">Will be automatically registered as a resident or applicant in this house.</p>
                         </div>
                     </div>
 
