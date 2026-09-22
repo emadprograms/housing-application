@@ -2174,9 +2174,35 @@ public class FileOrganizerRepository : IFileOrganizerRepository
 
         var cleanHouseId = TextUtils.ExtractHouseNumber(houseId);
 
+        var houseRow = await conn.QueryFirstOrDefaultAsync<House>(@"
+            SELECT id, area_id AS AreaId 
+            FROM houses 
+            WHERE id = @HouseId OR id = @CleanHouseId;",
+            new { HouseId = houseId, CleanHouseId = cleanHouseId }, tx);
+
         var currentTenants = (await conn.QueryAsync<Tenant>(
             "SELECT id, house_id AS HouseId, name, start_date AS StartDate, end_date AS EndDate, is_resident AS IsResident, notes AS Notes FROM tenants WHERE house_id = @HouseId OR house_id = @CleanHouseId;",
             new { HouseId = houseId, CleanHouseId = cleanHouseId }, tx)).ToList();
+
+        var targetHouseId = houseRow?.Id ?? currentTenants.FirstOrDefault()?.HouseId ?? (!string.IsNullOrWhiteSpace(cleanHouseId) ? cleanHouseId : houseId);
+
+        // Ensure foreign key target exists in houses table so foreign keys never fail
+        if (houseRow == null)
+        {
+            var existingHouse = await conn.QueryFirstOrDefaultAsync<string>(
+                "SELECT id FROM houses WHERE id = @Id;", new { Id = targetHouseId }, tx);
+            if (existingHouse == null)
+            {
+                var detectedAreaId = await conn.ExecuteScalarAsync<string?>(
+                    "SELECT area_id FROM documents WHERE house_id = @HouseId OR house_id = @CleanHouseId LIMIT 1;", new { HouseId = houseId, CleanHouseId = cleanHouseId }, tx)
+                    ?? await conn.ExecuteScalarAsync<string?>("SELECT id FROM areas LIMIT 1;", tx)
+                    ?? "General";
+                await conn.ExecuteAsync(
+                    "INSERT OR IGNORE INTO areas (id) VALUES (@AreaId);", new { AreaId = detectedAreaId }, tx);
+                await conn.ExecuteAsync(
+                    "INSERT OR IGNORE INTO houses (id, area_id) VALUES (@Id, @AreaId);", new { Id = targetHouseId, AreaId = detectedAreaId }, tx);
+            }
+        }
 
         if (tenants.Count > 0)
         {
@@ -2284,7 +2310,7 @@ public class FileOrganizerRepository : IFileOrganizerRepository
                 {
                     await conn.ExecuteAsync(
                         "INSERT INTO tenants (house_id, name, start_date, end_date, is_resident, notes) VALUES (@HouseId, @Name, @StartDate, @EndDate, @IsResident, @Notes);",
-                        new { HouseId = cleanHouseId, Name = t.Name.Trim(), StartDate = (object?)sDate ?? DBNull.Value, EndDate = (object?)eDate ?? DBNull.Value, IsResident = t.IsResident, Notes = t.Notes }, tx);
+                        new { HouseId = targetHouseId, Name = t.Name.Trim(), StartDate = (object?)sDate ?? DBNull.Value, EndDate = (object?)eDate ?? DBNull.Value, IsResident = t.IsResident, Notes = t.Notes }, tx);
                 }
             }
 
@@ -2333,8 +2359,8 @@ public class FileOrganizerRepository : IFileOrganizerRepository
         if (reallocate)
         {
             var updatedTenants = (await conn.QueryAsync<Tenant>(
-                "SELECT id, house_id AS HouseId, name, start_date AS StartDate, end_date AS EndDate, is_resident AS IsResident, notes AS Notes FROM tenants WHERE house_id = @HouseId OR house_id = @CleanHouseId ORDER BY start_date DESC;",
-                new { HouseId = houseId, CleanHouseId = cleanHouseId }, tx)).ToList();
+                "SELECT id, house_id AS HouseId, name, start_date AS StartDate, end_date AS EndDate, is_resident AS IsResident, notes AS Notes FROM tenants WHERE house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHouseId ORDER BY start_date DESC;",
+                new { HouseId = houseId, CleanHouseId = cleanHouseId, TargetHouseId = targetHouseId }, tx)).ToList();
 
             var residentTenants = updatedTenants.Where(ut => ut.IsResident == 1).ToList();
             var applicantIds = updatedTenants.Where(ut => ut.IsResident == 0).Select(ut => ut.Id).ToHashSet();
@@ -2344,10 +2370,10 @@ public class FileOrganizerRepository : IFileOrganizerRepository
                 var docs = (await conn.QueryAsync<Document>(
                     @"SELECT vault_id AS VaultId, tenant_id AS TenantId, primary_date AS PrimaryDate, is_manual AS IsManual 
 FROM documents 
-WHERE (house_id = @HouseId OR house_id = @CleanHouseId) 
+WHERE (house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHouseId) 
   AND (is_manual IS NULL OR is_manual = 0)
   AND tenant_id NOT IN (SELECT id FROM tenants WHERE is_resident = 0);",
-                    new { HouseId = houseId, CleanHouseId = cleanHouseId }, tx)).ToList();
+                    new { HouseId = houseId, CleanHouseId = cleanHouseId, TargetHouseId = targetHouseId }, tx)).ToList();
 
                 foreach (var doc in docs)
                 {
@@ -2384,12 +2410,12 @@ WHERE (house_id = @HouseId OR house_id = @CleanHouseId)
         await tx.CommitAsync();
 
         var totalDocs = await conn.ExecuteScalarAsync<int>(
-            "SELECT COUNT(*) FROM documents WHERE house_id = @HouseId OR house_id = @CleanHouseId;",
-            new { HouseId = houseId, CleanHouseId = cleanHouseId });
+            "SELECT COUNT(*) FROM documents WHERE house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHouseId;",
+            new { HouseId = houseId, CleanHouseId = cleanHouseId, TargetHouseId = targetHouseId });
 
         var totalTenants = await conn.ExecuteScalarAsync<int>(
-            "SELECT COUNT(*) FROM tenants WHERE house_id = @HouseId OR house_id = @CleanHouseId;",
-            new { HouseId = houseId, CleanHouseId = cleanHouseId });
+            "SELECT COUNT(*) FROM tenants WHERE house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHouseId;",
+            new { HouseId = houseId, CleanHouseId = cleanHouseId, TargetHouseId = targetHouseId });
 
         return new TenantReallocationResponseDto
         {

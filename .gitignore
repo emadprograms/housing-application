@@ -29,6 +29,9 @@ batch_log.txt
 /build/
 !**/lib/pdfjs/build/
 # dist/ (tracked for self-contained distribution binaries)
+dist/win-x64/wwwroot/**/*.gz
+dist/win-x64/wwwroot/**/*.br
+dist/win-x64/*.staticwebassets.endpoints.json
 *.egg-info/
 
 # Node

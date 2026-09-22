@@ -171,7 +171,14 @@ else
 // ---------------------------------------------------------------------------
 // Health check
 // ---------------------------------------------------------------------------
-app.MapGet("/api/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
+app.MapGet("/api/health", () => Results.Ok(new
+{
+    status = "healthy",
+    timestamp = DateTime.UtcNow,
+    build_version = "2026.09.22.1",
+    applicant_support = true,
+    executable_path = Environment.ProcessPath
+}));
 
 // ---------------------------------------------------------------------------
 // RBAC Security Helpers
