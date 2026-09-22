@@ -1650,3 +1650,8 @@ input[type="password"]::-ms-clear {
     width: 0 !important;
     height: 0 !important;
 }
+
+/* Drag & drop upload UX: disable pointer events on folder card children during file drag to prevent event bubbling flicker */
+body.is-dragging-file .category-folder-card * {
+    pointer-events: none !important;
+}

@@ -2176,6 +2176,26 @@
         return docEl;
     }
 
+    function clearAllCategoryDropHighlights() {
+        window.isHoveringCategoryFolder = false;
+        if (typeof document === 'undefined') return;
+        document.querySelectorAll('.category-folder-card').forEach(c => {
+            c.classList.remove('ring-2', 'ring-blue-500', 'border-blue-500', 'bg-blue-50/90', 'dark:bg-blue-950/50', 'shadow-md', 'scale-[1.01]');
+            const hint = c.querySelector('.category-drop-hint');
+            if (hint) hint.classList.add('hidden');
+            const banner = c.querySelector('.category-drop-banner');
+            if (banner) banner.classList.add('hidden');
+            const emptyHint = c.querySelector('.empty-folder-drop-hint');
+            if (emptyHint) {
+                emptyHint.classList.remove('border-blue-400', 'bg-blue-100/70', 'text-blue-800', 'font-semibold');
+                emptyHint.textContent = 'اسحب وأفلت الملفات هنا • Drag and drop files here';
+            }
+        });
+    }
+    if (typeof window !== 'undefined') {
+        window.clearAllCategoryDropHighlights = clearAllCategoryDropHighlights;
+    }
+
     function createCategoryCardElement(cat) {
         const card = document.createElement('div');
         card.className = 'p-3 bg-white rounded-xl border border-slate-200 shadow-2xs hover:border-slate-300 transition-all mb-2 cursor-pointer category-folder-card group/card';
@@ -2185,12 +2205,48 @@
             card.setAttribute('data-category-tenant', activeTenantVal);
         }
         
+        function highlightCardForDrop() {
+            window.isHoveringCategoryFolder = true;
+            const overlay = document.getElementById('ingest-dropzone-overlay');
+            if (overlay) overlay.classList.add('hidden');
+            card.classList.add('ring-2', 'ring-blue-500', 'border-blue-500', 'bg-blue-50/90', 'dark:bg-blue-950/50', 'shadow-md', 'scale-[1.01]');
+            const dropHint = card.querySelector('.category-drop-hint');
+            if (dropHint) dropHint.classList.remove('hidden');
+            const dropBanner = card.querySelector('.category-drop-banner');
+            if (dropBanner) dropBanner.classList.remove('hidden');
+            const emptyHint = card.querySelector('.empty-folder-drop-hint');
+            if (emptyHint) {
+                emptyHint.classList.add('border-blue-400', 'bg-blue-100/70', 'text-blue-800', 'font-semibold');
+                emptyHint.textContent = 'Drop to upload to this folder';
+            }
+        }
+
+        function unhighlightCardForDrop() {
+            card.classList.remove('ring-2', 'ring-blue-500', 'border-blue-500', 'bg-blue-50/90', 'dark:bg-blue-950/50', 'shadow-md', 'scale-[1.01]');
+            const dropHint = card.querySelector('.category-drop-hint');
+            if (dropHint) dropHint.classList.add('hidden');
+            const dropBanner = card.querySelector('.category-drop-banner');
+            if (dropBanner) dropBanner.classList.add('hidden');
+            const emptyHint = card.querySelector('.empty-folder-drop-hint');
+            if (emptyHint) {
+                emptyHint.classList.remove('border-blue-400', 'bg-blue-100/70', 'text-blue-800', 'font-semibold');
+                emptyHint.textContent = 'اسحب وأفلت الملفات هنا • Drag and drop files here';
+            }
+        }
+
+        card.ondragenter = (e) => {
+            if (e.dataTransfer && e.dataTransfer.types && Array.from(e.dataTransfer.types).includes('Files') && !window.draggedDoc) {
+                e.preventDefault();
+                highlightCardForDrop();
+            }
+        };
+
         card.ondragover = (e) => {
             if (e.dataTransfer && e.dataTransfer.types && Array.from(e.dataTransfer.types).includes('Files') && !window.draggedDoc) {
                 e.preventDefault();
                 e.stopPropagation();
                 e.dataTransfer.dropEffect = 'copy';
-                card.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50/40');
+                highlightCardForDrop();
             } else if (typeof window !== 'undefined' && typeof window.handleCategoryDragOver === 'function') {
                 window.handleCategoryDragOver(e, card);
             }
@@ -2200,7 +2256,17 @@
             if (e && e.relatedTarget && card.contains(e.relatedTarget)) {
                 return;
             }
-            card.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50/40');
+            unhighlightCardForDrop();
+            const nextCatCard = (e && e.relatedTarget && e.relatedTarget.closest) ? e.relatedTarget.closest('.category-folder-card') : null;
+            if (!nextCatCard) {
+                window.isHoveringCategoryFolder = false;
+                setTimeout(() => {
+                    if (!window.isHoveringCategoryFolder && window.isDraggingFiles) {
+                        const overlay = document.getElementById('ingest-dropzone-overlay');
+                        if (overlay) overlay.classList.remove('hidden');
+                    }
+                }, 40);
+            }
             if (typeof window !== 'undefined' && typeof window.handleCategoryDragLeave === 'function') {
                 window.handleCategoryDragLeave(e, card);
             }
@@ -2208,7 +2274,9 @@
 
         card.ondrop = (e) => {
             if (e && typeof e.preventDefault === 'function') e.preventDefault();
-            card.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50/40');
+            unhighlightCardForDrop();
+            window.isHoveringCategoryFolder = false;
+
             if (e.dataTransfer && e.dataTransfer.types && Array.from(e.dataTransfer.types).includes('Files') && !window.draggedDoc) {
                 e.stopPropagation();
                 if (typeof window !== 'undefined' && typeof window.resetDragCounter === 'function') {
@@ -2237,7 +2305,7 @@
 
         const hasNotedDoc = Boolean(cat.documents && cat.documents.some(d => d.notes && d.notes.trim()));
         const noteFolderBadge = hasNotedDoc 
-            ? '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-[10px] font-bold border border-amber-300/80 flex-shrink-0" title="Contains documents with notes">📝 Notes</span>'
+            ? '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-[10px] font-bold border border-amber-300/80 flex-shrink-0" title="Contains documents with notes">Notes</span>'
             : '';
         const isFolderOpen = openCategoryNames.has(cat.name) || 
             (typeof window !== 'undefined' && window._pendingOpenCategory && isCategoryMatch(cat.name, window._pendingOpenCategory)) ||
@@ -2262,7 +2330,7 @@
         const docCount = typeof cat.document_count === 'number' ? cat.document_count : (cat.documents ? cat.documents.length : 0);
 
         card.innerHTML = `
-            <div class="flex justify-between items-center">
+            <div class="flex justify-between items-center category-card-header">
                 <div class="flex items-center gap-2 min-w-0">
                     ${folderSelectCheckbox}
                     <div class="folder-icon-box w-6 h-6 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center flex-shrink-0" data-category="${escapeHtml(cat.name)}">
@@ -2271,10 +2339,14 @@
                     <h4 class="text-xs font-semibold text-slate-800 truncate">${escapeHtml(cat.name)}</h4>
                 </div>
                 <div class="flex items-center gap-1.5 flex-shrink-0">
+                    <span class="category-drop-hint hidden text-[11px] font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/60 px-2 py-0.5 rounded border border-blue-300 dark:border-blue-600 transition-all select-none">Drop to upload to this folder</span>
                     ${noteFolderBadge}
                     <span class="doc-count-badge min-w-[20px] h-5 px-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold border border-slate-200 flex items-center justify-center flex-shrink-0 select-none" title="${docCount} ${docCount === 1 ? 'Document' : 'Documents'}">${docCount}</span>
                     ${deleteFolderBtn}
                 </div>
+            </div>
+            <div class="category-drop-banner hidden mt-2 py-2 px-3 rounded-lg border-2 border-dashed border-blue-400 bg-blue-100/70 text-blue-800 dark:bg-blue-950/60 dark:text-blue-200 dark:border-blue-500 text-xs font-bold text-center select-none animate-pulse">
+                Drop to upload to this folder
             </div>
             <div class="${docsContainerClasses}">
             </div>
@@ -3111,6 +3183,7 @@
             finishTouchDrop,
             cancelTouchDrag,
             removeTouchAvatar,
+            clearAllCategoryDropHighlights,
         };
     }
 

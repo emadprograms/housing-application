@@ -519,6 +519,7 @@
             window.addEventListener('dragover', handleGlobalDragOver);
             window.addEventListener('dragleave', handleGlobalDragLeave);
             window.addEventListener('drop', handleGlobalDrop);
+            window.addEventListener('dragend', resetDragCounter);
             isGlobalListenersAttached = true;
         }
 
@@ -582,13 +583,13 @@
     function updateSubmitButtonText() {
         if (!submitText) return;
         if (activeTab === 'single') {
-            submitText.textContent = '⚡ Upload Document';
+            submitText.textContent = 'Upload Document';
         } else if (activeTab === 'broadcast') {
             const count = getSelectedBroadcastHouses().length;
-            submitText.textContent = `⚡ Broadcast to ${count} Houses`;
+            submitText.textContent = `Broadcast to ${count} Houses`;
         } else if (activeTab === 'housebatch') {
             const count = houseBatchQueue.length;
-            submitText.textContent = `⚡ Upload ${count} Documents`;
+            submitText.textContent = `Upload ${count} Documents`;
         }
     }
 
@@ -596,10 +597,16 @@
         if (!dropzoneOverlay) return;
         if (e.dataTransfer && e.dataTransfer.types) {
             const types = Array.from(e.dataTransfer.types);
-            if (types.includes('Files')) {
+            if (types.includes('Files') && !window.draggedDoc) {
                 dragCounter++;
+                window.isDraggingFiles = true;
+                if (typeof document !== 'undefined' && document.body) {
+                    document.body.classList.add('is-dragging-file');
+                }
                 updateDropzonePrompt();
-                dropzoneOverlay.classList.remove('hidden');
+                if (!window.isHoveringCategoryFolder) {
+                    dropzoneOverlay.classList.remove('hidden');
+                }
             }
         }
     }
@@ -612,14 +619,21 @@
         if (!dropzoneOverlay) return;
         dragCounter--;
         if (dragCounter <= 0) {
-            dragCounter = 0;
-            dropzoneOverlay.classList.add('hidden');
+            resetDragCounter();
         }
     }
 
     function resetDragCounter() {
         dragCounter = 0;
+        window.isDraggingFiles = false;
+        window.isHoveringCategoryFolder = false;
+        if (typeof document !== 'undefined' && document.body) {
+            document.body.classList.remove('is-dragging-file');
+        }
         if (dropzoneOverlay) dropzoneOverlay.classList.add('hidden');
+        if (typeof window.clearAllCategoryDropHighlights === 'function') {
+            window.clearAllCategoryDropHighlights();
+        }
     }
 
     function handleGlobalDrop(e) {
@@ -2117,7 +2131,7 @@
                     body: formData,
                 });
                 if (res.ok) {
-                    if (toastFn) toastFn(`⚡ Document "${cleanTitle}" filed into House ${houseId}!`, 'success');
+                    if (toastFn) toastFn(`Document "${cleanTitle}" filed into House ${houseId}!`, 'success');
                 } else {
                     const err = await res.json().catch(() => ({}));
                     if (toastFn) toastFn(`Failed to file "${cleanTitle}": ${err.detail || 'Error'}`, 'error');
@@ -2200,7 +2214,7 @@
                     body: formData,
                 });
                 if (res.ok) {
-                    if (toastFn) toastFn(`⚡ Document "${cleanTitle}" filed into ${categoryName} for House ${house}!`, 'success');
+                    if (toastFn) toastFn(`Document "${cleanTitle}" filed into ${categoryName} for House ${house}!`, 'success');
                 } else {
                     const err = await res.json().catch(() => ({}));
                     if (toastFn) toastFn(`Failed to file "${cleanTitle}": ${err.detail || 'Error'}`, 'error');

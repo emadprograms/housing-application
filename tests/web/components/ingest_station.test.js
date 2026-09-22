@@ -176,7 +176,7 @@ function setupDOM() {
                 <button id="btn-ingest-cancel">Cancel</button>
                 <button id="btn-ingest-submit">
                     <span id="ingest-submit-spinner" class="hidden"></span>
-                    <span id="ingest-submit-text">⚡ Upload Document</span>
+                    <span id="ingest-submit-text">Upload Document</span>
                 </button>
             </div>
         </div>
@@ -295,7 +295,7 @@ describe('Ingest Station Component', () => {
         expect(sectionSingle.classList.contains('hidden')).toBe(false);
         expect(sectionBroadcast.classList.contains('hidden')).toBe(true);
         expect(sectionHousebatch.classList.contains('hidden')).toBe(true);
-        expect(submitText.textContent).toBe('⚡ Upload Document');
+        expect(submitText.textContent).toBe('Upload Document');
 
         // Switch to Broadcast Notice
         tabBroadcast.click();
@@ -303,7 +303,7 @@ describe('Ingest Station Component', () => {
         expect(sectionSingle.classList.contains('hidden')).toBe(true);
         expect(sectionBroadcast.classList.contains('hidden')).toBe(false);
         expect(sectionHousebatch.classList.contains('hidden')).toBe(true);
-        expect(submitText.textContent).toBe('⚡ Broadcast to 0 Houses');
+        expect(submitText.textContent).toBe('Broadcast to 0 Houses');
 
         // Switch to House Batch
         tabHousebatch.click();
@@ -311,7 +311,7 @@ describe('Ingest Station Component', () => {
         expect(sectionSingle.classList.contains('hidden')).toBe(true);
         expect(sectionBroadcast.classList.contains('hidden')).toBe(true);
         expect(sectionHousebatch.classList.contains('hidden')).toBe(false);
-        expect(submitText.textContent).toBe('⚡ Upload 0 Documents');
+        expect(submitText.textContent).toBe('Upload 0 Documents');
 
         // Switch back to Single Document
         tabSingle.click();
@@ -319,7 +319,7 @@ describe('Ingest Station Component', () => {
         expect(sectionSingle.classList.contains('hidden')).toBe(false);
         expect(sectionBroadcast.classList.contains('hidden')).toBe(true);
         expect(sectionHousebatch.classList.contains('hidden')).toBe(true);
-        expect(submitText.textContent).toBe('⚡ Upload Document');
+        expect(submitText.textContent).toBe('Upload Document');
     });
 
     it('populates Area and House selects based on active context and handles dropdown changes in Single mode', () => {
@@ -476,7 +476,7 @@ describe('Ingest Station Component', () => {
         const countBadge = document.getElementById('housebatch-count-badge');
         expect(countBadge.textContent).toBe('2 files');
         const submitText = document.getElementById('ingest-submit-text');
-        expect(submitText.textContent).toBe('⚡ Upload 2 Documents');
+        expect(submitText.textContent).toBe('Upload 2 Documents');
     });
 
     it('auto-fills editable titles and renders file list in house batch queue with individual category and date controls', () => {
@@ -713,13 +713,13 @@ describe('Ingest Station Component', () => {
         btnSelectAll.click();
         expect(getSelectedBroadcastHouses().length).toBe(2);
         const submitText = document.getElementById('ingest-submit-text');
-        expect(submitText.textContent).toBe('⚡ Broadcast to 2 Houses');
+        expect(submitText.textContent).toBe('Broadcast to 2 Houses');
 
         // Deselect All
         const btnDeselectAll = document.getElementById('btn-broadcast-deselect-all');
         btnDeselectAll.click();
         expect(getSelectedBroadcastHouses().length).toBe(0);
-        expect(submitText.textContent).toBe('⚡ Broadcast to 0 Houses');
+        expect(submitText.textContent).toBe('Broadcast to 0 Houses');
     });
 
     it('filters broadcast houses with search input', async () => {
@@ -808,7 +808,7 @@ describe('Ingest Station Component', () => {
         expect(calls[0].body.get('arabic_title')).toBe('invoice jan 2026');
         expect(calls[0].body.get('tenant_id')).toBe('101');
         expect(global.showToast).toHaveBeenCalledWith(
-            '⚡ Document "invoice jan 2026" filed into House 501!',
+            'Document "invoice jan 2026" filed into House 501!',
             'success'
         );
     });
@@ -844,7 +844,7 @@ describe('Ingest Station Component', () => {
         expect(calls[0].body.get('arabic_title')).toBe('official contract 2026');
         expect(calls[0].body.get('tenant_id')).toBe('101');
         expect(global.showToast).toHaveBeenCalledWith(
-            '⚡ Document "official contract 2026" filed into 05 - عقود for House 501!',
+            'Document "official contract 2026" filed into 05 - عقود for House 501!',
             'success'
         );
     });
