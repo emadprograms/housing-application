@@ -15,10 +15,12 @@ function setupDOM() {
         <div id="top-navbar">
             <button id="btn-ingest-trigger"></button>
         </div>
-        <div id="ingest-dropzone-overlay" class="fixed inset-0 z-50 bg-blue-900/40 backdrop-blur-xs border-4 border-dashed border-blue-400 hidden flex items-center justify-center pointer-events-none transition-all">
-            <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border border-blue-200 pointer-events-none flex flex-col items-center">
-                <h3 class="text-lg font-bold text-slate-900 mb-1">Upload Document</h3>
-                <p id="ingest-dropzone-prompt" class="text-sm text-blue-700 font-semibold">Drop PDF to Upload into [Area / House]</p>
+        <div id="ingest-dropzone-overlay" class="fixed inset-0 z-50 pointer-events-none hidden transition-all">
+            <div class="absolute inset-0 border-2 border-dashed border-blue-400/50 bg-blue-600/[0.02]"></div>
+            <div class="absolute top-5 left-1/2 -translate-x-1/2 flex items-center justify-center">
+                <div class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-xl border border-blue-200 dark:border-blue-800 flex items-center gap-3">
+                    <p id="ingest-dropzone-prompt" class="text-[11px] text-slate-500 dark:text-slate-400">Drop on a folder to file, or drop anywhere to upload</p>
+                </div>
             </div>
         </div>
         <div id="ingest-station-modal" class="hidden">
@@ -69,7 +71,7 @@ describe('Folder Drag Hover and Upload Direct Filing UX', () => {
         return event;
     }
 
-    it('1. Displays global dropzone overlay when dragging external files into window when not over category', () => {
+    it('1. Displays compact floating dropzone overlay when dragging external files into window when not over category', () => {
         const overlay = document.getElementById('ingest-dropzone-overlay');
         expect(overlay.classList.contains('hidden')).toBe(true);
 
@@ -81,7 +83,7 @@ describe('Folder Drag Hover and Upload Direct Filing UX', () => {
         expect(document.body.classList.contains('is-dragging-file')).toBe(true);
     });
 
-    it('2. When hovering over a category folder card, hides global overlay, highlights the folder, and displays "Drop to upload to this folder" EXACTLY ONCE', () => {
+    it('2. When hovering over a category folder card, hides global overlay, highlights the folder, and displays sleek + icon badge', () => {
         const overlay = document.getElementById('ingest-dropzone-overlay');
         overlay.classList.remove('hidden');
         window.isDraggingFiles = true;
@@ -107,19 +109,16 @@ describe('Folder Drag Hover and Upload Direct Filing UX', () => {
         expect(card.classList.contains('ring-blue-500')).toBe(true);
         expect(card.classList.contains('border-blue-500')).toBe(true);
 
-        // Drop hint must be shown with exact required text
+        // Plus icon badge must be shown with SVG icon
         const hint = card.querySelector('.category-drop-hint');
         expect(hint).not.toBeNull();
         expect(hint.classList.contains('hidden')).toBe(false);
-        expect(hint.textContent).toBe('Drop to upload to this folder');
+        expect(hint.querySelector('svg')).not.toBeNull();
+        expect(hint.getAttribute('title')).toBe('Drop to upload to this folder');
 
-        // MUST NOT duplicate: "Drop to upload to this folder" must appear EXACTLY ONCE on the entire card
-        const occurrences = (card.innerHTML.match(/Drop to upload to this folder/g) || []).length;
-        expect(occurrences).toBe(1);
-
-        // Verify no emojis in hint
+        // Verify zero emojis on card
         const emojiRegex = /[\u{1F300}-\u{1FAD6}\u{2600}-\u{27BF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}]/u;
-        expect(emojiRegex.test(hint.textContent)).toBe(false);
+        expect(emojiRegex.test(card.innerHTML)).toBe(false);
     });
 
     it('3. When moving away from the category folder card into empty space, removes highlight and restores global overlay', async () => {

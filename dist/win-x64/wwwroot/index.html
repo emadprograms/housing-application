@@ -938,14 +938,23 @@
     </div>
 
     <!-- Global Contextual Ingest Dropzone Overlay -->
-    <div id="ingest-dropzone-overlay" class="fixed inset-0 z-50 bg-blue-900/40 backdrop-blur-xs border-4 border-dashed border-blue-400 hidden flex items-center justify-center pointer-events-none transition-all">
-        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-8 max-w-md w-full text-center border border-blue-200 pointer-events-none flex flex-col items-center">
-            <div class="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4 shadow-inner">
-                <svg class="w-8 h-8 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+    <div id="ingest-dropzone-overlay" class="fixed inset-0 z-50 pointer-events-none hidden transition-all">
+        <!-- Subtle perimeter guide -->
+        <div class="absolute inset-0 border-2 border-dashed border-blue-400/50 bg-blue-600/[0.02]"></div>
+        <!-- Compact Floating Pill at Top -->
+        <div class="absolute top-5 left-1/2 -translate-x-1/2 flex items-center justify-center">
+            <div class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-xl border border-blue-200 dark:border-blue-800 flex items-center gap-3">
+                <div class="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                </div>
+                <div>
+                    <div class="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                        <span>Upload Document</span>
+                        <span class="text-[10px] text-blue-600 dark:text-blue-400 font-semibold px-1.5 py-0.5 bg-blue-50 dark:bg-blue-900/40 rounded border border-blue-200 dark:border-blue-800">.pdf</span>
+                    </div>
+                    <p id="ingest-dropzone-prompt" class="text-[11px] text-slate-500 dark:text-slate-400">Drop on a folder to file, or drop anywhere to upload</p>
+                </div>
             </div>
-            <h3 class="text-lg font-bold text-slate-900 mb-1">Upload Document</h3>
-            <p id="ingest-dropzone-prompt" class="text-sm text-blue-700 font-semibold">Drop PDF to Upload into [Area / House]</p>
-            <p class="text-xs text-slate-400 mt-2">Single document or multi-page batch (.pdf)</p>
         </div>
     </div>
 
