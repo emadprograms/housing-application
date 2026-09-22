@@ -81,7 +81,7 @@ describe('Folder Drag Hover and Upload Direct Filing UX', () => {
         expect(document.body.classList.contains('is-dragging-file')).toBe(true);
     });
 
-    it('2. When hovering over a category folder card, hides global overlay, highlights the folder, and displays "Drop to upload to this folder"', () => {
+    it('2. When hovering over a category folder card, hides global overlay, highlights the folder, and displays "Drop to upload to this folder" EXACTLY ONCE', () => {
         const overlay = document.getElementById('ingest-dropzone-overlay');
         overlay.classList.remove('hidden');
         window.isDraggingFiles = true;
@@ -107,16 +107,18 @@ describe('Folder Drag Hover and Upload Direct Filing UX', () => {
         expect(card.classList.contains('ring-blue-500')).toBe(true);
         expect(card.classList.contains('border-blue-500')).toBe(true);
 
-        // Drop hint and banner must be shown with exact required text
+        // Drop hint must be shown with exact required text
         const hint = card.querySelector('.category-drop-hint');
-        const banner = card.querySelector('.category-drop-banner');
+        expect(hint).not.toBeNull();
         expect(hint.classList.contains('hidden')).toBe(false);
-        expect(banner.classList.contains('hidden')).toBe(false);
-        expect(banner.textContent).toContain('Drop to upload to this folder');
+        expect(hint.textContent).toBe('Drop to upload to this folder');
 
-        // Verify no emojis in drop banner or hint
+        // MUST NOT duplicate: "Drop to upload to this folder" must appear EXACTLY ONCE on the entire card
+        const occurrences = (card.innerHTML.match(/Drop to upload to this folder/g) || []).length;
+        expect(occurrences).toBe(1);
+
+        // Verify no emojis in hint
         const emojiRegex = /[\u{1F300}-\u{1FAD6}\u{2600}-\u{27BF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}]/u;
-        expect(emojiRegex.test(banner.textContent)).toBe(false);
         expect(emojiRegex.test(hint.textContent)).toBe(false);
     });
 
@@ -140,8 +142,8 @@ describe('Folder Drag Hover and Upload Direct Filing UX', () => {
 
         // Highlight removed immediately
         expect(card.classList.contains('ring-2')).toBe(false);
-        const banner = card.querySelector('.category-drop-banner');
-        expect(banner.classList.contains('hidden')).toBe(true);
+        const hint = card.querySelector('.category-drop-hint');
+        expect(hint.classList.contains('hidden')).toBe(true);
 
         // Overlay is restored after transition timeout
         await new Promise(r => setTimeout(r, 60));
@@ -198,7 +200,7 @@ describe('Folder Drag Hover and Upload Direct Filing UX', () => {
 
         // Highlight must be removed
         expect(card.classList.contains('ring-2')).toBe(false);
-        expect(card.querySelector('.category-drop-banner').classList.contains('hidden')).toBe(true);
+        expect(card.querySelector('.category-drop-hint').classList.contains('hidden')).toBe(true);
 
         // Overlay stays hidden
         const overlay = document.getElementById('ingest-dropzone-overlay');
@@ -221,15 +223,15 @@ describe('Folder Drag Hover and Upload Direct Filing UX', () => {
         document.getElementById('categories-container').appendChild(card2);
 
         card1.classList.add('ring-2', 'ring-blue-500');
-        card1.querySelector('.category-drop-banner').classList.remove('hidden');
+        card1.querySelector('.category-drop-hint').classList.remove('hidden');
         card2.classList.add('ring-2', 'ring-blue-500');
-        card2.querySelector('.category-drop-banner').classList.remove('hidden');
+        card2.querySelector('.category-drop-hint').classList.remove('hidden');
 
         clearAllCategoryDropHighlights();
 
         expect(card1.classList.contains('ring-2')).toBe(false);
-        expect(card1.querySelector('.category-drop-banner').classList.contains('hidden')).toBe(true);
+        expect(card1.querySelector('.category-drop-hint').classList.contains('hidden')).toBe(true);
         expect(card2.classList.contains('ring-2')).toBe(false);
-        expect(card2.querySelector('.category-drop-banner').classList.contains('hidden')).toBe(true);
+        expect(card2.querySelector('.category-drop-hint').classList.contains('hidden')).toBe(true);
     });
 });

@@ -2183,13 +2183,6 @@
             c.classList.remove('ring-2', 'ring-blue-500', 'border-blue-500', 'bg-blue-50/90', 'dark:bg-blue-950/50', 'shadow-md', 'scale-[1.01]');
             const hint = c.querySelector('.category-drop-hint');
             if (hint) hint.classList.add('hidden');
-            const banner = c.querySelector('.category-drop-banner');
-            if (banner) banner.classList.add('hidden');
-            const emptyHint = c.querySelector('.empty-folder-drop-hint');
-            if (emptyHint) {
-                emptyHint.classList.remove('border-blue-400', 'bg-blue-100/70', 'text-blue-800', 'font-semibold');
-                emptyHint.textContent = 'اسحب وأفلت الملفات هنا • Drag and drop files here';
-            }
         });
     }
     if (typeof window !== 'undefined') {
@@ -2212,26 +2205,12 @@
             card.classList.add('ring-2', 'ring-blue-500', 'border-blue-500', 'bg-blue-50/90', 'dark:bg-blue-950/50', 'shadow-md', 'scale-[1.01]');
             const dropHint = card.querySelector('.category-drop-hint');
             if (dropHint) dropHint.classList.remove('hidden');
-            const dropBanner = card.querySelector('.category-drop-banner');
-            if (dropBanner) dropBanner.classList.remove('hidden');
-            const emptyHint = card.querySelector('.empty-folder-drop-hint');
-            if (emptyHint) {
-                emptyHint.classList.add('border-blue-400', 'bg-blue-100/70', 'text-blue-800', 'font-semibold');
-                emptyHint.textContent = 'Drop to upload to this folder';
-            }
         }
 
         function unhighlightCardForDrop() {
             card.classList.remove('ring-2', 'ring-blue-500', 'border-blue-500', 'bg-blue-50/90', 'dark:bg-blue-950/50', 'shadow-md', 'scale-[1.01]');
             const dropHint = card.querySelector('.category-drop-hint');
             if (dropHint) dropHint.classList.add('hidden');
-            const dropBanner = card.querySelector('.category-drop-banner');
-            if (dropBanner) dropBanner.classList.add('hidden');
-            const emptyHint = card.querySelector('.empty-folder-drop-hint');
-            if (emptyHint) {
-                emptyHint.classList.remove('border-blue-400', 'bg-blue-100/70', 'text-blue-800', 'font-semibold');
-                emptyHint.textContent = 'اسحب وأفلت الملفات هنا • Drag and drop files here';
-            }
         }
 
         card.ondragenter = (e) => {
@@ -2339,14 +2318,11 @@
                     <h4 class="text-xs font-semibold text-slate-800 truncate">${escapeHtml(cat.name)}</h4>
                 </div>
                 <div class="flex items-center gap-1.5 flex-shrink-0">
-                    <span class="category-drop-hint hidden text-[11px] font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/60 px-2 py-0.5 rounded border border-blue-300 dark:border-blue-600 transition-all select-none">Drop to upload to this folder</span>
+                    <span class="category-drop-hint hidden text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/60 px-2.5 py-0.5 rounded-md border border-blue-300 dark:border-blue-700 transition-all select-none animate-pulse">Drop to upload to this folder</span>
                     ${noteFolderBadge}
                     <span class="doc-count-badge min-w-[20px] h-5 px-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold border border-slate-200 flex items-center justify-center flex-shrink-0 select-none" title="${docCount} ${docCount === 1 ? 'Document' : 'Documents'}">${docCount}</span>
                     ${deleteFolderBtn}
                 </div>
-            </div>
-            <div class="category-drop-banner hidden mt-2 py-2 px-3 rounded-lg border-2 border-dashed border-blue-400 bg-blue-100/70 text-blue-800 dark:bg-blue-950/60 dark:text-blue-200 dark:border-blue-500 text-xs font-bold text-center select-none animate-pulse">
-                Drop to upload to this folder
             </div>
             <div class="${docsContainerClasses}">
             </div>
