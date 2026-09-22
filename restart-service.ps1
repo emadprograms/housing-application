@@ -1,4 +1,4 @@
-# Windows Background Service Restarter & Updater for Housing Application
+# Windows Background Service Restarter for Housing Application
 $ErrorActionPreference = "Stop"
 
 # Auto-elevate to Administrator if not already elevated
@@ -10,50 +10,64 @@ if (-not $isAdmin) {
 }
 
 $TaskName = "HousingApplicationService"
+$Port = 5000
+
 Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host "  Housing Application Service: Update & Restart           " -ForegroundColor Cyan
+Write-Host "  Housing Application 24/7 Background Service Restarter    " -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
 
 # 1. Stop background service & terminate process to release locked files
-Write-Host "[1/3] Stopping running service and releasing file locks..." -ForegroundColor Yellow
+Write-Host "[1/2] Stopping running service and releasing file locks..." -ForegroundColor Yellow
 $task = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
 if ($task) {
     Stop-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
 }
 Get-Process -Name "FileOrganizer.Web" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
-Start-Sleep -Seconds 2
-Write-Host "      -> Service stopped successfully." -ForegroundColor Green
+Start-Sleep -Seconds 1
+Write-Host "      -> Service stopped! All files are now completely unlocked." -ForegroundColor Green
 
-# 2. Pull latest code and updated binary from GitHub (if in a git repo)
-Write-Host "`n[2/3] Checking for updates from GitHub..." -ForegroundColor Cyan
-Set-Location -Path $PSScriptRoot
-if (Test-Path "$PSScriptRoot\.git") {
-    try {
-        & git fetch origin main 2>&1 | Out-Null
-        & git reset --hard origin/main
-        $commit = (& git rev-parse --short HEAD).Trim()
-        Write-Host "      -> Updated to latest version (commit: $commit)." -ForegroundColor Green
-    } catch {
-        Write-Host "      ⚠️ Notice: Could not pull git updates (offline or network error). Continuing with current files." -ForegroundColor Yellow
-    }
-} else {
-    Write-Host "      -> No git repository detected, skipping update check." -ForegroundColor DarkGray
+# 2. Check binary status
+$exePath = Join-Path $PSScriptRoot "dist\win-x64\FileOrganizer.Web.exe"
+if (Test-Path $exePath) {
+    $exeItem = Get-Item $exePath
+    Write-Host "      Executable:    $($exeItem.FullName)" -ForegroundColor DarkGray
+    Write-Host "      Last Modified: $($exeItem.LastWriteTime)" -ForegroundColor DarkGray
 }
 
-# 3. Restart background service
-Write-Host "`n[3/3] Starting 24/7 background service..." -ForegroundColor Cyan
+Write-Host "`n----------------------------------------------------------" -ForegroundColor DarkCyan
+Write-Host "  TIP: If you are mirroring/copying files from the main PC," -ForegroundColor White
+Write-Host "       mirror them NOW while the service is stopped." -ForegroundColor Yellow
+Write-Host "----------------------------------------------------------`n" -ForegroundColor DarkCyan
+
+$answer = Read-Host "Press [Enter] to start the service (or type 'Q' to quit and leave it stopped)"
+if ($answer -match '^[Qq]') {
+    Write-Host "`nService remains stopped. You can mirror/copy files now." -ForegroundColor Yellow
+    Write-Host "Run restart-service.bat again whenever you are ready to start.`n" -ForegroundColor DarkGray
+    exit 0
+}
+
+# 3. Start background service
+Write-Host "`n[2/2] Starting 24/7 background service..." -ForegroundColor Cyan
 if ($task) {
     Start-ScheduledTask -TaskName $TaskName
-    Start-Sleep -Seconds 3
+    Start-Sleep -Seconds 2
     Write-Host "      -> Service successfully started and running!" -ForegroundColor Green
 } else {
-    Write-Host "      Notice: Task '$TaskName' is not registered. Run install-service.bat if you want 24/7 background service." -ForegroundColor Yellow
+    Write-Host "      ⚠️ Notice: Task '$TaskName' is not registered." -ForegroundColor Yellow
+    Write-Host "      Please run install-service.bat first to set up the service." -ForegroundColor DarkGray
 }
 
+$LocalIp = (Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
+    Where-Object { $_.InterfaceAlias -notlike "*Loopback*" -and $_.InterfaceAlias -notlike "*Tailscale*" -and $_.IPAddress -notlike "169.254.*" } |
+    Select-Object -ExpandProperty IPAddress -First 1)
+
 Write-Host "`n==========================================================" -ForegroundColor Green
-Write-Host "  COMPLETE: Service is running with latest version       " -ForegroundColor Green
+Write-Host "  COMPLETE: Service is Running                            " -ForegroundColor Green
 Write-Host "==========================================================" -ForegroundColor Green
-Write-Host "1. Refresh your browser with Ctrl + F5 (Hard Refresh)." -ForegroundColor White
-Write-Host "2. Verify health status at: http://localhost:5000/api/health" -ForegroundColor Cyan
+Write-Host "Local browser: http://localhost:$Port" -ForegroundColor Cyan
+if ($LocalIp) {
+    Write-Host "LAN address:   http://${LocalIp}:$Port" -ForegroundColor Yellow
+}
+Write-Host "Remember to refresh your browser (Ctrl + F5)." -ForegroundColor DarkGray
 Write-Host "==========================================================`n" -ForegroundColor Green
-Read-Host "Press Enter to finish..."
+Start-Sleep -Seconds 2
