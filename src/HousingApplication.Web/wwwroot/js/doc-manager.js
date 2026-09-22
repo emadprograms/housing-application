@@ -41,6 +41,8 @@
     let btnMergeDocsCancel = null;
     let btnMergeDocsConfirm = null;
     let mergeDocsList = null;
+    let mergeAddDocSelect = null;
+    let btnMergeAddDoc = null;
     let mergeTargetTitle = null;
     let mergeTargetCategory = null;
     let mergeCustomCatContainer = null;
@@ -500,9 +502,10 @@
         }
 
         const isMulti = vaultIds.length > 1;
+        const targetTenantAttr = targetCard ? targetCard.getAttribute('data-category-tenant') : null;
 
-        // If single doc and it is already in targetCategory, skip and reset dimming
-        if (!isMulti && activeDragged.category === resolvedCategory) {
+        // If single doc and it is already in targetCategory and same tenant, skip and reset dimming
+        if (!isMulti && activeDragged.category === resolvedCategory && (!targetTenantAttr || !activeDragged.tenant || activeDragged.tenant.trim() === targetTenantAttr.trim())) {
             handleDocDragEnd(e);
             return;
         }
@@ -511,15 +514,39 @@
         const house = getResolvedHouse(activeDragged);
         const sourceCategory = activeDragged.category;
 
+        // Resolve targetTenantId if targetTenantAttr is present
+        let targetTenantId = null;
+        if (targetTenantAttr) {
+            try {
+                const tRes = await fetch(`/api/areas/${encodeURIComponent(area)}/houses/${encodeURIComponent(house)}/tenants`);
+                if (tRes.ok) {
+                    const tenants = await tRes.json();
+                    const matched = tenants.find(t =>
+                        String(t.id) === String(targetTenantAttr) ||
+                        (t.name && t.name.trim().toLowerCase() === targetTenantAttr.trim().toLowerCase())
+                    );
+                    if (matched && matched.id != null) {
+                        targetTenantId = matched.id;
+                    } else if (!isNaN(parseInt(targetTenantAttr, 10))) {
+                        targetTenantId = parseInt(targetTenantAttr, 10);
+                    }
+                }
+            } catch (_) {}
+        }
+
         try {
             if (isMulti) {
+                const movePayload = {
+                    vault_ids: vaultIds,
+                    target_category: resolvedCategory
+                };
+                if (targetTenantId != null) {
+                    movePayload.target_tenant_id = targetTenantId;
+                }
                 const res = await fetch(`/api/areas/${encodeURIComponent(area)}/houses/${encodeURIComponent(house)}/documents/batch-move`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        vault_ids: vaultIds,
-                        target_category: resolvedCategory
-                    })
+                    body: JSON.stringify(movePayload)
                 });
                 if (!res.ok) {
                     const errData = await res.json().catch(() => ({}));
@@ -538,7 +565,7 @@
                 showToast(`Successfully moved ${movedCount} documents to "${finalCategory}"`);
 
                 let allMovedInDom = true;
-                if (typeof window !== 'undefined' && typeof window.moveDocInDom === 'function') {
+                if (!targetTenantId && typeof window !== 'undefined' && typeof window.moveDocInDom === 'function') {
                     vaultIds.forEach(id => {
                         const ok = window.moveDocInDom(id, null, finalCategory);
                         if (!ok) allMovedInDom = false;
@@ -553,10 +580,14 @@
                     await window.loadTree();
                 }
             } else {
+                const patchPayload = { category: resolvedCategory, is_manual: 1 };
+                if (targetTenantId != null) {
+                    patchPayload.tenant_id = targetTenantId;
+                }
                 const res = await fetch(`/api/areas/${encodeURIComponent(area)}/houses/${encodeURIComponent(house)}/documents/${encodeURIComponent(activeDragged.vault_id)}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ category: resolvedCategory, is_manual: 1 })
+                    body: JSON.stringify(patchPayload)
                 });
                 if (!res.ok) {
                     const errData = await res.json().catch(() => ({}));
@@ -577,7 +608,7 @@
                 showToast(`Moved to ${finalCategory}`);
 
                 let movedInDom = false;
-                if (typeof window !== 'undefined' && typeof window.moveDocInDom === 'function') {
+                if (!targetTenantId && typeof window !== 'undefined' && typeof window.moveDocInDom === 'function') {
                     movedInDom = window.moveDocInDom(activeDragged.vault_id, sourceCategory, finalCategory);
                 }
                 if (!movedInDom && typeof window !== 'undefined' && typeof window.refreshCurrentTab === 'function') {

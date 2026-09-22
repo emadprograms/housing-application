@@ -2131,7 +2131,7 @@
         if (typeof window.loadTree === 'function') window.loadTree();
     }
 
-    async function handleDirectCategoryDrop(files, categoryName, houseId = null, areaName = null) {
+    async function handleDirectCategoryDrop(files, categoryName, houseId = null, areaName = null, targetTenant = null) {
         if (!files || files.length === 0 || !categoryName) return;
         const fileList = Array.from(files).filter(f => f.name.toLowerCase().endsWith('.pdf') || f.type === 'application/pdf');
         if (fileList.length === 0) {
@@ -2146,6 +2146,38 @@
         const todayDate = getTodayIsoDate();
         const toastFn = (typeof showToast === 'function') ? showToast : (window.showToast || null);
 
+        let resolvedTenantId = latestTenantId;
+        let resolvedTenantName = null;
+        const effectiveTenant = targetTenant || (typeof currentTenant !== 'undefined' ? currentTenant : (typeof window !== 'undefined' ? window.currentTenant : null));
+        if (effectiveTenant) {
+            let targetId = null;
+            let targetName = null;
+            if (typeof effectiveTenant === 'object') {
+                targetId = effectiveTenant.id != null ? String(effectiveTenant.id).trim() : null;
+                targetName = effectiveTenant.name != null ? String(effectiveTenant.name).trim() : null;
+            } else {
+                const s = String(effectiveTenant).trim();
+                targetId = s;
+                targetName = s;
+            }
+
+            if (Array.isArray(tenants)) {
+                const matchedTenant = tenants.find(t => {
+                    if (targetId && String(t.id) === targetId) return true;
+                    if (targetName && t.name && t.name.trim().toLowerCase() === targetName.toLowerCase()) return true;
+                    return false;
+                });
+                if (matchedTenant) {
+                    if (matchedTenant.id != null) resolvedTenantId = String(matchedTenant.id);
+                    if (matchedTenant.name) resolvedTenantName = matchedTenant.name;
+                } else if (targetId && !isNaN(Number(targetId))) {
+                    resolvedTenantId = String(targetId);
+                } else if (targetName) {
+                    resolvedTenantName = targetName;
+                }
+            }
+        }
+
         for (const file of fileList) {
             const cleanTitle = file.name.replace(/\.pdf$/i, '').replace(/[-_]+/g, ' ').trim();
             const formData = new FormData();
@@ -2153,8 +2185,10 @@
             formData.append('mode', 'manual');
             formData.append('area_id', area);
             formData.append('house_id', String(house));
-            if (latestTenantId) {
-                formData.append('tenant_id', latestTenantId);
+            if (resolvedTenantId) {
+                formData.append('tenant_id', resolvedTenantId);
+            } else if (resolvedTenantName) {
+                formData.append('tenant_name', resolvedTenantName);
             }
             formData.append('category', categoryName);
             formData.append('arabic_title', cleanTitle);

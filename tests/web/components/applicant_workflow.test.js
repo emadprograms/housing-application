@@ -31,6 +31,10 @@ describe('Applicant Integrated Workflows Suite (Phase 113)', () => {
     path.resolve(__dirname, '../../../src/HousingApplication.Web/wwwroot/js/ingest-station.js'),
     'utf8'
   );
+  const docManagerCode = fs.readFileSync(
+    path.resolve(__dirname, '../../../src/HousingApplication.Web/wwwroot/js/doc-manager.js'),
+    'utf8'
+  );
 
   beforeEach(() => {
     document.body.innerHTML = htmlContent;
@@ -62,6 +66,7 @@ describe('Applicant Integrated Workflows Suite (Phase 113)', () => {
     eval(timelineViewCode);
     eval(commandPaletteCode);
     eval(ingestStationCode);
+    eval(docManagerCode);
 
     if (typeof window.initIngestStation === 'function') {
       window.initIngestStation();
@@ -628,4 +633,122 @@ describe('Applicant Integrated Workflows Suite (Phase 113)', () => {
       }
     }
   });
+
+  it('Test 11: Applicant with 0 documents renders all 13 standard category folders with empty drop hints instead of No folders found', () => {
+    window.currentTenant = 'متقدم فارغ';
+    global.currentTenant = 'متقدم فارغ';
+    window.currentCategories = [];
+    global.currentCategories = [];
+
+    window.renderCategories();
+
+    const docList = document.getElementById('document-list');
+    expect(docList).not.toBeNull();
+
+    // Verify all 13 standard category cards exist
+    const categoryCards = docList.querySelectorAll('.category-folder-card');
+    expect(categoryCards.length).toBe(13);
+
+    // Verify "No folders found" is NOT rendered
+    expect(docList.textContent).not.toContain('No folders found for this selection.');
+
+    // Verify standard names, zero count, and drop hint inside each folder
+    const standardNames = [
+      '01 - بيانات أساسية', '02 - بيانات شخصية', '03 - أمر تخصيص', '04 - محضر تسليم مفتاح',
+      '05 - عقود', '06 - كهرباء وماء', '07 - استقطاع إيجار', '08 - وقف استقطاع بدل',
+      '09 - إشعارات', '10 - صيانة', '11 - صور ومعاينات', '12 - تعديلات',
+      '13 - رسائل متنوعة'
+    ];
+
+    categoryCards.forEach((card, idx) => {
+      const catName = card.getAttribute('data-category-name');
+      expect(standardNames).toContain(catName);
+      expect(card.getAttribute('data-category-tenant')).toBe('متقدم فارغ');
+
+      const countBadge = card.querySelector('.doc-count-badge');
+      expect(countBadge).not.toBeNull();
+      expect(countBadge.textContent.trim()).toBe('0');
+
+      const dropHint = card.querySelector('.empty-folder-drop-hint');
+      expect(dropHint).not.toBeNull();
+      expect(dropHint.textContent).toContain('اسحب وأفلت الملفات هنا');
+    });
+  });
+
+  it('Test 12: Direct category drop on applicant empty folder assigns tenant_id to the applicant', async () => {
+    global.fetch = vi.fn().mockImplementation((url) => {
+      if (url.includes('/tenants')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => [
+            { id: 45, name: 'متقدم خالد', is_resident: 0 },
+            { id: 99, name: 'ساكن حالي', is_resident: 1 }
+          ]
+        });
+      }
+      if (url.includes('/categories')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => []
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ status: 'success' })
+      });
+    });
+
+    const file = new File(['%PDF-1.4 sample content'], 'nid.pdf', { type: 'application/pdf' });
+    await window.handleDirectCategoryDrop([file], '01 - بيانات أساسية', '500', 'Safra C', 'متقدم خالد');
+
+    const ingestCall = global.fetch.mock.calls.find(c => c[0] === '/api/ingest');
+    expect(ingestCall).toBeDefined();
+    const formData = ingestCall[1].body;
+    expect(formData.get('tenant_id')).toBe('45');
+    expect(formData.get('category')).toBe('01 - بيانات أساسية');
+    expect(formData.get('house_id')).toBe('500');
+    expect(formData.get('area_id')).toBe('Safra C');
+  });
+
+  it('Test 13: Dragging document onto applicant category card reassigns to applicant via batch-move or PATCH', async () => {
+    global.fetch = vi.fn().mockImplementation((url) => {
+      if (url.includes('/tenants')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => [
+            { id: 45, name: 'متقدم خالد', is_resident: 0 },
+            { id: 99, name: 'ساكن حالي', is_resident: 1 }
+          ]
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ status: 'success', category: '01 - بيانات أساسية' })
+      });
+    });
+
+    // Setup applicant folder card
+    const targetCard = document.createElement('div');
+    targetCard.className = 'category-folder-card';
+    targetCard.setAttribute('data-category-name', '01 - بيانات أساسية');
+    targetCard.setAttribute('data-category-tenant', 'متقدم خالد');
+
+    window.draggedDoc = {
+      vault_id: 'doc_res_001',
+      category: '13 - رسائل متنوعة',
+      tenant: 'ساكن حالي',
+      area_id: 'Safra C',
+      house_id: '500'
+    };
+
+    await window.handleCategoryDrop(new Event('drop'), '01 - بيانات أساسية', targetCard);
+
+    const patchCall = global.fetch.mock.calls.find(c => c[0].includes('/documents/doc_res_001'));
+    expect(patchCall).toBeDefined();
+    expect(patchCall[1].method).toBe('PATCH');
+    const payload = JSON.parse(patchCall[1].body);
+    expect(payload.category).toBe('01 - بيانات أساسية');
+    expect(payload.tenant_id).toBe(45);
+  });
 });
+

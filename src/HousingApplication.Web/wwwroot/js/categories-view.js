@@ -16,6 +16,22 @@
         "رسائل متنوعة": "13"
     };
 
+    const STANDARD_CATEGORIES = [
+        "01 - بيانات أساسية",
+        "02 - بيانات شخصية",
+        "03 - أمر تخصيص",
+        "04 - محضر تسليم مفتاح",
+        "05 - عقود",
+        "06 - كهرباء وماء",
+        "07 - استقطاع إيجار",
+        "08 - وقف استقطاع بدل",
+        "09 - إشعارات",
+        "10 - صيانة",
+        "11 - صور ومعاينات",
+        "12 - تعديلات",
+        "13 - رسائل متنوعة"
+    ];
+
     const EMPTY_FOLDER_SVG = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>`;
 
     const FOLDER_ICONS = {
@@ -307,6 +323,52 @@
         for (const [folderName, prefix] of Object.entries(FOLDER_PREFIXES)) {
             if (clean === `${prefix} - ${folderName}` || clean.endsWith(folderName)) return true;
         }
+        return false;
+    }
+
+    function isApplicantTenant(tenantName) {
+        if (!tenantName) return false;
+        const normName = String(tenantName).trim().toLowerCase();
+
+        const tenantSelect = document.getElementById('tenant-select') || document.getElementById('filter-tenant');
+        if (tenantSelect && tenantSelect.options) {
+            for (const opt of tenantSelect.options) {
+                const optVal = (opt.value || '').trim().toLowerCase();
+                const optText = (opt.textContent || '').trim().toLowerCase();
+                const optName = (opt.dataset && opt.dataset.name ? opt.dataset.name : '').trim().toLowerCase();
+                if (optVal === normName || optName === normName || optText.includes(normName)) {
+                    if (opt.dataset && (opt.dataset.isResident === '0' || opt.dataset.isResident === 0 || opt.dataset.isResident === 'false')) {
+                        return true;
+                    }
+                    if (optText.includes('متقدم') || optText.includes('لم يسكن')) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        const tree = (typeof globalTreeData !== 'undefined' ? globalTreeData : (typeof window !== 'undefined' ? window.globalTreeData : [])) || [];
+        for (const area of tree) {
+            if (Array.isArray(area.children)) {
+                for (const house of area.children) {
+                    if (Array.isArray(house.children)) {
+                        for (const t of house.children) {
+                            const tName = (t.name || '').trim().toLowerCase();
+                            if (tName === normName || String(t.id) === normName) {
+                                if (t.is_resident === 0 || t.is_resident === false || t.isResident === 0 || t.isResident === false) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (normName.includes('متقدم') || normName.includes('applicant')) {
+            return true;
+        }
+
         return false;
     }
 
@@ -1450,12 +1512,15 @@
                 const res = await fetch(`/api/areas/${encodeURIComponent(areaId)}/houses/${encodeURIComponent(houseId)}/categories`);
                 if (!res.ok) throw new Error('Failed to load categories');
                 currentCategories = await res.json();
+                if (!Array.isArray(currentCategories)) {
+                    currentCategories = [];
+                }
             }
             if (typeof window !== 'undefined') {
                 window.currentCategories = currentCategories;
             }
             
-            const totalDocs = currentCategories.reduce((sum, cat) => sum + cat.document_count, 0);
+            const totalDocs = Array.isArray(currentCategories) ? currentCategories.reduce((sum, cat) => sum + (cat.document_count || 0), 0) : 0;
             if (statsBadge) {
                 statsBadge.textContent = `${currentCategories.length} Categories (${totalDocs} Docs)`;
                 statsBadge.classList.remove('hidden');
@@ -2115,6 +2180,10 @@
         const card = document.createElement('div');
         card.className = 'p-3 bg-white rounded-xl border border-slate-200 shadow-2xs hover:border-slate-300 transition-all mb-2 cursor-pointer category-folder-card group/card';
         card.setAttribute('data-category-name', cat.name);
+        const activeTenantVal = cat.tenant || (typeof currentTenant !== 'undefined' ? currentTenant : (typeof window !== 'undefined' ? window.currentTenant : ''));
+        if (activeTenantVal) {
+            card.setAttribute('data-category-tenant', activeTenantVal);
+        }
         
         card.ondragover = (e) => {
             if (e.dataTransfer && e.dataTransfer.types && Array.from(e.dataTransfer.types).includes('Files') && !window.draggedDoc) {
@@ -2151,7 +2220,7 @@
                 if (typeof window !== 'undefined' && typeof window.handleDirectCategoryDrop === 'function') {
                     const activeArea = (typeof currentArea !== 'undefined' ? currentArea : window.currentArea) || '';
                     const activeHouse = (typeof currentHouse !== 'undefined' ? currentHouse : window.currentHouse) || '';
-                    window.handleDirectCategoryDrop(e.dataTransfer.files, cat.name, activeHouse, activeArea);
+                    window.handleDirectCategoryDrop(e.dataTransfer.files, cat.name, activeHouse, activeArea, activeTenantVal);
                 }
             } else if (typeof window !== 'undefined' && typeof window.handleCategoryDrop === 'function') {
                 window.handleCategoryDrop(e, cat.name, card);
@@ -2237,6 +2306,11 @@
                 const docEl = createDocRowElement(doc, cat.name, card);
                 docsContainer.appendChild(docEl);
             });
+        } else if (docsContainer) {
+            const emptyHint = document.createElement('div');
+            emptyHint.className = 'empty-folder-drop-hint text-[11px] text-slate-400 py-2 px-3 bg-slate-50/70 dark:bg-slate-800/40 rounded-lg border border-dashed border-slate-200 dark:border-slate-700 text-center select-none';
+            emptyHint.textContent = 'اسحب وأفلت الملفات هنا • Drag and drop files here';
+            docsContainer.appendChild(emptyHint);
         }
 
         const selectAllBtn = card.querySelector('.btn-select-all-folder');
@@ -2397,13 +2471,26 @@
             }
             if (remainingCount === 0) {
                 const sourceCatAttr = sourceCard.getAttribute('data-category-name') || sourceCatName;
-                openCategoryNames.delete(sourceCatAttr);
-                if (sourceCatName) openCategoryNames.delete(sourceCatName);
-                sourceCard.remove();
+                const sourceTenantAttr = sourceCard.getAttribute('data-category-tenant') || (typeof currentTenant !== 'undefined' ? currentTenant : (typeof window !== 'undefined' ? window.currentTenant : ''));
+                const isApplicant = isApplicantTenant(sourceTenantAttr);
 
-                const srcIdx = cats.findIndex(c => (c.name === sourceCatName || c.name === sourceCatAttr) && (!c.documents || c.documents.length === 0));
-                if (srcIdx !== -1) {
-                    cats.splice(srcIdx, 1);
+                if (!isApplicant || !isStandardCategoryName(sourceCatAttr)) {
+                    openCategoryNames.delete(sourceCatAttr);
+                    if (sourceCatName) openCategoryNames.delete(sourceCatName);
+                    sourceCard.remove();
+
+                    const srcIdx = cats.findIndex(c => (c.name === sourceCatName || c.name === sourceCatAttr) && (!c.documents || c.documents.length === 0));
+                    if (srcIdx !== -1) {
+                        cats.splice(srcIdx, 1);
+                    }
+                } else {
+                    const docsContainer = sourceCard.querySelector('.category-docs');
+                    if (docsContainer && !docsContainer.querySelector('.empty-folder-drop-hint')) {
+                        const emptyHint = document.createElement('div');
+                        emptyHint.className = 'empty-folder-drop-hint text-[11px] text-slate-400 py-2 px-3 bg-slate-50/70 dark:bg-slate-800/40 rounded-lg border border-dashed border-slate-200 dark:border-slate-700 text-center select-none';
+                        emptyHint.textContent = 'اسحب وأفلت الملفات هنا • Drag and drop files here';
+                        docsContainer.appendChild(emptyHint);
+                    }
                 }
 
                 const remainingCards = docListEl.querySelectorAll('.category-folder-card');
@@ -2487,13 +2574,26 @@
             }
             if (remainingCount === 0) {
                 const sourceCatAttr = sourceCard.getAttribute('data-category-name') || sourceCatName;
-                openCategoryNames.delete(sourceCatAttr);
-                if (sourceCatName) openCategoryNames.delete(sourceCatName);
-                sourceCard.remove();
+                const sourceTenantAttr = sourceCard.getAttribute('data-category-tenant') || (typeof currentTenant !== 'undefined' ? currentTenant : (typeof window !== 'undefined' ? window.currentTenant : ''));
+                const isApplicant = isApplicantTenant(sourceTenantAttr);
 
-                const srcIdx = cats.findIndex(c => (c.name === sourceCatName || c.name === sourceCatAttr) && (!c.documents || c.documents.length === 0));
-                if (srcIdx !== -1) {
-                    cats.splice(srcIdx, 1);
+                if (!isApplicant || !isStandardCategoryName(sourceCatAttr)) {
+                    openCategoryNames.delete(sourceCatAttr);
+                    if (sourceCatName) openCategoryNames.delete(sourceCatName);
+                    sourceCard.remove();
+
+                    const srcIdx = cats.findIndex(c => (c.name === sourceCatName || c.name === sourceCatAttr) && (!c.documents || c.documents.length === 0));
+                    if (srcIdx !== -1) {
+                        cats.splice(srcIdx, 1);
+                    }
+                } else {
+                    const docsContainer = sourceCard.querySelector('.category-docs');
+                    if (docsContainer && !docsContainer.querySelector('.empty-folder-drop-hint')) {
+                        const emptyHint = document.createElement('div');
+                        emptyHint.className = 'empty-folder-drop-hint text-[11px] text-slate-400 py-2 px-3 bg-slate-50/70 dark:bg-slate-800/40 rounded-lg border border-dashed border-slate-200 dark:border-slate-700 text-center select-none';
+                        emptyHint.textContent = 'اسحب وأفلت الملفات هنا • Drag and drop files here';
+                        docsContainer.appendChild(emptyHint);
+                    }
                 }
 
                 const remainingCards = docListEl.querySelectorAll('.category-folder-card');
@@ -2544,6 +2644,9 @@
 
         const targetDocsContainer = targetCard.querySelector('.category-docs');
         if (!targetDocsContainer) return false;
+
+        const emptyHint = targetDocsContainer.querySelector('.empty-folder-drop-hint');
+        if (emptyHint) emptyHint.remove();
 
         const resolvedTargetName = targetCard.getAttribute('data-category-name') || targetCatName;
 
@@ -2751,7 +2854,41 @@
         let displayCategories = [];
         
         if (activeTenant) {
-            displayCategories = activeCategories.filter(cat => cat.tenant === activeTenant);
+            const tenantCats = activeCategories.filter(cat => cat.tenant === activeTenant);
+            const isApplicant = isApplicantTenant(activeTenant) || tenantCats.length === 0;
+
+            if (isApplicant) {
+                const catMap = new Map();
+                tenantCats.forEach(cat => {
+                    catMap.set(cat.name, cat);
+                    const norm = normalizeCategoryName(cat.name);
+                    if (norm) catMap.set(norm, cat);
+                });
+
+                // Ensure all 13 standard folders exist for activeTenant
+                STANDARD_CATEGORIES.forEach(stdName => {
+                    const norm = normalizeCategoryName(stdName);
+                    if (!catMap.has(stdName) && !catMap.has(norm)) {
+                        catMap.set(stdName, {
+                            name: stdName,
+                            tenant: activeTenant,
+                            document_count: 0,
+                            documents: []
+                        });
+                    }
+                });
+
+                const seenNames = new Set();
+                displayCategories = [];
+                for (const cat of catMap.values()) {
+                    if (!seenNames.has(cat.name)) {
+                        seenNames.add(cat.name);
+                        displayCategories.push(cat);
+                    }
+                }
+            } else {
+                displayCategories = tenantCats;
+            }
         } else {
             const agg = {};
             activeCategories.forEach(cat => {
@@ -2763,6 +2900,7 @@
                     agg[cat.name].documents = agg[cat.name].documents.concat(cat.documents);
                 }
             });
+
             for (const [name, data] of Object.entries(agg)) {
                 displayCategories.push({ name: name, document_count: data.count, documents: data.documents });
             }
