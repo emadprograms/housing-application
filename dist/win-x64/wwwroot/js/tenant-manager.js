@@ -219,7 +219,7 @@
 
         const residentStartTitle = 'Start date is always selected as the first document and is auto if there is no document • تاريخ البدء يُحدّد دائماً من تاريخ أول وثيقة، ويكون تلقائياً عند عدم وجود وثائق';
         const applicantStartTitle = 'Application / Order Date • تاريخ الطلب/التخصيص';
-        const residentEndTitle = 'End date is decided by the user • تاريخ الانتهاء يحدده المستخدم';
+        const residentEndTitle = 'End date is always selected as the last document and is auto if there is no document • تاريخ الانتهاء يُحدّد دائماً من تاريخ آخر وثيقة، ويكون تلقائياً عند عدم وجود وثائق';
         const applicantEndTitle = 'N/A (لم يسكن)';
 
         const startInputHtml = (startVal && String(startVal).trim())
@@ -229,7 +229,7 @@
         const endInputTitle = isApplicant ? applicantEndTitle : residentEndTitle;
         const effectiveEndVal = (isApplicant || isPresent || endVal === 'present')
             ? ''
-            : (endVal && endVal !== 'none' && endVal !== 'null' ? endVal : (lastDocArrival || ''));
+            : (lastDocArrival || (endVal && endVal !== 'none' && endVal !== 'null' ? endVal : ''));
 
         row.innerHTML = `
             <div class="sm:col-span-3 flex items-center gap-2">
@@ -247,8 +247,9 @@
                 ${startInputHtml}
             </div>
             <div class="sm:col-span-2">
-                <input type="date" value="${effectiveEndVal}" ${isApplicant || isPresent ? 'disabled' : ''} title="${endInputTitle}"
-                       class="tenant-end-input w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-1.5 focus:ring-blue-500/20 focus:border-blue-500 font-medium ${isApplicant || isPresent ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white'}" />
+                <input type="text" readonly value="${effectiveEndVal}" ${isApplicant || isPresent ? 'disabled' : ''} title="${endInputTitle}"
+                       placeholder="${!isApplicant && !isPresent && !effectiveEndVal ? 'تلقائي (عند الرفع)' : ''}"
+                       class="tenant-end-input w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 font-mono font-medium cursor-default ${isApplicant || isPresent ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200'}" />
             </div>
             <div class="sm:col-span-1 flex items-center justify-between sm:justify-center">
                 <span class="text-xs font-semibold text-slate-600 sm:hidden">Present:</span>
@@ -293,7 +294,7 @@
                     endInput.title = residentEndTitle;
                 } else {
                     endInput.disabled = false;
-                    endInput.className = "tenant-end-input w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-1.5 focus:ring-blue-500/20 focus:border-blue-500 bg-white font-medium";
+                    endInput.className = "tenant-end-input w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-mono font-medium cursor-default";
                     endInput.title = residentEndTitle;
                     if (!endInput.value) {
                         const docDate = resolveLastDocDate(row);
@@ -317,7 +318,7 @@
                         }
                         if (otherEnd && otherEnd.disabled && otherType !== 'applicant') {
                             otherEnd.disabled = false;
-                            otherEnd.className = "tenant-end-input w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-1.5 focus:ring-blue-500/20 focus:border-blue-500 bg-white font-medium";
+                            otherEnd.className = "tenant-end-input w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-mono font-medium cursor-default";
                             otherEnd.title = residentEndTitle;
                             if (!otherEnd.value) {
                                 const docDate = resolveLastDocDate(otherRow);
@@ -333,7 +334,7 @@
             } else {
                 if (typeSelect.value !== 'applicant') {
                     endInput.disabled = false;
-                    endInput.className = "tenant-end-input w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-1.5 focus:ring-blue-500/20 focus:border-blue-500 bg-white font-medium";
+                    endInput.className = "tenant-end-input w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-mono font-medium cursor-default";
                     endInput.title = residentEndTitle;
                     if (!endInput.value) {
                         const docDate = resolveLastDocDate(row);
@@ -380,11 +381,8 @@
             const typeVal = r.querySelector('.tenant-type-select')?.value || 'resident';
             const isResident = typeVal === 'applicant' ? 0 : 1;
             const isPresent = isResident === 0 ? false : r.querySelector('.tenant-present-check').checked;
-            let end = (isResident === 0 || isPresent) ? null : (r.querySelector('.tenant-end-input').value || null);
-
-            // If an end date of the previous tenant is not mentioned in the settings and he isn't marked as present
-            // then the date of his last document arrival is marked as the end date.
-            if (isResident === 1 && !isPresent && !end) {
+            let end = (isResident === 0 || isPresent) ? null : (r.querySelector('.tenant-end-input')?.value?.trim() || resolveLastDocDate(r, name) || null);
+            if (end && (end.includes('تلقائي') || end.includes('N/A') || end.toLowerCase().includes('present') || end.toLowerCase().includes('auto'))) {
                 end = resolveLastDocDate(r, name) || null;
             }
 

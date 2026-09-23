@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v17.0
 current_phase: 119
 status: completed
-last_updated: "2026-09-23T04:04:52.185Z"
+last_updated: "2026-09-23T06:37:00.000Z"
 last_activity: 2026-09-23
-last_activity_desc: Milestone v17.0 completed and archived
+last_activity_desc: Quick task 260923-cqe completed (document-driven past tenant end date)
 state_head: 1458239720bc3c1c67233558bb50e1a6a274cfa1
 progress:
   total_phases: 4
@@ -27,7 +27,7 @@ milestone_name: User Authentication, Roles & Permissions
 Phase: Milestone v17.0 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-09-23 — Milestone v17.0 completed and archived
+Last activity: 2026-09-23 — Quick task 260923-cqe completed (document-driven past tenant end date)
 
 ## Context
 
@@ -115,6 +115,7 @@ Milestone v17.0 introduced complete user authentication, session management, and
 - `260918-merge-document-previews`: Visual Document Previews for Document Merge (QCK-56). Replaced text-heavy names and arrow summary in the merge dialog with visual PDF page 1 thumbnails, interactive sequence badges (`#1 (البداية)`, `#2 (النهاية)`), inline circular swap button, mini thumbnails in reorder rows, and zero-flicker cached PDF.js rendering. 17 Vitest tests in `merge_documents.test.js` and all 596 tests passing.
 - `260920-login-home-page-animated`: Animated Login Home Page with Logo & Preset Removal (QCK-57). Created a dedicated, entertaining Login Home Page as the entry point with floating animated `pictures/logo.png`, pulsing glowing halo, ambient floating glowing orbs, subtle grid background, bold gradient `Housing Application` title, interactive feature badges, and error shake. Completely removed preset user buttons (`#login-presets-container` and user chips) in favor of clean manual authentication. Maintained 100% dual-asset parity across `src/` and `dist/`. All 12 tests in `auth_manager.test.js` passing.
 - `260921-d6n`: Convert Transparent Ministry Logo into Multi-Resolution Icon & Web Favicon (QCK-58). Generated multi-resolution Windows .ico (16, 32, 48, 64, 128, 256) and PNG favicons from logo.png with 100% alpha transparency. Deployed across src/ and dist/win-x64/ wwwroot, updated index.html with favicon/apple-touch-icon tags, and configured <ApplicationIcon> in HousingApplication.Web.csproj. Verified by 20 passing Vitest tests.
+- `260923-cqe`: Document-Driven End Date for Past Tenants & Zero Manual Date Entry (QCK-59). Made past residents' end date 100% document-driven (derived from MAX(primary_date)) across FileOrganizerRepository, updated tenant-manager.js to render tenant-end-input as readonly, eliminated manual user entry in House Settings modal, and added automated backend/frontend test coverage.
 
 ## Deferred Items
 
@@ -144,7 +145,7 @@ Items acknowledged and deferred at milestone close on 2026-09-13:
 Phase: Milestone v17.0 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-09-23 — Milestone v17.0 completed and archived
+Last activity: 2026-09-23 — Quick task 260923-cqe completed (document-driven past tenant end date)
 
 ## Operator Next Steps
 

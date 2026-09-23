@@ -311,9 +311,9 @@ describe('House Settings Modal Layout & UX (QCK-22)', () => {
 
   it('renders End Date • تاريخ الانتهاء table column header with question mark, tooltip explanation, and whitespace-nowrap in index.html', () => {
     expect(htmlContent).toContain('End Date • تاريخ الانتهاء');
-    expect(htmlContent).toContain('End date is decided by the user. If currently residing, check Present');
-    expect(htmlContent).toContain('تاريخ الانتهاء يحدده المستخدم. إذا كان يسكن حالياً، حدد (حالي)');
-    expect(htmlContent).toContain('title="End date is decided by the user. If currently residing, check Present • تاريخ الانتهاء يحدده المستخدم. إذا كان يسكن حالياً، حدد (حالي)"');
+    expect(htmlContent).toContain('End date is always selected as the last document. If currently residing, check Present');
+    expect(htmlContent).toContain('تاريخ الانتهاء يُحدّد دائماً من تاريخ آخر وثيقة. إذا كان يسكن حالياً، حدد (حالي)');
+    expect(htmlContent).toContain('title="End date is always selected as the last document. If currently residing, check Present • تاريخ الانتهاء يُحدّد دائماً من تاريخ آخر وثيقة. إذا كان يسكن حالياً، حدد (حالي)"');
 
     // Both Start Date and End Date headers contain whitespace-nowrap
     expect(htmlContent).toMatch(/sm:col-span-3 flex items-center gap-1 whitespace-nowrap[\s\S]*?Start Date • تاريخ البدء/);
@@ -333,10 +333,12 @@ describe('House Settings Modal Layout & UX (QCK-22)', () => {
     const endInput = row.querySelector('.tenant-end-input');
     const typeSelect = row.querySelector('.tenant-type-select');
 
+    const expectedResidentEndTitle = 'End date is always selected as the last document and is auto if there is no document • تاريخ الانتهاء يُحدّد دائماً من تاريخ آخر وثيقة، ويكون تلقائياً عند عدم وجود وثائق';
+
     // Uncheck present -> resident not present
     presentCheck.checked = false;
     presentCheck.dispatchEvent(new Event('change'));
-    expect(endInput.title).toBe('End date is decided by the user • تاريخ الانتهاء يحدده المستخدم');
+    expect(endInput.title).toBe(expectedResidentEndTitle);
 
     // Switch to applicant
     typeSelect.value = 'applicant';
@@ -346,7 +348,7 @@ describe('House Settings Modal Layout & UX (QCK-22)', () => {
     // Switch back to resident and not present
     typeSelect.value = 'resident';
     typeSelect.dispatchEvent(new Event('change'));
-    expect(endInput.title).toBe('End date is decided by the user • تاريخ الانتهاء يحدده المستخدم');
+    expect(endInput.title).toBe(expectedResidentEndTitle);
   });
 
   it('renders readonly auto input for new tenant row and sends null start_date on save', async () => {
@@ -516,5 +518,18 @@ describe('House Settings Modal Layout & UX (QCK-22)', () => {
         })
       })
     );
+  });
+
+  it('renders tenant-end-input as readonly input displaying document-driven date without manual user entry', () => {
+    const addBtn = document.getElementById('btn-add-tenant-row');
+    const rowsContainer = document.getElementById('tenant-modal-rows');
+
+    addBtn.click();
+    const row = rowsContainer.querySelector('.tenant-row');
+    const endInput = row.querySelector('.tenant-end-input');
+
+    expect(endInput.readOnly).toBe(true);
+    expect(endInput.tagName.toLowerCase()).toBe('input');
+    expect(endInput.getAttribute('type')).toBe('text');
   });
 });

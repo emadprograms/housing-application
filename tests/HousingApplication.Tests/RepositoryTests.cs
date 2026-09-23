@@ -2707,6 +2707,64 @@ public class RepositoryTests : IDisposable
     }
 
     [Fact]
+    public async Task PastTenant_WhenNewDocumentUploaded_EndDateAutomaticallyUpdatesToLatestDocumentDate()
+    {
+        // Arrange
+        const string areaId = "Safra C";
+        const string houseId = "601";
+        await _repo.AddAreaAsync(areaId, "SC");
+        await _repo.AddHouseAsync(houseId, areaId);
+
+        // Add 2 tenants: past tenant A (vacated) and active tenant B (present) with natural overlap
+        var pastTenant = await _repo.AddTenantAsync(houseId, "Past Tenant A", "2018-01-01", "2021-01-01", isResident: 1);
+        var activeTenant = await _repo.AddTenantAsync(houseId, "Active Tenant B", "2020-01-01", null, isResident: 1);
+
+        // Initial doc for past tenant in 2019
+        await _repo.AddManualDocumentAsync(new IngestRequestDto
+        {
+            AreaId = areaId,
+            HouseId = houseId,
+            TenantId = pastTenant.Id,
+            Category = "05 - عقود",
+            ArabicTitle = "عقد إيجار قديم",
+            PrimaryDate = "2019-06-01",
+            PageCount = 1
+        });
+
+        var tenantsBefore = await _repo.GetTenantsAsync(houseId);
+        var pBefore = tenantsBefore.First(t => t.Name == "Past Tenant A");
+        Assert.Equal("2019-06-01", pBefore.EndDate);
+
+        // Act: User uploads a later document for Past Tenant A (e.g. late clearance certificate dated 2021-08-20)
+        await _repo.AddManualDocumentAsync(new IngestRequestDto
+        {
+            AreaId = areaId,
+            HouseId = houseId,
+            TenantId = pastTenant.Id,
+            Category = "02 - بيانات شخصية",
+            ArabicTitle = "شهادة براءة ذمة متأخرة",
+            PrimaryDate = "2021-08-20",
+            PageCount = 1
+        });
+
+        // Assert: End date automatically updates to latest document date (2021-08-20) across all queries
+        var tenantsAfter = await _repo.GetTenantsAsync(houseId);
+        var pAfter = tenantsAfter.First(t => t.Name == "Past Tenant A");
+        Assert.Equal("2021-08-20", pAfter.EndDate);
+        Assert.Equal("2019-06-01", pAfter.StartDate);
+
+        var profile = await _repo.GetHouseProfileAsync(areaId, houseId);
+        var profilePast = profile!.Tenants.First(t => t.Name == "Past Tenant A");
+        Assert.Equal("2021-08-20", profilePast.EndDate);
+        Assert.Equal("2019-06-01", profilePast.StartDate);
+
+        var tree = await _repo.GetTreeAsync();
+        var houseNode = tree.First(a => a.Name == areaId).Children!.First(h => h.Id == houseId);
+        var treePast = houseNode.Children!.First(t => t.Name == "Past Tenant A");
+        Assert.Equal("2021-08-20", treePast.EndDate);
+    }
+
+    [Fact]
     public async Task BulkUpdateTenantsAsync_SaveApplicant_PersistsAsApplicantAndExcludesFromReallocation()
     {
         // Arrange

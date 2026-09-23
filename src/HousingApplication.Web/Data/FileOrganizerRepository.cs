@@ -198,7 +198,7 @@ public class FileOrganizerRepository : IFileOrganizerRepository
                     {
                         var latest = residentTenants[0];
                         var sStr = (!string.IsNullOrEmpty(latest.StartDate) && latest.StartDate.Length >= 4) ? latest.StartDate[..4] : "";
-                        var effectiveLatestEnd = !string.IsNullOrEmpty(latest.EndDate) ? latest.EndDate : latest.LastDocDate;
+                        var effectiveLatestEnd = !string.IsNullOrEmpty(latest.LastDocDate) ? latest.LastDocDate : latest.EndDate;
                         var eStr = (!string.IsNullOrEmpty(effectiveLatestEnd) && effectiveLatestEnd.Length >= 4) ? effectiveLatestEnd[..4] : "";
                         if (!string.IsNullOrEmpty(sStr) && !string.IsNullOrEmpty(eStr) && sStr != eStr)
                             houseSubtitle = $"{sStr} - {eStr}";
@@ -211,7 +211,7 @@ public class FileOrganizerRepository : IFileOrganizerRepository
                 foreach (var t in hTenants)
                 {
                     var isActive = (activeTenant != null && t.Id == activeTenant.Id);
-                    var effectiveEndDate = isActive ? t.EndDate : (!string.IsNullOrEmpty(t.EndDate) ? t.EndDate : (t.IsResident == 1 ? t.LastDocDate : null));
+                    var effectiveEndDate = isActive ? null : (t.IsResident == 1 ? (!string.IsNullOrEmpty(t.LastDocDate) ? t.LastDocDate : t.EndDate) : null);
 
                     var sM = Regex.Match(t.StartDate ?? "", @"(\d{4})");
                     var eM = Regex.Match(effectiveEndDate ?? "", @"(\d{4})");
@@ -429,7 +429,7 @@ public class FileOrganizerRepository : IFileOrganizerRepository
                 {
                     var latest = residentTenants[0];
                     var sStr = (!string.IsNullOrEmpty(latest.StartDate) && latest.StartDate.Length >= 4) ? latest.StartDate[..4] : "";
-                    var effectiveLatestEnd = !string.IsNullOrEmpty(latest.EndDate) ? latest.EndDate : latest.LastDocDate;
+                    var effectiveLatestEnd = !string.IsNullOrEmpty(latest.LastDocDate) ? latest.LastDocDate : latest.EndDate;
                     var eStr = (!string.IsNullOrEmpty(effectiveLatestEnd) && effectiveLatestEnd.Length >= 4) ? effectiveLatestEnd[..4] : "";
                     if (!string.IsNullOrEmpty(sStr) && !string.IsNullOrEmpty(eStr) && sStr != eStr)
                         subtitle = $"{sStr} - {eStr}";
@@ -586,7 +586,7 @@ public class FileOrganizerRepository : IFileOrganizerRepository
         foreach (var t in tenants)
         {
             var isActive = (activeTenant != null && t.Id == activeTenant.Id);
-            var effectiveEnd = isActive ? t.EndDate : (!string.IsNullOrEmpty(t.EndDate) ? t.EndDate : (t.IsResident == 1 ? t.LastDocDate : null));
+            var effectiveEnd = isActive ? null : (t.IsResident == 1 ? (!string.IsNullOrEmpty(t.LastDocDate) ? t.LastDocDate : t.EndDate) : null);
 
             var (years, durStr) = TextUtils.FormatArabicDuration(t.StartDate, effectiveEnd);
             var durCat = string.IsNullOrWhiteSpace(durStr) ? null : (years < 5 ? "short" : (years <= 10 ? "medium" : "long"));
@@ -857,9 +857,8 @@ public class FileOrganizerRepository : IFileOrganizerRepository
                 }
                 else
                 {
-                    // If an end date of the previous tenant is not mentioned in the settings and he isn't marked as present
-                    // then the date of his last document arrival is marked as the end date.
-                    var effectiveEnd = isExplicitPast ? t.EndDate : (!string.IsNullOrWhiteSpace(t.LastDocDate) ? t.LastDocDate : null);
+                    // Past resident: end date is always the latest document date
+                    var effectiveEnd = !string.IsNullOrWhiteSpace(t.LastDocDate) ? t.LastDocDate : (isExplicitPast ? t.EndDate : null);
                     finalTenants.Add(t with { IsPresent = false, EndDate = effectiveEnd, LastDocDate = t.LastDocDate });
                 }
             }
@@ -2248,17 +2247,11 @@ public class FileOrganizerRepository : IFileOrganizerRepository
             {
                 var t = tenants[i];
                 var sDate = !string.IsNullOrWhiteSpace(t.StartDate) ? (t.StartDate.Length >= 10 ? t.StartDate[..10] : t.StartDate) : null;
-                string? eDate = null;
-                if (!string.IsNullOrWhiteSpace(t.EndDate) && !t.EndDate.Equals("none", StringComparison.OrdinalIgnoreCase) && !t.EndDate.Equals("null", StringComparison.OrdinalIgnoreCase) && !t.EndDate.Equals("present", StringComparison.OrdinalIgnoreCase))
-                {
-                    eDate = t.EndDate.Length >= 10 ? t.EndDate[..10] : t.EndDate;
-                }
-
                 var isPresent = (i == presentTenantIndex);
-                if (t.IsResident == 1 && !isPresent && string.IsNullOrWhiteSpace(eDate))
+                string? eDate = null;
+                if (t.IsResident == 1 && !isPresent)
                 {
-                    // If an end date of the previous tenant is not mentioned in the settings and he isn't marked as present
-                    // then the date of his last document arrival is marked as the end date.
+                    // End date of the past tenant is always the date of their last document arrival
                     string? maxDocDate = null;
                     if (t.Id.HasValue)
                     {
@@ -2287,6 +2280,10 @@ public class FileOrganizerRepository : IFileOrganizerRepository
                     if (!string.IsNullOrWhiteSpace(maxDocDate))
                     {
                         eDate = maxDocDate.Length >= 10 ? maxDocDate[..10] : maxDocDate;
+                    }
+                    else if (!string.IsNullOrWhiteSpace(t.EndDate) && !t.EndDate.Equals("none", StringComparison.OrdinalIgnoreCase) && !t.EndDate.Equals("null", StringComparison.OrdinalIgnoreCase) && !t.EndDate.Equals("present", StringComparison.OrdinalIgnoreCase))
+                    {
+                        eDate = t.EndDate.Length >= 10 ? t.EndDate[..10] : t.EndDate;
                     }
                 }
 
