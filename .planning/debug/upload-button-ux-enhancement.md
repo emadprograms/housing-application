@@ -1,9 +1,17 @@
+---
+audit_acknowledged:
+  milestone: v17.0
+  at: 2026-09-23
+  status: unknown
+---
+
 # UX Enhancement: Upload Button Redesign & Drag-and-Drop Hint
 
 **Date:** 2026-09-10  
 **Context:** User feedback on Ingest action button terminology, placement, icon duplication, and hover responsiveness.
 
 ## User Feedback Addressed
+
 1. **Terminology:** Changed "Ingest" to **"Upload"** across the navbar trigger, dialog headers, progress indicators, and toast notifications.
 2. **Double-plus Bug:** Eliminated duplicate plus icon (previously rendered as `+ + Ingest` due to both SVG plus and literal `+` text). The button now renders a single crisp SVG plus icon alongside `Upload` and keyboard shortcut badge `⌘I`.
 3. **Navbar Placement & Visual Hierarchy:**
@@ -15,6 +23,7 @@
    - Styled with dashed borders and hover states; clicking the pill also opens the Upload dialog.
 
 ## Verification & Parity
+
 - **Vitest Frontend Tests:** 68 passing (100%).
 - **Playwright Browser Tests:** 8 passing (100%).
 - **Pytest Backend Tests:** 29 passing (100%).

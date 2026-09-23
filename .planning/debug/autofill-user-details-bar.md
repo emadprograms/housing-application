@@ -1,3 +1,10 @@
+---
+audit_acknowledged:
+  milestone: v17.0
+  at: 2026-09-23
+  status: unknown
+---
+
 # Debug Session: Autofill User Details Bar Background & Text Near White
 
 **Status:** resolved
@@ -8,6 +15,7 @@
 ---
 
 ## 1. Symptoms & Initial Observations
+
 - **Symptom:** When a user autofills login credentials (username and password) via the browser (Chrome, Edge, Safari, Firefox), the input fields' background turns near-white (light blue/yellow default autofill hue) and the text is near-white too.
 - **Expected Behavior:** When credentials are autofilled, the input fields should maintain a dark, high-contrast theme (`#0f172a` / `#131b2e`) with clear, crisp white text (`#ffffff`), matching the dark open login home page design.
 - **Reproduction:** Use browser password manager / autocomplete to autofill `#login-username` and `#login-password`.
@@ -15,6 +23,7 @@
 ---
 
 ## 2. Root Cause Analysis
+
 1. **Browser Default Autofill Styling (`:-webkit-autofill`):**
    - Chromium and WebKit browsers apply internal user-agent styles to inputs matching `:-webkit-autofill`:
      - They inject an inset box shadow (e.g. `box-shadow: 0 0 0 1000px #e8f0fe inset` or light yellow/white).
@@ -30,6 +39,7 @@
 ---
 
 ## 3. Resolution Plan
+
 1. **Add Dark Mode Autofill Styles to `styles.css`:**
    - Target `#login-screen input:-webkit-autofill`, `#login-screen input:-webkit-autofill:hover`, `#login-screen input:-webkit-autofill:focus`, `#login-screen input:-webkit-autofill:active`:
      - `-webkit-box-shadow: 0 0 0 1000px #0f172a inset !important;`
@@ -55,6 +65,7 @@
 ---
 
 ## 4. Resolution & Verification
+
 - **Status:** resolved
 - **Verification:**
   - Browser autofill pseudo-classes (`:-webkit-autofill`, `:-moz-autofill`) now enforce an inset shadow of `#0f172a` (dark slate) and `-webkit-text-fill-color: #ffffff !important;`.

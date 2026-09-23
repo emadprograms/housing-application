@@ -1,5 +1,15 @@
 # Milestones History
 
+## v17.0 User Authentication, Roles & Permissions (Shipped: 2026-09-23)
+
+**Phases completed:** 4 phases, 4 plans, 0 tasks
+
+**Key accomplishments:**
+
+- (none recorded)
+
+---
+
 ## v17.0 User Authentication, Roles & Permissions (Shipped: 2026-09-17)
 
 **Phases completed:** 4 phases (116-119), 4 plans, 970 .NET xUnit tests (100% passing), 570 Vitest tests across 42 test files (100% passing)
@@ -112,7 +122,6 @@
   - Completed milestone audit with 17/17 requirements validated.
 
 ---
-
 
 ## v14.0 Power-User Operations & Portfolio Expansion (Shipped: 2026-09-12)
 

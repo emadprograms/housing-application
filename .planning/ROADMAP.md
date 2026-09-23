@@ -120,7 +120,7 @@ See [.planning/milestones/v11.0-ROADMAP.md](milestones/v11.0-ROADMAP.md) for ful
 | 113. End-to-End Test Suite Verification & Milestone Audit | v15.0 | 1/1 | Complete | 2026-09-13 |
 | 114. Settings Modal Simplification & Applicant Clean-Up | v16.0 | 1/1 | Complete | 2026-09-13 |
 | 115. Document-Anchored Tenancy Dates & Minimalist Register | v16.1 | 1/1 | Complete | 2026-09-14 |
-| 116. User Data Model, Password Security & Auth API | v17.0 | 0/1 | Not Started | — |
-| 117. Login Screen, Session Management & Navbar User Profile | v17.0 | 0/1 | Not Started | — |
-| 118. Permission-Aware UI Enforcement & Zero-Delete Guards | v17.0 | 0/1 | Not Started | — |
-| 119. Comprehensive Multi-Stack Verification & Milestone Audit | v17.0 | 0/1 | Not Started | — |
+| 116. User Data Model, Password Security & Auth API | v17.0 | 1/1 | Complete | 2026-09-17 |
+| 117. Login Screen, Session Management & Navbar User Profile | v17.0 | 1/1 | Complete | 2026-09-17 |
+| 118. Permission-Aware UI Enforcement & Zero-Delete Guards | v17.0 | 1/1 | Complete | 2026-09-17 |
+| 119. Comprehensive Multi-Stack Verification & Milestone Audit | v17.0 | 1/1 | Complete | 2026-09-17 |

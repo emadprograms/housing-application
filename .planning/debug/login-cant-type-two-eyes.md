@@ -1,3 +1,10 @@
+---
+audit_acknowledged:
+  milestone: v17.0
+  at: 2026-09-23
+  status: unknown
+---
+
 # Debug Session: Login Inputs Invisible Text & Duplicate Password Eye
 
 **Status:** fixing
@@ -8,12 +15,14 @@
 ---
 
 ## 1. Symptoms & Initial Observations
+
 - **Symptom 1:** User cannot see anything being typed into `#login-username` or `#login-password`. Keys are pressed, but the fields appear unresponsive or blank.
 - **Symptom 2:** The password field displays two eye icons simultaneously.
 
 ---
 
 ## 2. Root Cause Analysis
+
 1. **Invisible Text (White on White):**
    - In `styles.css` (line 146):
      ```css
@@ -33,6 +42,7 @@
 ---
 
 ## 3. Resolution Plan
+
 1. **Explicit Login Input Styling in `styles.css`:**
    - Defined dedicated rules for `#login-screen input[type="text"]` and `#login-screen input[type="password"]` with:
      - `background-color: rgba(255, 255, 255, 0.08) !important;`
@@ -50,9 +60,9 @@
 ---
 
 ## 4. Resolution & Verification
+
 - **Status:** resolved
 - **Verification:**
   - In light mode, `#login-screen` inputs now retain their dark translucent background (`rgba(255, 255, 255, 0.08)`) with crystal clear white text (`#ffffff`) and bright cyan cursor (`#38bdf8`), resolving the white-on-white invisible text issue.
   - In Microsoft Edge, `::-ms-reveal` is hidden via CSS, leaving only the custom SVG eye button for password visibility toggling.
   - All 12 tests in `auth_manager.test.js` passed.
-
