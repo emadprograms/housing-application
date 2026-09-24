@@ -31,8 +31,8 @@ Requirements for Milestone v18.1: UI & Localization Consistency Polish.
 
 ### Automated Verification & Regression Guard (TEST)
 
-- [ ] **TEST-01**: Automated unit and component tests verify that Move/Copy modal folder names, tab labels, tenant suffixes, and navbar stats dynamically re-render on language toggle in both Arabic and English modes.
-- [ ] **TEST-02**: Full test suite remains 100% green with zero regressions across all frontend and backend tests, with 1:1 distribution synchronization between `src/` and `dist/`.
+- [x] **TEST-01**: Automated unit and component tests verify that Move/Copy modal folder names, tab labels, tenant suffixes, and navbar stats dynamically re-render on language toggle in both Arabic and English modes.
+- [x] **TEST-02**: Full test suite remains 100% green with zero regressions across all frontend and backend tests, with 1:1 distribution synchronization between `src/` and `dist/`.
 
 ## v2 Requirements
 
@@ -57,5 +57,5 @@ Deferred to future releases.
 | TSEL-02 | Phase 127 | Complete |
 | EDGE-01 | Phase 127 | Complete |
 | EDGE-02 | Phase 127 | Complete |
-| TEST-01 | Phase 128 | Pending |
-| TEST-02 | Phase 128 | Pending |
+| TEST-01 | Phase 128 | Complete |
+| TEST-02 | Phase 128 | Complete |

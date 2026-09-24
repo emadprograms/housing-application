@@ -3121,6 +3121,7 @@
         window.getBatchTenantFromHash = getBatchTenantFromHash;
         window.getBatchResolvedTenant = getBatchResolvedTenant;
         window.formatBatchTenantLabel = formatBatchTenantLabel;
+        window.formatCategoriesStatsBadge = formatCategoriesStatsBadge;
         window.getBatchSelectedDocsInfo = getBatchSelectedDocsInfo;
         window.isCategoryMatch = isCategoryMatch;
         window.normalizeCategoryName = normalizeCategoryName;
@@ -3174,6 +3175,7 @@
             getBatchTenantFromHash,
             getBatchResolvedTenant,
             formatBatchTenantLabel,
+            formatCategoriesStatsBadge,
             getBatchSelectedDocsInfo,
             openBatchMoveModal,
             closeBatchMoveModal,
