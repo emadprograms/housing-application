@@ -71,6 +71,14 @@
             'sidebar.db_inspector': 'فاحص قاعدة البيانات',
             'sidebar.areas': 'الأحياء السكنية',
 
+            // Navigation & Tabs
+            'tabs.tenants': 'سجل المستأجرين',
+            'tabs.folders': 'المجلدات',
+            'tabs.house_timeline': 'التسلسل الزمني للمنزل',
+            'tabs.tenant_timeline': 'التسلسل الزمني للمستأجر',
+            'tabs.back_to_tenants_title': 'الرجوع إلى سجل المستأجرين',
+            'tabs.back_to_houses': 'منازل {area}',
+
             // Login
             'login.title': 'تسجيل الدخول',
             'login.subtitle': 'نظام إدارة الوثائق السكنية',
@@ -540,6 +548,14 @@
             'sidebar.title': 'Navigation',
             'sidebar.db_inspector': 'Database Inspector',
             'sidebar.areas': 'Residential Areas',
+
+            // Navigation & Tabs
+            'tabs.tenants': 'Tenants',
+            'tabs.folders': 'Folders',
+            'tabs.house_timeline': 'House Timeline',
+            'tabs.tenant_timeline': 'Tenant Timeline',
+            'tabs.back_to_tenants_title': 'Back to Tenant Register',
+            'tabs.back_to_houses': '{area} Houses',
 
             // Login
             'login.title': 'Sign In',

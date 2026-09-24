@@ -196,6 +196,64 @@
         });
     }
 
+    function updateNavTabLabels(tenantName) {
+        if (typeof tenantName === 'undefined') {
+            tenantName = (typeof currentTenant !== 'undefined' && currentTenant) ? currentTenant : (typeof window !== 'undefined' ? window.currentTenant : null);
+        }
+
+        const tabCategoriesLabel = document.getElementById('tab-categories-label');
+        const tabTimelineLabel = document.getElementById('tab-timeline-label');
+        const tabBackToTenants = document.getElementById('tab-back-to-tenants');
+        const backToGridBtn = document.getElementById('back-to-grid-btn');
+
+        const hasI18n = typeof window !== 'undefined' && window.i18n && typeof window.i18n.t === 'function';
+
+        let catText, timelineText;
+        if (hasI18n) {
+            const isAr = window.i18n.getCurrentLanguage() === 'ar';
+            if (tenantName) {
+                catText = window.i18n.t('tabs.folders', isAr ? 'المجلدات' : 'Folders');
+                timelineText = window.i18n.t('tabs.tenant_timeline', isAr ? 'التسلسل الزمني للمستأجر' : 'Tenant Timeline');
+            } else {
+                catText = window.i18n.t('tabs.tenants', isAr ? 'سجل المستأجرين' : 'Tenants');
+                timelineText = window.i18n.t('tabs.house_timeline', isAr ? 'التسلسل الزمني للمنزل' : 'House Timeline');
+            }
+        } else {
+            // Unlocalized fallback preserves exact legacy expectations when running tests without i18n
+            catText = tenantName ? 'Folders' : 'سجل المستأجرين';
+            timelineText = tenantName ? 'Tenant Timeline' : 'House Timeline';
+        }
+
+        if (tabCategoriesLabel) {
+            tabCategoriesLabel.textContent = catText;
+            tabCategoriesLabel.title = catText;
+        }
+
+        if (tabTimelineLabel) {
+            tabTimelineLabel.textContent = timelineText;
+            tabTimelineLabel.title = timelineText;
+        }
+
+        if (tabBackToTenants) {
+            const backTitle = hasI18n
+                ? window.i18n.t('tabs.back_to_tenants_title', window.i18n.getCurrentLanguage() === 'ar' ? 'الرجوع إلى سجل المستأجرين' : 'Back to Tenant Register')
+                : 'Back to Tenant Register';
+            tabBackToTenants.title = backTitle;
+        }
+
+        if (backToGridBtn) {
+            const area = (typeof currentArea !== 'undefined' && currentArea) ? currentArea : (typeof window !== 'undefined' ? window.currentArea : '');
+            if (area) {
+                const isAr = hasI18n && window.i18n.getCurrentLanguage() === 'ar';
+                const gridLabel = isAr ? `منازل ${area}` : `${area} Houses`;
+                const labelSpan = backToGridBtn.querySelector('span');
+                if (labelSpan) {
+                    labelSpan.textContent = gridLabel;
+                }
+            }
+        }
+    }
+
     async function selectHouse(areaId, houseId, tenantName) {
         currentArea = areaId;
         currentHouse = houseId;
@@ -205,8 +263,6 @@
         window.currentTenant = tenantName;
 
         const currentHouseTitle = document.getElementById('current-house-title');
-        const tabCategoriesLabel = document.getElementById('tab-categories-label');
-        const tabTimelineLabel = document.getElementById('tab-timeline-label');
         const areaGridPanel = document.getElementById('area-grid-panel');
         const tabBackToTenants = document.getElementById('tab-back-to-tenants');
         const backToGridBtn = document.getElementById('back-to-grid-btn');
@@ -229,11 +285,8 @@
             }
         }
 
-        if (tabCategoriesLabel) {
-            const catText = tenantName ? 'Folders' : 'سجل المستأجرين';
-            tabCategoriesLabel.textContent = catText;
-            tabCategoriesLabel.title = catText;
-        }
+        updateNavTabLabels(tenantName);
+
         const tabCategoriesIcon = document.getElementById('tab-categories-icon') || document.querySelector('#tab-categories svg');
         if (tabCategoriesIcon) {
             if (tenantName) {
@@ -241,11 +294,6 @@
             } else {
                 tabCategoriesIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>';
             }
-        }
-        if (tabTimelineLabel) {
-            const timelineText = tenantName ? 'Tenant Timeline' : 'House Timeline';
-            tabTimelineLabel.textContent = timelineText;
-            tabTimelineLabel.title = timelineText;
         }
 
         if (areaGridPanel) {
@@ -296,7 +344,9 @@
         if (backToGridBtn) {
             backToGridBtn.classList.remove('hidden');
             backToGridBtn.classList.add('flex');
-            const gridLabel = `${areaId} Houses`;
+            const hasI18n = typeof window !== 'undefined' && window.i18n && typeof window.i18n.t === 'function';
+            const isAr = hasI18n && window.i18n.getCurrentLanguage() === 'ar';
+            const gridLabel = isAr ? `منازل ${areaId}` : `${areaId} Houses`;
             backToGridBtn.innerHTML = `
                 <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                 <span>${gridLabel}</span>
@@ -377,12 +427,35 @@
 
     window.addEventListener('hashchange', handleHashChange);
 
+    if (typeof window !== 'undefined') {
+        window.addEventListener('languageChanged', function() {
+            updateNavTabLabels();
+            const viewMode = (typeof currentViewMode !== 'undefined' ? currentViewMode : (typeof window !== 'undefined' ? window.currentViewMode : ''));
+            if (viewMode === 'db') {
+                const sidebarSectionTitle = document.getElementById('sidebar-section-title');
+                const currentHouseTitle = document.getElementById('current-house-title');
+                const hasI18n = window.i18n && typeof window.i18n.t === 'function';
+                if (hasI18n) {
+                    if (sidebarSectionTitle) sidebarSectionTitle.textContent = window.i18n.t('sidebar.db_inspector', 'Database');
+                    if (currentHouseTitle) currentHouseTitle.textContent = window.i18n.t('sidebar.db_inspector', 'Database Inspector');
+                }
+            } else if (viewMode === 'overview') {
+                const sidebarSectionTitle = document.getElementById('sidebar-section-title');
+                const hasI18n = window.i18n && typeof window.i18n.t === 'function';
+                if (hasI18n && sidebarSectionTitle) {
+                    sidebarSectionTitle.textContent = window.i18n.t('sidebar.areas', 'Areas');
+                }
+            }
+        });
+    }
+
     window.switchMainTab = switchMainTab;
     window.switchToViewMode = switchToViewMode;
     window.handleHashChange = handleHashChange;
     window.selectHouse = selectHouse;
     window.refreshCurrentTab = refreshCurrentTab;
     window.safeDecodeURIComponent = safeDecodeURIComponent;
+    window.updateNavTabLabels = updateNavTabLabels;
 
     if (typeof module !== 'undefined' && module.exports) {
         module.exports = {
@@ -391,7 +464,8 @@
             handleHashChange,
             selectHouse,
             refreshCurrentTab,
-            safeDecodeURIComponent
+            safeDecodeURIComponent,
+            updateNavTabLabels
         };
     }
 })();

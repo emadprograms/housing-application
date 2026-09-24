@@ -15,9 +15,9 @@ Requirements for Milestone v18.1: UI & Localization Consistency Polish.
 
 ### House Profile Tabs & Navigation Localization (TAB)
 
-- [ ] **TAB-01**: In house view, the first segmented tab dynamically displays pure localized text (`Tenants` / `سجل المستأجرين`) and the adjacent timeline tab displays pure localized text (`House Timeline` / `التسلسل الزمني للمنزل`), eliminating side-by-side language intermixing.
-- [ ] **TAB-02**: In tenant drill-down view, the segmented tabs dynamically display pure localized text (`Folders` / `المجلدات` and `Tenant Timeline` / `التسلسل الزمني للمستأجر`).
-- [ ] **TAB-03**: Router navigation subscribes to the `languageChanged` event so tab titles, tooltips, and header breadcrumbs immediately re-render in the active language when toggled while viewing a house or tenant without requiring a page reload.
+- [x] **TAB-01**: In house view, the first segmented tab dynamically displays pure localized text (`Tenants` / `سجل المستأجرين`) and the adjacent timeline tab displays pure localized text (`House Timeline` / `التسلسل الزمني للمنزل`), eliminating side-by-side language intermixing.
+- [x] **TAB-02**: In tenant drill-down view, the segmented tabs dynamically display pure localized text (`Folders` / `المجلدات` and `Tenant Timeline` / `التسلسل الزمني للمستأجر`).
+- [x] **TAB-03**: Router navigation subscribes to the `languageChanged` event so tab titles, tooltips, and header breadcrumbs immediately re-render in the active language when toggled while viewing a house or tenant without requiring a page reload.
 
 ### Tenant Selectors & Header Stats Polish (TSEL)
 
@@ -50,9 +50,9 @@ Deferred to future releases.
 | MOVE-01 | Phase 125 | Complete |
 | MOVE-02 | Phase 125 | Complete |
 | MOVE-03 | Phase 125 | Complete |
-| TAB-01 | Phase 126 | Pending |
-| TAB-02 | Phase 126 | Pending |
-| TAB-03 | Phase 126 | Pending |
+| TAB-01 | Phase 126 | Complete |
+| TAB-02 | Phase 126 | Complete |
+| TAB-03 | Phase 126 | Complete |
 | TSEL-01 | Phase 127 | Pending |
 | TSEL-02 | Phase 127 | Pending |
 | EDGE-01 | Phase 127 | Pending |

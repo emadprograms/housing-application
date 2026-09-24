@@ -140,4 +140,53 @@ describe('Segmented Tabs Emojiless Labels & Dynamic SVG Iconography', () => {
     expect(css).toMatch(/#tab-categories-label,\s*#tab-timeline-label\s*\{[^}]*text-overflow:\s*ellipsis/);
     expect(css).toMatch(/#tab-categories-label,\s*#tab-timeline-label\s*\{[^}]*white-space:\s*nowrap/);
   });
+
+  it('dynamically localizes tab labels in Arabic and English when window.i18n is active', async () => {
+    let currentLang = 'ar';
+    const mockDict = {
+      ar: {
+        'tabs.tenants': 'سجل المستأجرين',
+        'tabs.folders': 'المجلدات',
+        'tabs.house_timeline': 'التسلسل الزمني للمنزل',
+        'tabs.tenant_timeline': 'التسلسل الزمني للمستأجر',
+        'tabs.back_to_tenants_title': 'الرجوع إلى سجل المستأجرين',
+      },
+      en: {
+        'tabs.tenants': 'Tenants',
+        'tabs.folders': 'Folders',
+        'tabs.house_timeline': 'House Timeline',
+        'tabs.tenant_timeline': 'Tenant Timeline',
+        'tabs.back_to_tenants_title': 'Back to Tenant Register',
+      }
+    };
+
+    window.i18n = {
+      getCurrentLanguage: () => currentLang,
+      t: (key, fallback) => (mockDict[currentLang] && mockDict[currentLang][key]) || fallback
+    };
+
+    // 1. House mode in Arabic
+    currentLang = 'ar';
+    await window.selectHouse('Safra C', '500', null);
+    expect(document.getElementById('tab-categories-label').textContent).toBe('سجل المستأجرين');
+    expect(document.getElementById('tab-timeline-label').textContent).toBe('التسلسل الزمني للمنزل');
+
+    // 2. Tenant mode in Arabic
+    await window.selectHouse('Safra C', '500', 'علي الحداد');
+    expect(document.getElementById('tab-categories-label').textContent).toBe('المجلدات');
+    expect(document.getElementById('tab-timeline-label').textContent).toBe('التسلسل الزمني للمستأجر');
+
+    // 3. Switch to English dynamically via languageChanged event
+    currentLang = 'en';
+    window.dispatchEvent(new Event('languageChanged'));
+    expect(document.getElementById('tab-categories-label').textContent).toBe('Folders');
+    expect(document.getElementById('tab-timeline-label').textContent).toBe('Tenant Timeline');
+
+    // 4. House mode in English
+    await window.selectHouse('Safra C', '500', null);
+    expect(document.getElementById('tab-categories-label').textContent).toBe('Tenants');
+    expect(document.getElementById('tab-timeline-label').textContent).toBe('House Timeline');
+
+    delete window.i18n;
+  });
 });
