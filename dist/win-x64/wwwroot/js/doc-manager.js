@@ -803,14 +803,15 @@
     function setDocModalMode(mode) {
         activeDocModalMode = mode;
         if (!btnModeMove || !btnModeCopy) return;
+        const i18n = (typeof window !== 'undefined' && window.i18n) ? window.i18n : null;
         if (mode === 'move') {
             btnModeMove.className = 'px-2.5 py-0.5 rounded-md font-semibold bg-white text-blue-600 shadow-2xs';
             btnModeCopy.className = 'px-2.5 py-0.5 rounded-md font-semibold text-slate-600 hover:text-slate-900';
-            docModalSubmitText.textContent = '💾 Apply Changes';
+            docModalSubmitText.textContent = i18n ? i18n.t('doc_action.apply_changes') : '💾 Apply Changes';
         } else {
             btnModeCopy.className = 'px-2.5 py-0.5 rounded-md font-semibold bg-white text-blue-600 shadow-2xs';
             btnModeMove.className = 'px-2.5 py-0.5 rounded-md font-semibold text-slate-600 hover:text-slate-900';
-            docModalSubmitText.textContent = '📄 Duplicate Document';
+            docModalSubmitText.textContent = i18n ? i18n.t('doc_action.duplicate_doc') : '📄 Duplicate Document';
         }
     }
 
@@ -834,11 +835,12 @@
         }
 
         const sorted = Array.from(existingFolderNames).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+        const i18n = (typeof window !== 'undefined' && window.i18n) ? window.i18n : null;
 
         sorted.forEach(f => {
             const opt = document.createElement('option');
             opt.value = f;
-            opt.textContent = f;
+            opt.textContent = i18n ? i18n.localizeCategory(f) : f;
             if (selectedCategory && (f === selectedCategory || f.includes(selectedCategory) || selectedCategory.includes(f))) {
                 opt.selected = true;
             }
@@ -847,7 +849,7 @@
 
         const newOpt = document.createElement('option');
         newOpt.value = '__NEW_CUSTOM_FOLDER__';
-        newOpt.textContent = '➕ Create new folder...';
+        newOpt.textContent = i18n ? i18n.t('batch.create_new_folder') : '➕ Create new folder...';
         docModalFolderSelect.appendChild(newOpt);
 
         docModalFolderSelect.onchange = () => {

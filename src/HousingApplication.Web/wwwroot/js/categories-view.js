@@ -851,12 +851,15 @@
 
         populateBatchTenantSelect('batch-move-tenant-select');
 
+        const i18n = (typeof window !== 'undefined' && window.i18n) ? window.i18n : null;
+
         if (subtitle) {
             if (singleTargetDoc) {
                 const docName = singleTargetDoc.file_name || singleTargetDoc.filename || singleTargetDoc.name || singleTargetDoc.brief_arabic_title || 'document';
-                subtitle.textContent = `Move "${docName}" to a target category folder.`;
+                subtitle.textContent = i18n ? i18n.t('batch.move_single_subtitle', { name: docName }) : `Move "${docName}" to a target category folder.`;
             } else {
-                subtitle.textContent = `Move ${selectedDocIds.size} ${selectedDocIds.size === 1 ? 'document' : 'documents'} to a target category folder.`;
+                const count = selectedDocIds.size;
+                subtitle.textContent = i18n ? i18n.t('batch.move_multiple_subtitle', { count }) : `Move ${count} ${count === 1 ? 'document' : 'documents'} to a target category folder.`;
             }
         }
 
@@ -865,12 +868,12 @@
 
         select.innerHTML = '';
         const stdOptGroup = document.createElement('optgroup');
-        stdOptGroup.label = 'Standard Folders';
+        stdOptGroup.label = i18n ? i18n.t('batch.standard_folders') : 'Standard Folders';
         for (const [folderName, prefix] of Object.entries(FOLDER_PREFIXES)) {
             const opt = document.createElement('option');
             const formatted = `${prefix} - ${folderName}`;
             opt.value = formatted;
-            opt.textContent = formatted;
+            opt.textContent = i18n ? i18n.localizeCategory(formatted) : formatted;
             stdOptGroup.appendChild(opt);
         }
         select.appendChild(stdOptGroup);
@@ -886,7 +889,7 @@
         }
         if (customFolders.size > 0) {
             const custGroup = document.createElement('optgroup');
-            custGroup.label = 'Custom Folders';
+            custGroup.label = i18n ? i18n.t('batch.custom_folders') : 'Custom Folders';
             Array.from(customFolders).sort().forEach(cf => {
                 const opt = document.createElement('option');
                 opt.value = cf;
@@ -898,7 +901,7 @@
 
         const newOpt = document.createElement('option');
         newOpt.value = '__custom__';
-        newOpt.textContent = '+ Create New Folder...';
+        newOpt.textContent = i18n ? i18n.t('batch.create_new_folder') : '+ Create New Folder...';
         select.appendChild(newOpt);
 
         select.onchange = () => {
@@ -1000,7 +1003,8 @@
         }
         if (!targetCat) {
             const toast = (typeof showToast === 'function') ? showToast : (typeof window !== 'undefined' ? window.showToast : null);
-            if (toast) toast('Please select or specify a target category folder.', 'error');
+            const errMsg = (window.i18n) ? window.i18n.t('batch.select_target_folder_error') : 'Please select or specify a target category folder.';
+            if (toast) toast(errMsg, 'error');
             return;
         }
 
@@ -1048,9 +1052,16 @@
 
             const toast = (typeof showToast === 'function') ? showToast : (typeof window !== 'undefined' ? window.showToast : null);
             if (toast) {
-                const msg = isSingle 
-                    ? `Successfully moved document to "${data.target_category || targetCat}"`
-                    : `Successfully moved ${movedCount} documents to "${data.target_category || targetCat}"`;
+                const i18n = (typeof window !== 'undefined' && window.i18n) ? window.i18n : null;
+                const rawCat = data.target_category || targetCat;
+                const localizedCat = i18n ? i18n.localizeCategory(rawCat) : rawCat;
+                const msg = i18n
+                    ? (isSingle 
+                        ? i18n.t('batch.move_success_single', { category: localizedCat })
+                        : i18n.t('batch.move_success_multiple', { count: movedCount, category: localizedCat }))
+                    : (isSingle 
+                        ? `Successfully moved document to "${localizedCat}"`
+                        : `Successfully moved ${movedCount} documents to "${localizedCat}"`);
                 toast(msg, 'success');
             }
 
@@ -1109,12 +1120,15 @@
 
         populateBatchTenantSelect('batch-copy-tenant-select');
 
+        const i18n = (typeof window !== 'undefined' && window.i18n) ? window.i18n : null;
+
         if (subtitle) {
             if (singleTargetDoc) {
                 const docName = singleTargetDoc.file_name || singleTargetDoc.filename || singleTargetDoc.name || singleTargetDoc.brief_arabic_title || 'document';
-                subtitle.textContent = `Copy "${docName}" to a target category folder.`;
+                subtitle.textContent = i18n ? i18n.t('batch.copy_single_subtitle', { name: docName }) : `Copy "${docName}" to a target category folder.`;
             } else {
-                subtitle.textContent = `Copy ${selectedDocIds.size} ${selectedDocIds.size === 1 ? 'document' : 'documents'} to a target category folder.`;
+                const count = selectedDocIds.size;
+                subtitle.textContent = i18n ? i18n.t('batch.copy_multiple_subtitle', { count }) : `Copy ${count} ${count === 1 ? 'document' : 'documents'} to a target category folder.`;
             }
         }
 
@@ -1123,12 +1137,12 @@
 
         select.innerHTML = '';
         const stdOptGroup = document.createElement('optgroup');
-        stdOptGroup.label = 'Standard Folders';
+        stdOptGroup.label = i18n ? i18n.t('batch.standard_folders') : 'Standard Folders';
         for (const [folderName, prefix] of Object.entries(FOLDER_PREFIXES)) {
             const opt = document.createElement('option');
             const formatted = `${prefix} - ${folderName}`;
             opt.value = formatted;
-            opt.textContent = formatted;
+            opt.textContent = i18n ? i18n.localizeCategory(formatted) : formatted;
             stdOptGroup.appendChild(opt);
         }
         select.appendChild(stdOptGroup);
@@ -1144,7 +1158,7 @@
         }
         if (customFolders.size > 0) {
             const custGroup = document.createElement('optgroup');
-            custGroup.label = 'Custom Folders';
+            custGroup.label = i18n ? i18n.t('batch.custom_folders') : 'Custom Folders';
             Array.from(customFolders).sort().forEach(cf => {
                 const opt = document.createElement('option');
                 opt.value = cf;
@@ -1156,7 +1170,7 @@
 
         const newOpt = document.createElement('option');
         newOpt.value = '__custom__';
-        newOpt.textContent = '+ Create New Folder...';
+        newOpt.textContent = i18n ? i18n.t('batch.create_new_folder') : '+ Create New Folder...';
         select.appendChild(newOpt);
 
         select.onchange = () => {
@@ -1197,7 +1211,8 @@
         }
         if (!targetCat) {
             const toast = (typeof showToast === 'function') ? showToast : (typeof window !== 'undefined' ? window.showToast : null);
-            if (toast) toast('Please select or specify a target category folder.', 'error');
+            const errMsg = (window.i18n) ? window.i18n.t('batch.select_target_folder_error') : 'Please select or specify a target category folder.';
+            if (toast) toast(errMsg, 'error');
             return;
         }
 
@@ -1241,7 +1256,14 @@
 
             const toast = (typeof showToast === 'function') ? showToast : (typeof window !== 'undefined' ? window.showToast : null);
             if (toast) {
-                const msg = isSingle ? 'تم نسخ الوثيقة بنجاح' : 'تم نسخ الوثائق المحددة بنجاح';
+                const isEn = (typeof window !== 'undefined' && window.i18n) ? window.i18n.getLanguage() === 'en' : false;
+                const rawCat = data.target_category || targetCat;
+                const localizedCat = (window.i18n && isEn) ? window.i18n.localizeCategory(rawCat) : rawCat;
+                const msg = isEn
+                    ? (isSingle
+                        ? `Successfully copied document to "${localizedCat}"`
+                        : `Successfully copied ${targetVaultIds.length} documents to "${localizedCat}"`)
+                    : (isSingle ? 'تم نسخ الوثيقة بنجاح' : 'تم نسخ الوثائق المحددة بنجاح');
                 toast(msg, 'success');
             }
 

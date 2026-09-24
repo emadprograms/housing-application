@@ -9,9 +9,9 @@ Requirements for Milestone v18.1: UI & Localization Consistency Polish.
 
 ### Move & Copy Modals Localization (MOVE)
 
-- [ ] **MOVE-01**: User opening Move Document modal (single or batch) sees standard category folder options translated according to the active language (e.g. `05 - Contracts` in English vs `05 - عقود` in Arabic) while preserving underlying category mapping and compatibility.
-- [ ] **MOVE-02**: User opening Copy Document modal (single or batch) sees standard category folder options translated according to the active language.
-- [ ] **MOVE-03**: Move and Copy modal optgroup labels (`Standard Folders`, `Custom Folders`), action options (`+ Create New Folder...`), and modal subtitles dynamically render in the active language without hardcoded English or Arabic strings.
+- [x] **MOVE-01**: User opening Move Document modal (single or batch) sees standard category folder options translated according to the active language (e.g. `05 - Contracts` in English vs `05 - عقود` in Arabic) while preserving underlying category mapping and compatibility.
+- [x] **MOVE-02**: User opening Copy Document modal (single or batch) sees standard category folder options translated according to the active language.
+- [x] **MOVE-03**: Move and Copy modal optgroup labels (`Standard Folders`, `Custom Folders`), action options (`+ Create New Folder...`), and modal subtitles dynamically render in the active language without hardcoded English or Arabic strings.
 
 ### House Profile Tabs & Navigation Localization (TAB)
 
@@ -47,9 +47,9 @@ Deferred to future releases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MOVE-01 | Phase 125 | Pending |
-| MOVE-02 | Phase 125 | Pending |
-| MOVE-03 | Phase 125 | Pending |
+| MOVE-01 | Phase 125 | Complete |
+| MOVE-02 | Phase 125 | Complete |
+| MOVE-03 | Phase 125 | Complete |
 | TAB-01 | Phase 126 | Pending |
 | TAB-02 | Phase 126 | Pending |
 | TAB-03 | Phase 126 | Pending |
