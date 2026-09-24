@@ -219,13 +219,13 @@
         row.dataset.lastDocDate = lastDocArrival || '';
 
         const tApi = (typeof window !== 'undefined' && window.i18n) ? window.i18n : null;
-        const residentStartTitle = tApi ? tApi.t('house_settings.start_date_tooltip') : 'Start date is set from first document, or auto if none';
-        const applicantStartTitle = tApi ? tApi.t('house_settings.app_order_date') : 'Application / Order Date';
-        const residentEndTitle = tApi ? tApi.t('house_settings.end_date_tooltip') : 'End date is set from last document, or auto if none';
-        const applicantEndTitle = tApi ? tApi.t('house_settings.did_not_reside') : 'N/A (Did not reside)';
+        const residentStartTitle = tApi ? tApi.t('house_settings.start_date_tooltip') : 'Start date is always selected as the first document and is auto if there is no document • تاريخ البدء يُحدّد دائماً من تاريخ أول وثيقة، ويكون تلقائياً عند عدم وجود وثائق';
+        const applicantStartTitle = tApi ? tApi.t('house_settings.app_order_date') : 'Application / Order Date • تاريخ الطلب/التخصيص';
+        const residentEndTitle = tApi ? tApi.t('house_settings.end_date_tooltip') : 'End date is always selected as the last document and is auto if there is no document • تاريخ الانتهاء يُحدّد دائماً من تاريخ آخر وثيقة، ويكون تلقائياً عند عدم وجود وثائق';
+        const applicantEndTitle = tApi ? tApi.t('house_settings.did_not_reside') : 'N/A (لم يسكن)';
 
-        const autoFirstText = tApi ? tApi.t('house_settings.auto_first_upload') : 'Auto (on first upload)';
-        const autoUploadText = tApi ? tApi.t('house_settings.auto_on_upload') : 'Auto (on upload)';
+        const autoFirstText = tApi ? tApi.t('house_settings.auto_first_upload') : 'تلقائي (عند أول رفع)';
+        const autoUploadText = tApi ? tApi.t('house_settings.auto_on_upload') : 'تلقائي (عند الرفع)';
         const residentOptText = tApi ? tApi.t('house_settings.tenant_type_resident') : '🏠 Resident';
         const applicantOptText = tApi ? tApi.t('house_settings.tenant_type_applicant') : '📋 Applicant';
         const tenantTypeTitle = tApi ? tApi.t('house_settings.tenant_type') : 'Tenant Type';
@@ -468,7 +468,7 @@
         const canDelete = (typeof window !== 'undefined' && window.authManager) ? window.authManager.hasDeletePermission() : true;
         if (!canDelete) {
             const toast = (typeof showToast === 'function') ? showToast : (typeof window !== 'undefined' ? window.showToast : null);
-            if (toast) toast((typeof window !== 'undefined' && window.i18n) ? window.i18n.t('toast.delete_house_restricted') : 'House deletion is restricted for Contributor accounts.', 'error');
+            if (toast) toast((typeof window !== 'undefined' && window.i18n) ? window.i18n.t('toast.delete_house_restricted') : 'عذراً: ليس لديك صلاحية حذف المنازل (قراءة ورفع فقط)', 'error');
             return;
         }
 

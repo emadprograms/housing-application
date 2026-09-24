@@ -904,8 +904,8 @@
             let countBadgeText = isAr ? '0 مستأجر' : '0 Tenants';
             if (residents.length > 0 && applicants.length > 0) {
                 countBadgeText = isAr
-                    ? `${residents.length} ساكن — ${applicants.length} متقدم`
-                    : `${residents.length} ${residents.length === 1 ? 'Tenant' : 'Tenants'} — ${applicants.length} ${applicants.length === 1 ? 'Applicant' : 'Applicants'}`;
+                    ? `${residents.length} ساكن • ${applicants.length} متقدم`
+                    : `${residents.length} ${residents.length === 1 ? 'Tenant' : 'Tenants'} • ${applicants.length} ${applicants.length === 1 ? 'Applicant' : 'Applicants'}`;
             } else if (residents.length > 0) {
                 countBadgeText = isAr
                     ? `${residents.length} ${residents.length === 1 ? 'ساكن' : 'سكان'}`
@@ -935,10 +935,16 @@
                             if (t.is_resident === 0) {
                                 cardBg = 'bg-purple-50/30 border-purple-200/60 dark:bg-purple-950/20 dark:border-purple-800/40';
                                 nameClass = 'font-medium text-purple-900 dark:text-purple-200';
-                                tenantIcon = `<span class="w-5 h-5 rounded-md bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 flex items-center justify-center flex-shrink-0" title="${isAr ? 'متقدم' : 'Applicant'}">
+                                const appTitle = (typeof window !== 'undefined' && window.i18n)
+                                    ? (window.i18n.getLanguage() === 'ar' ? 'متقدم' : 'Applicant')
+                                    : 'Applicant • متقدم';
+                                tenantIcon = `<span class="w-5 h-5 rounded-md bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 flex items-center justify-center flex-shrink-0" title="${appTitle}">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                                 </span>`;
-                                tenureText = t.subtitle ? (isAr ? `${t.subtitle} — متقدم` : `${t.subtitle} — Applicant`) : (isAr ? 'متقدم' : 'Applicant');
+                                const appTenure = (typeof window !== 'undefined' && window.i18n)
+                                    ? (window.i18n.getLanguage() === 'ar' ? (t.subtitle ? `${t.subtitle} • متقدم` : 'متقدم') : (t.subtitle ? `${t.subtitle} • Applicant` : 'Applicant'))
+                                    : (t.subtitle ? `${t.subtitle} • متقدم` : 'Applicant • متقدم');
+                                tenureText = appTenure;
                             } else {
                                 const isCurrent = Boolean(
                                     (house.current_tenant && t.name === house.current_tenant) 
@@ -1147,14 +1153,31 @@
         addCard.className = 'add-house-card group bg-slate-50/60 hover:bg-blue-50/40 border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-xl p-6 transition-all duration-200 cursor-pointer flex flex-col items-center justify-center text-center min-h-[200px] select-none';
         addCard.setAttribute('role', 'button');
         addCard.setAttribute('tabindex', '0');
-        addCard.setAttribute('aria-label', 'Add New House / إضافة منزل جديد');
-        addCard.title = 'Add New House / إضافة منزل جديد';
+
+        const isLiveI18n = (typeof window !== 'undefined' && window.i18n);
+        const isLiveEn = isLiveI18n && window.i18n.getLanguage() === 'en';
+
+        const addCardAria = isLiveI18n ? (isLiveEn ? 'Add New House' : 'إضافة منزل جديد') : 'Add New House / إضافة منزل جديد';
+        addCard.setAttribute('aria-label', addCardAria);
+        addCard.title = addCardAria;
+
+        let addCardTextHtml = '';
+        if (isLiveI18n) {
+            addCardTextHtml = isLiveEn
+                ? `<h3 class="font-bold text-slate-700 group-hover:text-blue-600 text-sm transition-colors" data-i18n="house.add_new">Add New House</h3>`
+                : `<h3 class="font-bold text-slate-700 group-hover:text-blue-600 text-sm transition-colors" data-i18n="house.add_new">إضافة منزل جديد</h3>`;
+        } else {
+            addCardTextHtml = `
+                <h3 class="font-bold text-slate-700 group-hover:text-blue-600 text-sm transition-colors">إضافة منزل جديد</h3>
+                <p class="text-xs font-medium text-slate-400 mt-1">Add New House</p>
+            `;
+        }
+
         addCard.innerHTML = `
             <div class="w-14 h-14 rounded-full bg-white border border-slate-200 text-slate-400 group-hover:text-blue-600 group-hover:border-blue-300 group-hover:scale-110 shadow-2xs flex items-center justify-center transition-all duration-200 mb-3">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
             </div>
-            <h3 class="font-bold text-slate-700 group-hover:text-blue-600 text-sm transition-colors">إضافة منزل جديد</h3>
-            <p class="text-xs font-medium text-slate-400 mt-1">Add New House</p>
+            ${addCardTextHtml}
         `;
         addCard.onclick = () => {
             openAddHouseModal(areaNode.name);
@@ -1291,13 +1314,18 @@
         const tenantName = tenantInput ? tenantInput.value.trim() : '';
         const startDate = dateInput ? dateInput.value.trim() : '';
 
+        const isLiveI18n = (typeof window !== 'undefined' && window.i18n);
+        const isLiveEn = isLiveI18n && window.i18n.getLanguage() === 'en';
+
         if (!areaId) {
-            showModalError('يرجى تحديد المنطقة / Please select an area.');
+            const areaErrMsg = isLiveI18n ? (isLiveEn ? 'Please select an area.' : 'يرجى تحديد المنطقة.') : 'يرجى تحديد المنطقة / Please select an area.';
+            showModalError(areaErrMsg);
             return;
         }
 
         if (!houseId) {
-            showModalError('يرجى إدخال رقم أو اسم المنزل / House number or name is required.');
+            const houseErrMsg = isLiveI18n ? (isLiveEn ? 'House number or name is required.' : 'يرجى إدخال رقم أو اسم المنزل.') : 'يرجى إدخال رقم أو اسم المنزل / House number or name is required.';
+            showModalError(houseErrMsg);
             if (idInput) idInput.focus();
             return;
         }
@@ -1334,16 +1362,18 @@
 
             const data = await res.json();
             closeAddHouseModal();
+            const successMsg = isLiveI18n ? (isLiveEn ? 'House added successfully' : 'تمت إضافة المنزل بنجاح') : 'تمت إضافة المنزل بنجاح';
             if (typeof showToast === 'function') {
-                showToast('تمت إضافة المنزل بنجاح', 'success');
+                showToast(successMsg, 'success');
             } else if (typeof window.showToast === 'function') {
-                window.showToast('تمت إضافة المنزل بنجاح', 'success');
+                window.showToast(successMsg, 'success');
             }
 
             await loadAreaGrid(areaId);
             return data;
         } catch (err) {
-            showModalError(err.message || 'فشل إضافة المنزل / Failed to create house');
+            const failDefault = isLiveI18n ? (isLiveEn ? 'Failed to create house' : 'فشل إضافة المنزل') : 'فشل إضافة المنزل / Failed to create house';
+            showModalError(err.message || failDefault);
         } finally {
             if (spinner) spinner.classList.add('hidden');
             if (submitBtn) submitBtn.disabled = false;

@@ -2,7 +2,7 @@
 
 ## Milestones
 
-- 🟡 **v18.0 Clean Language Separation & Localization (Arabic / English)** — Phases 120-124 (in progress)
+- ✅ **v18.0 Clean Language Separation & Localization (Arabic / English)** — Phases 120-124 (shipped 2026-09-24)
 - ✅ **v17.0 User Authentication, Roles & Permissions** — Phases 116-119 (shipped 2026-09-17)
 - ✅ **v16.1 Document-Anchored Tenancy Dates & Minimalist Register** — Phase 115 (shipped 2026-09-14)
 - ✅ **v16.0 Settings Streamlining & Applicant Alignment** — Phase 114 (shipped 2026-09-13)
@@ -17,13 +17,13 @@
 
 ## Phases
 
-### 🟡 v18.0 Clean Language Separation & Localization (Arabic / English)
+### ✅ v18.0 Clean Language Separation & Localization (Arabic / English)
 
 - [x] Phase 120: Language Toggle & Directionality Engine (1/1 plans) — completed 2026-09-24
 - [x] Phase 121: Top Navbar, Login, Shortcuts & Search Clean-Up (1/1 plans) — completed 2026-09-24
 - [x] Phase 122: House Profile, Tenancy Register & Category Folders English Localization (1/1 plans) — completed 2026-09-24
 - [x] Phase 123: Modals, Actions, Ingestion Station & System Messages Localization (1/1 plans) — completed 2026-09-24
-- [ ] Phase 124: Localization Testing, Automated Suite & Multi-Stack Verification (0/1 plans)
+- [x] Phase 124: Localization Testing, Automated Suite & Multi-Stack Verification (1/1 plans) — completed 2026-09-24
 
 #### Phase 120: Language Toggle & Directionality Engine
 **Goal:** Implement client-side i18n module with localStorage persistence, a prominent header toggle button in `#top-navbar`, and dynamic document directionality (`dir="rtl"` vs `dir="ltr"`).
