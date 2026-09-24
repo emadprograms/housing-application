@@ -2839,6 +2839,14 @@
                 btnDocDelete.classList.toggle('hidden', !canDelete);
             }
         });
+
+        window.addEventListener('languageChanged', () => {
+            if (activeDocModalDoc && activeDocModalMode) {
+                setDocModalMode(activeDocModalMode);
+                const currentCat = docModalFolderSelect ? docModalFolderSelect.value : null;
+                populateFolderOptions(currentCat);
+            }
+        });
     }
 
     if (document.readyState === 'loading') {

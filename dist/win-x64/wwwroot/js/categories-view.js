@@ -602,17 +602,33 @@
         return '';
     }
 
+    function formatCategoriesStatsBadge(catCount, docCount) {
+        const i18n = (typeof window !== 'undefined' && window.i18n) ? window.i18n : null;
+        if (i18n && i18n.getLanguage && i18n.getLanguage() === 'ar') {
+            return `${catCount} مجلدات (${docCount} وثائق)`;
+        }
+        return `${catCount} Categories (${docCount} Docs)`;
+    }
+
     function formatBatchTenantLabel(t) {
         if (!t) return '';
+        const i18n = (typeof window !== 'undefined' && window.i18n) ? window.i18n : null;
         if (t.is_resident === 0 || t.is_resident === false) {
-            return `📋 ${t.name || 'Applicant'} (متقدم - لم يسكن)`;
+            const applicantSuffix = i18n
+                ? i18n.t('profile.applicant_label_suffix', (i18n.getLanguage && i18n.getLanguage() === 'en') ? '(Applicant - Did not reside)' : '(متقدم - لم يسكن)')
+                : '(متقدم - لم يسكن)';
+            const defaultName = (i18n && i18n.getLanguage && i18n.getLanguage() === 'en') ? 'Applicant' : 'متقدم';
+            return `📋 ${t.name || defaultName} ${applicantSuffix}`;
         }
         const isActive = t.is_active != null 
             ? Boolean(t.is_active) 
             : (!t.end_date || String(t.end_date).toLowerCase() === 'present' || String(t.end_date).toLowerCase() === 'none' || t.end_date === '');
-        let label = t.name || 'Tenant';
+        let label = t.name || ((i18n && i18n.getLanguage && i18n.getLanguage() === 'en') ? 'Tenant' : 'مستأجر');
         if (isActive) {
-            label += ' (المستأجر الحالي)';
+            const currentSuffix = i18n
+                ? i18n.t('profile.current_tenant_suffix', (i18n.getLanguage && i18n.getLanguage() === 'en') ? '(Current Tenant)' : '(المستأجر الحالي)')
+                : '(المستأجر الحالي)';
+            label += ` ${currentSuffix}`;
         } else if (t.start_date) {
             const startYear = String(t.start_date).substring(0, 4);
             const endYear = (t.end_date && String(t.end_date).length >= 4) ? String(t.end_date).substring(0, 4) : '';
@@ -1544,7 +1560,7 @@
             
             const totalDocs = Array.isArray(currentCategories) ? currentCategories.reduce((sum, cat) => sum + (cat.document_count || 0), 0) : 0;
             if (statsBadge) {
-                statsBadge.textContent = `${currentCategories.length} Categories (${totalDocs} Docs)`;
+                statsBadge.textContent = formatCategoriesStatsBadge(currentCategories.length, totalDocs);
                 statsBadge.classList.remove('hidden');
             }
             
@@ -2585,7 +2601,7 @@
         if (statsBadge) {
             const activeCats = cats.filter(c => (c.document_count || (c.documents && c.documents.length) || 0) > 0);
             const totalDocs = activeCats.reduce((sum, cat) => sum + (cat.document_count || 0), 0);
-            statsBadge.textContent = `${activeCats.length} Categories (${totalDocs} Docs)`;
+            statsBadge.textContent = formatCategoriesStatsBadge(activeCats.length, totalDocs);
         }
 
         // 3. Update timeline in memory if in timeline view
@@ -2711,7 +2727,7 @@
             if (statsBadge) {
                 const activeCats = cats.filter(c => (c.document_count || (c.documents && c.documents.length) || 0) > 0);
                 const totalDocs = activeCats.reduce((sum, cat) => sum + (cat.document_count || 0), 0);
-                statsBadge.textContent = `${activeCats.length} Categories (${totalDocs} Docs)`;
+                statsBadge.textContent = formatCategoriesStatsBadge(activeCats.length, totalDocs);
             }
 
             return true;
@@ -2783,7 +2799,7 @@
         if (statsBadge) {
             const activeCats = cats.filter(c => (c.document_count || (c.documents && c.documents.length) || 0) > 0);
             const totalDocs = activeCats.reduce((sum, cat) => sum + (cat.document_count || 0), 0);
-            statsBadge.textContent = `${activeCats.length} Categories (${totalDocs} Docs)`;
+            statsBadge.textContent = formatCategoriesStatsBadge(activeCats.length, totalDocs);
         }
 
         return true;
@@ -2827,7 +2843,7 @@
             if (statsBadge) {
                 const activeCats = cats.filter(c => (c.document_count || (c.documents && c.documents.length) || 0) > 0);
                 const totalDocs = activeCats.reduce((sum, cat) => sum + (cat.document_count || 0), 0);
-                statsBadge.textContent = `${activeCats.length} Categories (${totalDocs} Docs)`;
+                statsBadge.textContent = formatCategoriesStatsBadge(activeCats.length, totalDocs);
             }
 
             return true;
@@ -2863,7 +2879,7 @@
         if (statsBadge) {
             const activeCats = cats.filter(c => (c.document_count || (c.documents && c.documents.length) || 0) > 0);
             const totalDocs = activeCats.reduce((sum, cat) => sum + (cat.document_count || 0), 0);
-            statsBadge.textContent = `${activeCats.length} Categories (${totalDocs} Docs)`;
+            statsBadge.textContent = formatCategoriesStatsBadge(activeCats.length, totalDocs);
         }
 
         return true;
@@ -3212,6 +3228,12 @@
             const docListEl = document.getElementById('document-list');
             if (docListEl && docListEl.querySelector('.category-folder-card') && Array.isArray(cats) && cats.length > 0) {
                 renderCategories(cats);
+            }
+            const statsBadge = document.getElementById('stats-badge');
+            if (statsBadge && !statsBadge.classList.contains('hidden') && Array.isArray(cats) && cats.length > 0 && docListEl && docListEl.querySelector('.category-folder-card')) {
+                const activeCats = cats.filter(c => (c.document_count || (c.documents && c.documents.length) || 0) > 0);
+                const totalDocs = activeCats.reduce((sum, cat) => sum + (cat.document_count || 0), 0);
+                statsBadge.textContent = formatCategoriesStatsBadge(activeCats.length, totalDocs);
             }
         });
     }

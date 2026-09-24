@@ -3,38 +3,38 @@ gsd_state_version: 1.0
 milestone: v18.1
 milestone_name: UI & Localization Consistency Polish
 status: in_progress
-last_updated: "2026-09-24T08:25:40.000Z"
+last_updated: "2026-09-24T08:38:30.000Z"
 last_activity: 2026-09-24
 progress:
   total_phases: 4
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 4
-  completed_plans: 2
-  percent: 50
+  completed_plans: 3
+  percent: 75
 ---
 
 # Milestone State
 
 **Current Milestone:** v18.1 UI & Localization Consistency Polish  
-**Current Phase:** 127: Tenant Suffixes, Header Stats & Management Modals Clean-Up  
-**Status:** In Progress (Phase 126 complete, advancing to Phase 127)  
+**Current Phase:** 128: Automated Localization Suite & Full Regression Verification  
+**Status:** In Progress (Phase 127 complete, advancing to Phase 128)  
 
 ## Current Position
 
-Phase: Phase 127 (Tenant Suffixes, Header Stats & Management Modals Clean-Up)
+Phase: Phase 128 (Automated Localization Suite & Full Regression Verification)
 Plan: Ready to plan / execute
 Status: Ready
-Last activity: 2026-09-24 — Phase 126 completed (House Profile tabs & router navigation dynamic localization)
+Last activity: 2026-09-24 — Phase 127 completed (Tenant suffixes, header stats, & management modals clean-up)
 
 ## Context
 
-Milestone v18.1 resolves remaining small issues, hardcoded strings, and localization edge cases. Phase 125 localized standard folder names, optgroups, and subtitles in Move and Copy modals. Phase 126 addressed House Profile tabs and router dynamic re-evaluation on language switch. Phase 127 polishes tenant active suffixes, top navbar stats badge formatting, and management modal strings. Phase 128 delivers automated verification and regression testing.
+Milestone v18.1 resolves remaining small issues, hardcoded strings, and localization edge cases. Phase 125 localized standard folder names, optgroups, and subtitles in Move and Copy modals. Phase 126 addressed House Profile tabs and router dynamic re-evaluation on language switch. Phase 127 polished tenant active suffixes, top navbar stats badge formatting, and management modal strings. Phase 128 delivers automated verification and regression testing.
 
 ## Target Phases
 
 - [x] Phase 125: Move & Copy Modals Folder & Options Localization
 - [x] Phase 126: House Profile Tabs & Router Navigation Dynamic Localization
-- [ ] Phase 127: Tenant Suffixes, Header Stats & Management Modals Clean-Up
+- [x] Phase 127: Tenant Suffixes, Header Stats & Management Modals Clean-Up
 - [ ] Phase 128: Automated Localization Suite & Full Regression Verification
 
 ## Quick Tasks Completed

@@ -21,13 +21,13 @@ Requirements for Milestone v18.1: UI & Localization Consistency Polish.
 
 ### Tenant Selectors & Header Stats Polish (TSEL)
 
-- [ ] **TSEL-01**: In Move & Copy tenant dropdowns (`formatBatchTenantLabel`), active tenant indicator renders in the active language (` (Current Tenant)` in English vs ` (المستأجر الحالي)` in Arabic).
-- [ ] **TSEL-02**: In House Profile view, the top navbar house stats badge (`#stats-badge`) renders clean localized metrics in both languages (`N Tenants • M Documents` in English vs `N مستأجرين • M وثائق` in Arabic) without hardcoded English words.
+- [x] **TSEL-01**: In Move & Copy tenant dropdowns (`formatBatchTenantLabel`), active tenant indicator renders in the active language (` (Current Tenant)` in English vs ` (المستأجر الحالي)` in Arabic).
+- [x] **TSEL-02**: In House Profile view, the top navbar house stats badge (`#stats-badge`) renders clean localized metrics in both languages (`N Tenants • M Documents` in English vs `N مستأجرين • M وثائق` in Arabic) without hardcoded English words.
 
 ### Management Modals & Edge Strings Clean-up (EDGE)
 
-- [ ] **EDGE-01**: Manage Tenants modal (`tenant-manager.js`) eliminates residual hardcoded bilingual bullets (` • `) and `(لم يسكن)` in tooltips, placeholder text, and empty states.
-- [ ] **EDGE-02**: Single document action modal (`doc-manager.js`) mode buttons (`Apply Changes`, `Duplicate Document`) and custom folder options render purely in the active language.
+- [x] **EDGE-01**: Manage Tenants modal (`tenant-manager.js`) eliminates residual hardcoded bilingual bullets (` • `) and `(لم يسكن)` in tooltips, placeholder text, and empty states.
+- [x] **EDGE-02**: Single document action modal (`doc-manager.js`) mode buttons (`Apply Changes`, `Duplicate Document`) and custom folder options render purely in the active language.
 
 ### Automated Verification & Regression Guard (TEST)
 
@@ -53,9 +53,9 @@ Deferred to future releases.
 | TAB-01 | Phase 126 | Complete |
 | TAB-02 | Phase 126 | Complete |
 | TAB-03 | Phase 126 | Complete |
-| TSEL-01 | Phase 127 | Pending |
-| TSEL-02 | Phase 127 | Pending |
-| EDGE-01 | Phase 127 | Pending |
-| EDGE-02 | Phase 127 | Pending |
+| TSEL-01 | Phase 127 | Complete |
+| TSEL-02 | Phase 127 | Complete |
+| EDGE-01 | Phase 127 | Complete |
+| EDGE-02 | Phase 127 | Complete |
 | TEST-01 | Phase 128 | Pending |
 | TEST-02 | Phase 128 | Pending |

@@ -239,10 +239,14 @@
             ? ''
             : (lastDocArrival || (endVal && endVal !== 'none' && endVal !== 'null' ? endVal : ''));
 
+        const tenantNamePlaceholder = tApi ? tApi.t('house_settings.tenant_name') : 'Tenant Name';
+        const presentText = tApi ? tApi.t('house_settings.present') : 'Present';
+        const deleteTenantTitle = tApi ? tApi.t('common.delete') : 'Delete Tenant';
+
         row.innerHTML = `
             <div class="sm:col-span-3 flex items-center gap-2">
                 <span class="tenant-row-number w-5 h-5 rounded-full bg-slate-100 text-slate-500 font-bold text-[10px] flex items-center justify-center flex-shrink-0">1</span>
-                <input type="text" value="${nameVal.replace(/"/g, '&quot;')}" placeholder="Tenant Name" 
+                <input type="text" value="${nameVal.replace(/"/g, '&quot;')}" placeholder="${tenantNamePlaceholder}" 
                        class="tenant-name-input w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-1.5 focus:ring-blue-500/20 focus:border-blue-500 bg-white font-medium" required />
             </div>
             <div class="sm:col-span-2">
@@ -260,11 +264,11 @@
                        class="tenant-end-input w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 font-mono font-medium cursor-default ${isApplicant || isPresent ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200'}" />
             </div>
             <div class="sm:col-span-1 flex items-center justify-between sm:justify-center">
-                <span class="text-xs font-semibold text-slate-600 sm:hidden">Present:</span>
-                <input type="checkbox" class="tenant-present-check w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 ${isApplicant ? 'cursor-not-allowed opacity-30' : 'cursor-pointer'}" ${isApplicant ? 'disabled' : (isPresent ? 'checked' : '')} title="Present" />
+                <span class="text-xs font-semibold text-slate-600 sm:hidden">${presentText}:</span>
+                <input type="checkbox" class="tenant-present-check w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 ${isApplicant ? 'cursor-not-allowed opacity-30' : 'cursor-pointer'}" ${isApplicant ? 'disabled' : (isPresent ? 'checked' : '')} title="${presentText}" />
             </div>
             <div class="sm:col-span-1 flex items-center justify-end sm:justify-center">
-                <button type="button" class="btn-remove-row text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer" title="Delete Tenant">
+                <button type="button" class="btn-remove-row text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer" title="${deleteTenantTitle}">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                 </button>
             </div>

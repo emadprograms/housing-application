@@ -75,7 +75,11 @@
                 : currentTimeline;
 
             if (statsBadge) {
-                statsBadge.textContent = `${displayTimeline.length} Documents`;
+                const i18n = (typeof window !== 'undefined' && window.i18n) ? window.i18n : null;
+                const isAr = i18n && i18n.getLanguage && i18n.getLanguage() === 'ar';
+                statsBadge.textContent = isAr
+                    ? `${displayTimeline.length} وثيقة`
+                    : `${displayTimeline.length} Documents`;
                 statsBadge.classList.remove('hidden');
             }
             
@@ -566,6 +570,14 @@
             const docListEl = document.getElementById('document-list');
             if (docListEl && docListEl.querySelector('[data-vault-id]') && Array.isArray(tl) && tl.length > 0) {
                 renderTimeline(tl);
+            }
+            const statsBadge = document.getElementById('stats-badge');
+            if (statsBadge && !statsBadge.classList.contains('hidden') && Array.isArray(tl) && tl.length > 0 && docListEl && docListEl.querySelector('[data-vault-id]')) {
+                const curT = typeof currentTenant !== 'undefined' ? currentTenant : null;
+                const displayTimeline = curT ? tl.filter(doc => doc.primary_tenant === curT) : tl;
+                const i18n = window.i18n;
+                const isAr = i18n && i18n.getLanguage && i18n.getLanguage() === 'ar';
+                statsBadge.textContent = isAr ? `${displayTimeline.length} وثيقة` : `${displayTimeline.length} Documents`;
             }
         });
 
