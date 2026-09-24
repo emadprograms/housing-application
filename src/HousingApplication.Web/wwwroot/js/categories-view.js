@@ -1299,7 +1299,7 @@
         const canDelete = (typeof window !== 'undefined' && window.authManager) ? window.authManager.hasDeletePermission() : true;
         if (!canDelete) {
             const toast = (typeof showToast === 'function') ? showToast : (typeof window !== 'undefined' ? window.showToast : null);
-            if (toast) toast('عذراً: ليس لديك صلاحية حذف الوثائق (قراءة ورفع فقط) • Deletion is restricted for Contributor accounts.', 'error');
+            if (toast) toast(window.i18n ? window.i18n.t('folder.doc_delete_restricted') : 'عذراً: ليس لديك صلاحية حذف الوثائق (قراءة ورفع فقط)', 'error');
             return;
         }
 
@@ -1380,7 +1380,7 @@
     function openBatchMergeModal() {
         if (selectedDocIds.size < 2) {
             const toast = (typeof showToast === 'function') ? showToast : (typeof window !== 'undefined' ? window.showToast : null);
-            if (toast) toast('يرجى تحديد وثيقتين على الأقل للدمج / Please select at least 2 documents to merge', 'warning');
+            if (toast) toast(window.i18n ? window.i18n.t('folder.select_two_to_merge') : 'يرجى تحديد وثيقتين على الأقل للدمج', 'warning');
             return;
         }
 
@@ -2308,6 +2308,10 @@
         const folderIconSvg = getFolderIconSvg(cat.name);
         const docCount = typeof cat.document_count === 'number' ? cat.document_count : (cat.documents ? cat.documents.length : 0);
 
+        const displayName = (typeof window !== 'undefined' && window.i18n && typeof window.i18n.localizeCategory === 'function')
+            ? window.i18n.localizeCategory(cat.name)
+            : cat.name;
+
         card.innerHTML = `
             <div class="flex justify-between items-center category-card-header">
                 <div class="flex items-center gap-2 min-w-0">
@@ -2315,7 +2319,7 @@
                     <div class="folder-icon-box w-6 h-6 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center flex-shrink-0" data-category="${escapeHtml(cat.name)}">
                         ${folderIconSvg}
                     </div>
-                    <h4 class="text-xs font-semibold text-slate-800 truncate">${escapeHtml(cat.name)}</h4>
+                    <h4 class="text-xs font-semibold text-slate-800 truncate" data-category-name="${escapeHtml(cat.name)}">${escapeHtml(displayName)}</h4>
                 </div>
                     <span class="category-drop-hint hidden w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-xs flex-shrink-0 animate-pulse select-none" title="Drop to upload to this folder">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
@@ -2358,7 +2362,7 @@
         } else if (docsContainer) {
             const emptyHint = document.createElement('div');
             emptyHint.className = 'empty-folder-drop-hint text-[11px] text-slate-400 py-2 px-3 bg-slate-50/70 dark:bg-slate-800/40 rounded-lg border border-dashed border-slate-200 dark:border-slate-700 text-center select-none';
-            emptyHint.textContent = 'اسحب وأفلت الملفات هنا • Drag and drop files here';
+            emptyHint.textContent = window.i18n ? window.i18n.t('folder.dropzone_hint') : 'اسحب وأفلت الملفات هنا';
             docsContainer.appendChild(emptyHint);
         }
 
@@ -2377,7 +2381,7 @@
                 const canDelete = (typeof window !== 'undefined' && window.authManager) ? window.authManager.hasDeletePermission() : true;
                 if (!canDelete) {
                     const toast = (typeof showToast === 'function') ? showToast : (window.showToast || null);
-                    if (toast) toast('عذراً: ليس لديك صلاحية حذف المجلدات (قراءة ورفع فقط) • Folder deletion is restricted for Contributor accounts.', 'error');
+                    if (toast) toast(window.i18n ? window.i18n.t('folder.delete_restricted') : 'عذراً: ليس لديك صلاحية حذف المجلدات (قراءة ورفع فقط)', 'error');
                     return;
                 }
 
@@ -2537,7 +2541,7 @@
                     if (docsContainer && !docsContainer.querySelector('.empty-folder-drop-hint')) {
                         const emptyHint = document.createElement('div');
                         emptyHint.className = 'empty-folder-drop-hint text-[11px] text-slate-400 py-2 px-3 bg-slate-50/70 dark:bg-slate-800/40 rounded-lg border border-dashed border-slate-200 dark:border-slate-700 text-center select-none';
-                        emptyHint.textContent = 'اسحب وأفلت الملفات هنا • Drag and drop files here';
+                        emptyHint.textContent = window.i18n ? window.i18n.t('folder.dropzone_hint') : 'اسحب وأفلت الملفات هنا';
                         docsContainer.appendChild(emptyHint);
                     }
                 }
@@ -2640,7 +2644,7 @@
                     if (docsContainer && !docsContainer.querySelector('.empty-folder-drop-hint')) {
                         const emptyHint = document.createElement('div');
                         emptyHint.className = 'empty-folder-drop-hint text-[11px] text-slate-400 py-2 px-3 bg-slate-50/70 dark:bg-slate-800/40 rounded-lg border border-dashed border-slate-200 dark:border-slate-700 text-center select-none';
-                        emptyHint.textContent = 'اسحب وأفلت الملفات هنا • Drag and drop files here';
+                        emptyHint.textContent = window.i18n ? window.i18n.t('folder.dropzone_hint') : 'اسحب وأفلت الملفات هنا';
                         docsContainer.appendChild(emptyHint);
                     }
                 }
@@ -2843,7 +2847,11 @@
         return true;
     }
 
-    function renderCategories() {
+    function renderCategories(categories = null) {
+        if (categories && Array.isArray(categories)) {
+            currentCategories = categories;
+            if (typeof window !== 'undefined') window.currentCategories = categories;
+        }
         removeTouchAvatar();
         if (touchDragTimer) {
             clearTimeout(touchDragTimer);
@@ -2944,7 +2952,8 @@
                 if (!agg[cat.name]) {
                     agg[cat.name] = { count: 0, documents: [] };
                 }
-                agg[cat.name].count += cat.document_count;
+                const cnt = typeof cat.document_count === 'number' ? cat.document_count : (cat.documents ? cat.documents.length : 0);
+                agg[cat.name].count += cnt;
                 if (cat.documents) {
                     agg[cat.name].documents = agg[cat.name].documents.concat(cat.documents);
                 }
@@ -2989,12 +2998,15 @@
                 }
             });
             const allSelected = allDocIds.length > 0 && allDocIds.every(id => selectedDocIds.has(id));
+            const catFoldersLabel = window.i18n ? window.i18n.t('doc.categories_view') : 'Category Folders';
+            const isAr = window.i18n && window.i18n.getLanguage() === 'ar';
+            const selectAllText = allSelected ? (isAr ? 'إلغاء تحديد الكل' : 'Deselect All') : (isAr ? 'تحديد الكل' : 'Select All');
             const topBar = document.createElement('div');
             topBar.className = 'flex items-center justify-between pb-2 px-1 text-xs';
             topBar.innerHTML = `
-                <span class="text-[11px] font-medium text-slate-400">Category Folders</span>
+                <span class="text-[11px] font-medium text-slate-400">${catFoldersLabel}</span>
                 <button id="btn-toggle-select-all-categories" type="button" class="text-[11px] font-semibold text-blue-600 hover:text-blue-800 transition-colors cursor-pointer">
-                    ${allSelected ? 'Deselect All' : 'Select All'}
+                    ${selectAllText}
                 </button>
             `;
             const toggleAllBtn = topBar.querySelector('#btn-toggle-select-all-categories');
@@ -3170,6 +3182,14 @@
             if (btnDelete) {
                 const isRestricted = Boolean(window.authManager && window.authManager.currentUser && !window.authManager.hasDeletePermission());
                 btnDelete.classList.toggle('hidden', isRestricted);
+            }
+        });
+
+        window.addEventListener('languageChanged', () => {
+            const cats = (typeof currentCategories !== 'undefined' ? currentCategories : (typeof window !== 'undefined' ? window.currentCategories : [])) || [];
+            const docListEl = document.getElementById('document-list');
+            if (docListEl && docListEl.querySelector('.category-folder-card') && Array.isArray(cats) && cats.length > 0) {
+                renderCategories(cats);
             }
         });
     }

@@ -84,12 +84,39 @@
             // House Profile & Tenancy Register
             'profile.tenancy_register': 'سجل المستأجرين المتعاقبين',
             'profile.tenants_section': 'المستأجرون الحاليون والسابقون',
-            'profile.applicants_section': 'المتقدمون بطلبات سكن',
+            'profile.tenants': 'المستأجرون',
+            'profile.applicants': 'المتقدمون',
             'profile.archive_data': 'بيانات الأرشيف الرقمي',
             'profile.back_to_register': 'سجل المنزل',
             'profile.present_status': 'مقيم حالياً',
             'profile.vacated_status': 'أخلى المسكن',
             'profile.applicant_status': 'طلب سكن قيد الانتظار',
+            'profile.current_resident': 'حالي',
+            'profile.vacated_resident': 'سابق',
+            'profile.applicant_badge': '📋 متقدم (لم يسكن)',
+            'profile.no_tenants': 'لا يوجد مستأجرون مسجلون لهذا المنزل حالياً.',
+            'profile.no_applicants': 'لا يوجد متقدمون مسجلون لهذا المنزل.',
+            'profile.stats_tenants': 'مستأجرين',
+            'profile.stats_applicants': 'طلبات تخصيص',
+            'profile.stats_docs': 'وثيقة',
+            'profile.compliance_title': 'فحص اكتمال ملف الساكن',
+            'profile.compliance_vacant_desc': 'المنزل شاغر حالياً — لا يوجد ساكن حالي لإجراء فحص الاكتمال.',
+            'profile.compliance_complete': 'مكتمل 5/5 ✓',
+            'profile.compliance_incomplete': 'ناقص ⚠️',
+            'profile.compliance_show': 'عرض',
+            'profile.compliance_hide': 'إخفاء',
+            'profile.compliance_available': 'متوفر',
+            'profile.compliance_upload': 'رفع',
+            'profile.all_records': 'كامل السجل',
+            'profile.current_tenant_suffix': '(المستأجر الحالي)',
+            'profile.first_doc': 'أول وثيقة: ',
+            'profile.awaiting_upload': 'بانتظار أول رفع',
+            'profile.lease_started': 'بدء الإيجار',
+            'profile.lease_ongoing': '(مستمر)',
+            'profile.years_count': 'سنوات',
+            'profile.year_single': 'سنة واحدة',
+            'profile.years_two': 'سنتين',
+            'profile.under_year': 'أقل من سنة',
             'profile.auto_date': 'تلقائي (عند أول رفع)',
             'profile.start_date': 'تاريخ البداية',
             'profile.end_date': 'تاريخ الإخلاء',
@@ -98,16 +125,30 @@
             'profile.open_folder': 'فتح المجلد',
             'profile.settings': 'إعدادات المنزل',
             'profile.export_archive': 'تصدير الأرشيف',
+            'profile.loading_register': 'جاري تحميل سجل المنزل والأرشيف...',
+            'profile.error_loading_register': 'خطأ أثناء تحميل سجل المستأجرين',
 
-            // Folders & Categories
-            'folder.01': '01 - الهوية والوثائق الشخصية',
-            'folder.02': '02 - عقود الإيجار',
-            'folder.03': '03 - المخالصات والإخلاءات',
-            'folder.04': '04 - سندات القبض والدفع',
-            'folder.05': '05 - المراسلات والإشعارات',
-            'folder.06': '06 - الصيانة والترميم',
-            'folder.07': '07 - وثائق الملكية والصكوك',
-            'folder.08': '08 - أخرى',
+            // Folders & Categories (All 13 Standard Categories)
+            'folder.01': '01 - بيانات أساسية',
+            'folder.02': '02 - بيانات شخصية',
+            'folder.03': '03 - أمر تخصيص',
+            'folder.04': '04 - محضر تسليم مفتاح',
+            'folder.05': '05 - عقود',
+            'folder.06': '06 - كهرباء وماء',
+            'folder.07': '07 - استقطاع إيجار',
+            'folder.08': '08 - وقف استقطاع بدل',
+            'folder.09': '09 - إشعارات',
+            'folder.10': '10 - صيانة',
+            'folder.11': '11 - صور ومعاينات',
+            'folder.12': '12 - تعديلات',
+            'folder.13': '13 - رسائل متنوعة',
+            'folder.dropzone_hint': 'اسحب وأفلت الملفات هنا',
+            'folder.dropzone_sub': 'أو انقر لاختيار ملفات من جهازك',
+            'folder.delete_restricted': 'عذراً: ليس لديك صلاحية حذف المجلدات (قراءة ورفع فقط)',
+            'folder.doc_delete_restricted': 'عذراً: ليس لديك صلاحية حذف الوثائق (قراءة ورفع فقط)',
+            'folder.select_two_to_merge': 'يرجى تحديد وثيقتين على الأقل للدمج',
+            'folder.doc_copied': 'تم نسخ الوثيقة بنجاح',
+            'folder.docs_copied': 'تم نسخ الوثائق المحددة بنجاح',
 
             // Document Operations
             'doc.details': 'تفاصيل الوثيقة',
@@ -236,12 +277,39 @@
             // House Profile & Tenancy Register
             'profile.tenancy_register': 'House Tenancy Register',
             'profile.tenants_section': 'Current & Past Tenants',
-            'profile.applicants_section': 'Housing Applicants',
+            'profile.tenants': 'Tenants',
+            'profile.applicants': 'Applicants',
             'profile.archive_data': 'Digital Archive Profile',
             'profile.back_to_register': 'House Register',
             'profile.present_status': 'Current Resident',
             'profile.vacated_status': 'Vacated',
             'profile.applicant_status': 'Pending Applicant',
+            'profile.current_resident': 'Current',
+            'profile.vacated_resident': 'Vacated',
+            'profile.applicant_badge': '📋 Applicant (Pending)',
+            'profile.no_tenants': 'No tenants currently registered for this house.',
+            'profile.no_applicants': 'No applicants registered for this house.',
+            'profile.stats_tenants': 'Tenants',
+            'profile.stats_applicants': 'Applicants',
+            'profile.stats_docs': 'Documents',
+            'profile.compliance_title': 'Tenant File Compliance Audit',
+            'profile.compliance_vacant_desc': 'House is currently vacant — no active resident to audit.',
+            'profile.compliance_complete': 'Complete 5/5 ✓',
+            'profile.compliance_incomplete': 'Incomplete ⚠️',
+            'profile.compliance_show': 'Show',
+            'profile.compliance_hide': 'Hide',
+            'profile.compliance_available': 'Available',
+            'profile.compliance_upload': 'Upload',
+            'profile.all_records': 'All Records',
+            'profile.current_tenant_suffix': '(Current Resident)',
+            'profile.first_doc': 'First document: ',
+            'profile.awaiting_upload': 'Awaiting first upload',
+            'profile.lease_started': 'Lease started',
+            'profile.lease_ongoing': '(Current)',
+            'profile.years_count': 'years',
+            'profile.year_single': '1 year',
+            'profile.years_two': '2 years',
+            'profile.under_year': 'Less than a year',
             'profile.auto_date': 'Auto (on first upload)',
             'profile.start_date': 'Start Date',
             'profile.end_date': 'Vacated Date',
@@ -250,16 +318,30 @@
             'profile.open_folder': 'Open Folder',
             'profile.settings': 'House Settings',
             'profile.export_archive': 'Export Archive',
+            'profile.loading_register': 'Loading house register and archive...',
+            'profile.error_loading_register': 'Error loading tenancy register',
 
-            // Folders & Categories
-            'folder.01': '01 - Identity & Personal Documents',
-            'folder.02': '02 - Lease Contracts',
-            'folder.03': '03 - Clearances & Evictions',
-            'folder.04': '04 - Payment Receipts & Vouchers',
-            'folder.05': '05 - Correspondence & Notices',
-            'folder.06': '06 - Maintenance & Repairs',
-            'folder.07': '07 - Ownership & Title Deeds',
-            'folder.08': '08 - Other Documents',
+            // Folders & Categories (All 13 Standard Categories)
+            'folder.01': '01 - Basic Master Data',
+            'folder.02': '02 - Personal & Identity Data',
+            'folder.03': '03 - Allotment Order',
+            'folder.04': '04 - Key Handover Record',
+            'folder.05': '05 - Contracts & Leases',
+            'folder.06': '06 - Electricity & Water',
+            'folder.07': '07 - Rent Deduction',
+            'folder.08': '08 - Allowance Deduction Stop',
+            'folder.09': '09 - Notices & Alerts',
+            'folder.10': '10 - Maintenance & Repairs',
+            'folder.11': '11 - Photos & Inspections',
+            'folder.12': '12 - Modifications & Alterations',
+            'folder.13': '13 - Miscellaneous Letters',
+            'folder.dropzone_hint': 'Drag and drop files here',
+            'folder.dropzone_sub': 'or click to browse from device',
+            'folder.delete_restricted': 'Folder deletion is restricted for Contributor accounts.',
+            'folder.doc_delete_restricted': 'Deletion is restricted for Contributor accounts.',
+            'folder.select_two_to_merge': 'Please select at least 2 documents to merge',
+            'folder.doc_copied': 'Document copied successfully',
+            'folder.docs_copied': 'Selected documents copied successfully',
 
             // Document Operations
             'doc.details': 'Document Details',
@@ -484,6 +566,71 @@
         }
     }
 
+    const CATEGORY_MAP = [
+        { id: '01', ar: '01 - بيانات أساسية', en: '01 - Basic Master Data' },
+        { id: '02', ar: '02 - بيانات شخصية', en: '02 - Personal & Identity Data' },
+        { id: '03', ar: '03 - أمر تخصيص', en: '03 - Allotment Order' },
+        { id: '04', ar: '04 - محضر تسليم مفتاح', en: '04 - Key Handover Record' },
+        { id: '05', ar: '05 - عقود', en: '05 - Contracts & Leases' },
+        { id: '06', ar: '06 - كهرباء وماء', en: '06 - Electricity & Water' },
+        { id: '07', ar: '07 - استقطاع إيجار', en: '07 - Rent Deduction' },
+        { id: '08', ar: '08 - وقف استقطاع بدل', en: '08 - Allowance Deduction Stop' },
+        { id: '09', ar: '09 - إشعارات', en: '09 - Notices & Alerts' },
+        { id: '10', ar: '10 - صيانة', en: '10 - Maintenance & Repairs' },
+        { id: '11', ar: '11 - صور ومعاينات', en: '11 - Photos & Inspections' },
+        { id: '12', ar: '12 - تعديلات', en: '12 - Modifications & Alterations' },
+        { id: '13', ar: '13 - رسائل متنوعة', en: '13 - Miscellaneous Letters' }
+    ];
+
+    function localizeCategory(categoryName) {
+        if (!categoryName) return '';
+        const isEn = currentLang === 'en';
+        const trimmed = String(categoryName).trim();
+
+        for (const cat of CATEGORY_MAP) {
+            if (trimmed === cat.ar || trimmed === cat.en || trimmed.startsWith(cat.id + ' - ') || trimmed.startsWith(cat.id + '-')) {
+                return isEn ? cat.en : cat.ar;
+            }
+            const arBare = cat.ar.replace(/^\d+\s*-\s*/, '');
+            const enBare = cat.en.replace(/^\d+\s*-\s*/, '');
+            if (trimmed === arBare || trimmed === enBare) {
+                return isEn ? enBare : arBare;
+            }
+        }
+        return trimmed;
+    }
+
+    function formatTenureDuration(startYear, endYear, isApplicant, isActive) {
+        const isEn = currentLang === 'en';
+        if (isApplicant) {
+            return isEn ? 'Applicant (Pending)' : 'متقدم (لم يسكن)';
+        }
+        if (isActive) {
+            if (!startYear) return isEn ? 'Current Resident' : 'المستأجر الحالي';
+            return isEn ? `Lease started ${startYear} (Current)` : `بدء الإيجار ${startYear} (مستمر)`;
+        }
+        if (!startYear || !endYear) {
+            return isEn ? 'Vacated' : 'سابق';
+        }
+        const s = parseInt(startYear, 10);
+        const e = parseInt(endYear, 10);
+        const years = (!isNaN(s) && !isNaN(e) && e >= s) ? (e - s) : 0;
+
+        if (isEn) {
+            let yrStr = `${years} years`;
+            if (years === 0) yrStr = 'Less than 1 year';
+            else if (years === 1) yrStr = '1 year';
+            else if (years === 2) yrStr = '2 years';
+            return `From ${startYear} to ${endYear} (${yrStr})`;
+        } else {
+            let yrStr = `${years} سنوات`;
+            if (years === 0) yrStr = 'أقل من سنة';
+            else if (years === 1) yrStr = 'سنة واحدة';
+            else if (years === 2) yrStr = 'سنتين';
+            return `من ${startYear} إلى ${endYear} (${yrStr})`;
+        }
+    }
+
     const i18n = {
         init,
         getLanguage: () => currentLang,
@@ -491,6 +638,9 @@
         toggleLanguage,
         t,
         apply: applyTranslations,
+        localizeCategory,
+        formatTenureDuration,
+        CATEGORY_MAP,
         translations,
         SUPPORTED_LANGS,
         DEFAULT_LANG

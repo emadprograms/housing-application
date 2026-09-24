@@ -2,19 +2,22 @@
 (function() {
     let currentHouseProfile = null;
 
-    async function loadHouseProfile(areaId, houseId) {
+    async function loadHouseProfile(areaId, houseId, data = null) {
         const docListEl = document.getElementById('document-list');
-        const statsBadge = document.getElementById('stats-badge');
+        const statsBadge = document.getElementById('stats-badge') || document.getElementById('house-stats-badge');
         if (!docListEl) return;
+        const loadingMsg = window.i18n ? window.i18n.t('profile.loading_register') : 'جاري تحميل سجل المنزل والأرشيف...';
         docListEl.innerHTML = `
             <div class="py-8 text-center text-slate-400">
                 <div class="inline-block animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full mb-2"></div>
-                <p class="text-xs">جاري تحميل سجل المنزل والأرشيف...</p>
+                <p class="text-xs">${loadingMsg}</p>
             </div>
         `;
 
         try {
-            if (isStaticMode) {
+            if (data) {
+                currentHouseProfile = data;
+            } else if (typeof isStaticMode !== 'undefined' && isStaticMode) {
                 const stateData = await fetchHouseState(areaId, houseId);
                 const groups = getDocumentGroups(stateData);
                 const knownTenants = stateData.known_tenants || [];
@@ -151,10 +154,19 @@
                     ? currentHouseProfile.archive.total_documents
                     : 0;
 
-                if (applicants.length > 0) {
-                    statsBadge.textContent = `${residents.length} مستأجرين · ${applicants.length} طلبات تخصيص · ${totalDocs} وثيقة`;
+                const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+                if (isEn) {
+                    if (applicants.length > 0) {
+                        statsBadge.textContent = `${residents.length} Tenants · ${applicants.length} Applicants · ${totalDocs} Documents`;
+                    } else {
+                        statsBadge.textContent = `${residents.length} Tenants · ${totalDocs} Documents`;
+                    }
                 } else {
-                    statsBadge.textContent = `${residents.length} مستأجرين · ${totalDocs} وثيقة`;
+                    if (applicants.length > 0) {
+                        statsBadge.textContent = `${residents.length} مستأجرين · ${applicants.length} طلبات تخصيص · ${totalDocs} وثيقة`;
+                    } else {
+                        statsBadge.textContent = `${residents.length} مستأجرين · ${totalDocs} وثيقة`;
+                    }
                 }
                 statsBadge.classList.remove('hidden');
             }
@@ -162,8 +174,44 @@
             renderHouseProfile(currentHouseProfile);
         } catch (err) {
             console.error(err);
-            docListEl.innerHTML = '<p class="text-xs text-rose-500 p-3 text-center">خطأ أثناء تحميل سجل المستأجرين والأرشيف.</p>';
+            const errMsg = (window.i18n && window.i18n.getLanguage() === 'en')
+                ? 'Error loading tenancy register and archive.'
+                : 'خطأ أثناء تحميل سجل المستأجرين والأرشيف.';
+            docListEl.innerHTML = `<p class="text-xs text-rose-500 p-3 text-center">${errMsg}</p>`;
         }
+    }
+
+    function getLocalizedTenureDuration(t) {
+        if (!t) return '';
+        const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+        const isApplicant = (t.is_resident === 0 || t.is_resident === false);
+        if (isApplicant) {
+            return isEn ? 'Applicant (Pending)' : 'متقدم (لم يسكن)';
+        }
+
+        const sYear = t.start_date ? String(t.start_date).substring(0, 4) : '';
+        const isCurrent = !!t.is_active;
+        const eYear = (!isCurrent && t.end_date && t.end_date !== 'PRESENT') ? String(t.end_date).substring(0, 4) : '';
+
+        if (window.i18n && typeof window.i18n.formatTenureDuration === 'function') {
+            const formatted = window.i18n.formatTenureDuration(sYear, eYear, isApplicant, isCurrent);
+            if (formatted) {
+                return isEn
+                    ? formatted.replace(/^Lease started\s*/i, '').replace(/^From\s*/i, '')
+                    : formatted.replace(/^بدء الإيجار\s*/, '').replace(/^من\s*/, '');
+            }
+        }
+
+        if (isEn) {
+            if (isCurrent) {
+                return sYear ? `${sYear} (Current)` : 'Current Resident';
+            }
+            return (sYear && eYear) ? `${sYear} – ${eYear}` : (sYear || 'Vacated');
+        }
+
+        return (t.duration_str_ar || '')
+            .replace(/^بدء الإيجار\s*/, '')
+            .replace(/^فترة الإيجار:\s*/, '');
     }
 
     function getTenantTenureCategory(t) {
@@ -465,7 +513,8 @@
 
         const container = document.createElement('div');
         container.className = 'space-y-2 py-1';
-        container.dir = 'rtl';
+        const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+        container.dir = isEn ? 'ltr' : 'rtl';
 
         const allTenants = (profile && Array.isArray(profile.tenants)) ? profile.tenants : [];
         const residents = allTenants.filter(t => t.is_resident !== 0 && t.is_resident !== false);
@@ -480,16 +529,19 @@
 
         if (!activeTenant) {
             complianceSection.className = 'tenant-compliance-card mb-2.5 p-2.5 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/50';
+            const compTitle = window.i18n ? window.i18n.t('profile.compliance_title') : 'فحص اكتمال ملف الساكن';
+            const vacantDesc = window.i18n ? window.i18n.t('profile.compliance_vacant_desc') : 'المنزل شاغر حالياً — لا يوجد ساكن حالي لإجراء فحص الوثائق الإلزامية.';
+            const vacantBadge = isEn ? 'Vacant' : 'شاغر';
             complianceSection.innerHTML = `
                 <div class="flex items-center justify-between gap-2">
                     <div class="flex items-center gap-2">
                         <span class="w-6 h-6 rounded-lg bg-slate-200/80 dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center text-xs flex-shrink-0">📋</span>
                         <div>
-                            <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200">فحص اكتمال ملف الساكن</h4>
-                            <p class="text-[10.5px] text-slate-500 dark:text-slate-400">المنزل شاغر حالياً — لا يوجد ساكن حالي لإجراء فحص الوثائق الإلزامية.</p>
+                            <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200">${compTitle}</h4>
+                            <p class="text-[10.5px] text-slate-500 dark:text-slate-400">${vacantDesc}</p>
                         </div>
                     </div>
-                    <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 flex-shrink-0">شاغر</span>
+                    <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 flex-shrink-0">${vacantBadge}</span>
                 </div>
             `;
         } else {
@@ -504,37 +556,50 @@
                 ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
                 : 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800';
 
+            const compTitle = window.i18n ? window.i18n.t('profile.compliance_title') : 'فحص اكتمال ملف الساكن';
+            const completeScoreText = isEn ? 'Complete 5/5 ✓' : 'مكتمل 5/5 ✓';
+            const incompleteScoreText = isEn ? `${compliance.presentCount}/5 Incomplete ⚠️` : `${compliance.presentCount}/5 ناقص ⚠️`;
+
             const itemsHtml = compliance.items.map(cat => {
+                const label = isEn ? (cat.labelEn || cat.label) : cat.label;
                 if (cat.exists) {
+                    const availTitle = isEn 
+                        ? `Available (${cat.documentCount} ${cat.documentCount === 1 ? 'document' : 'documents'}) - Click to view folder`
+                        : `متوفر (${cat.documentCount} وثيقة) - انقر لعرض المجلد`;
+                    const availText = isEn ? `Available (${cat.documentCount})` : `متوفر (${cat.documentCount})`;
                     return `
                         <div class="compliance-item p-1.5 px-2 rounded-lg border border-emerald-200/80 dark:border-emerald-800/50 bg-white dark:bg-emerald-950/30 flex flex-col justify-between cursor-pointer hover:border-emerald-400 hover:shadow-2xs transition-all group"
                              data-category-prefix="${cat.prefix}"
-                             title="متوفر (${cat.documentCount} وثيقة) - انقر لعرض المجلد">
+                             title="${availTitle}">
                             <div class="flex items-center justify-between gap-1 mb-0.5">
                                 <span class="text-[9.5px] font-bold text-emerald-700 dark:text-emerald-400 font-mono">${cat.id}</span>
                                 <span class="w-3.5 h-3.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center text-[9px] font-bold">✓</span>
                             </div>
-                            <div class="text-[11px] font-bold text-slate-800 dark:text-slate-100 truncate mb-1" title="${cat.label}">${cat.label}</div>
+                            <div class="text-[11px] font-bold text-slate-800 dark:text-slate-100 truncate mb-1" title="${label}">${label}</div>
                             <div class="flex items-center justify-between text-[9.5px] text-emerald-600 dark:text-emerald-400 font-medium">
-                                <span>متوفر (${cat.documentCount})</span>
-                                <svg class="w-2.5 h-2.5 text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                <span>${availText}</span>
+                                <svg class="w-2.5 h-2.5 text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${isEn ? 'M9 5l7 7-7 7' : 'M15 19l-7-7 7-7'}"/></svg>
                             </div>
                         </div>
                     `;
                 } else {
+                    const uploadTitle = isEn 
+                        ? `Upload ${label} for resident ${activeTenant.name}`
+                        : `رفع ${label} للساكن ${activeTenant.name}`;
+                    const uploadBtnText = isEn ? 'Upload' : 'رفع';
                     return `
                         <div class="compliance-item p-1.5 px-2 rounded-lg border border-amber-200/90 dark:border-amber-800/60 bg-white dark:bg-amber-950/30 flex flex-col justify-between transition-all">
                             <div class="flex items-center justify-between gap-1 mb-0.5">
                                 <span class="text-[9.5px] font-bold text-amber-700 dark:text-amber-400 font-mono">${cat.id}</span>
                                 <span class="w-3.5 h-3.5 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 flex items-center justify-center text-[9px] font-bold">⚠️</span>
                             </div>
-                            <div class="text-[11px] font-bold text-slate-800 dark:text-slate-100 truncate mb-1" title="${cat.label}">${cat.label}</div>
+                            <div class="text-[11px] font-bold text-slate-800 dark:text-slate-100 truncate mb-1" title="${label}">${label}</div>
                             <button type="button" class="btn-compliance-upload w-full py-0.5 px-1.5 rounded-md bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-bold text-[10px] flex items-center justify-center gap-1 shadow-2xs cursor-pointer transition-all hover:scale-[1.02]"
                                     data-cat-prefix="${cat.prefix}"
                                     data-cat-name="${cat.key}"
-                                    title="رفع ${cat.label} للساكن ${activeTenant.name}">
+                                    title="${uploadTitle}">
                                 <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
-                                <span>رفع</span>
+                                <span>${uploadBtnText}</span>
                             </button>
                         </div>
                     `;
@@ -542,6 +607,8 @@
             }).join('');
 
             const isExpanded = typeof localStorage !== 'undefined' ? localStorage.getItem('tenant_compliance_expanded') !== 'false' : true;
+            const toggleShowText = isEn ? 'Show' : 'عرض';
+            const toggleHideText = isEn ? 'Hide' : 'إخفاء';
 
             complianceSection.className = `tenant-compliance-card mb-2.5 p-2.5 rounded-xl border ${cardBorder} shadow-2xs`;
 
@@ -550,17 +617,17 @@
                     <div class="flex items-center gap-2 min-w-0">
                         <span class="text-sm">🛡️</span>
                         <div class="flex items-center gap-1.5 min-w-0 truncate">
-                            <h4 class="text-xs font-bold text-slate-900 dark:text-slate-100">فحص اكتمال ملف الساكن</h4>
+                            <h4 class="text-xs font-bold text-slate-900 dark:text-slate-100">${compTitle}</h4>
                             <span class="text-[10px] text-slate-300 dark:text-slate-600">•</span>
                             <span class="text-xs font-semibold text-blue-600 dark:text-blue-400 truncate">${activeTenant.name}</span>
                         </div>
                     </div>
                     <div class="flex items-center gap-1.5 flex-shrink-0">
                         <span class="compliance-score-badge text-[10.5px] font-bold px-2 py-0.5 rounded-md border ${badgeClass}">
-                            ${isComplete ? 'مكتمل 5/5 ✓' : `${compliance.presentCount}/5 ناقص ⚠️`}
+                            ${isComplete ? completeScoreText : incompleteScoreText}
                         </span>
                         <button type="button" class="btn-toggle-compliance text-[10px] font-medium px-1.5 py-0.5 rounded text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 border border-slate-200 dark:border-slate-700 flex items-center gap-0.5 transition-all">
-                            <span class="toggle-text">${isExpanded ? 'إخفاء' : 'عرض'}</span>
+                            <span class="toggle-text">${isExpanded ? toggleHideText : toggleShowText}</span>
                             <svg class="w-3 h-3 transform transition-transform ${isExpanded ? 'rotate-180' : ''} toggle-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                     </div>
@@ -581,7 +648,7 @@
             if (headerToggle && bodyContainer) {
                 headerToggle.addEventListener('click', (e) => {
                     const nowHidden = bodyContainer.classList.toggle('hidden');
-                    if (toggleText) toggleText.textContent = nowHidden ? 'عرض' : 'إخفاء';
+                    if (toggleText) toggleText.textContent = nowHidden ? toggleShowText : toggleHideText;
                     if (toggleIcon) toggleIcon.classList.toggle('rotate-180', !nowHidden);
                     if (typeof localStorage !== 'undefined') {
                         localStorage.setItem('tenant_compliance_expanded', (!nowHidden).toString());
@@ -631,13 +698,16 @@
         const residentsSection = document.createElement('div');
         residentsSection.className = 'residents-section space-y-2';
 
+        const tenantsHeaderTitle = isEn ? 'Tenants' : 'المستأجرون';
+        const emptyTenantsText = isEn ? 'No tenants currently registered for this house.' : 'لا يوجد مستأجرون مسجلون لهذا المنزل حالياً.';
+
         if (applicants.length > 0) {
             const residentsHeader = document.createElement('div');
             residentsHeader.className = 'flex items-center justify-between px-1 mb-1.5 residents-header';
             residentsHeader.innerHTML = `
                 <h3 class="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
                     <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                    <span>المستأجرون</span>
+                    <span>${tenantsHeaderTitle}</span>
                     <span class="text-[10px] font-semibold text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.2 rounded-full">${residents.length}</span>
                 </h3>
             `;
@@ -647,7 +717,7 @@
         if (residents.length === 0) {
             const emptyEl = document.createElement('p');
             emptyEl.className = 'text-xs text-slate-400 p-4 text-center bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700';
-            emptyEl.textContent = 'لا يوجد مستأجرون مسجلون لهذا المنزل حالياً.';
+            emptyEl.textContent = emptyTenantsText;
             residentsSection.appendChild(emptyEl);
         } else {
             residents.forEach(t => {
@@ -662,9 +732,7 @@
                 }`;
                 card.dataset.tenantName = t.name;
 
-                const cleanDuration = (t.duration_str_ar || '')
-                    .replace(/^بدء الإيجار\s*/, '')
-                    .replace(/^فترة الإيجار:\s*/, '');
+                const cleanDuration = getLocalizedTenureDuration(t);
 
                 const avatarIcon = t.is_active
                     ? `<div class="w-8 h-8 rounded-lg ${theme.avatar} flex items-center justify-center flex-shrink-0">
@@ -674,15 +742,26 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                        </div>`;
 
+                const currentBadgeTitle = isEn ? 'Current Resident' : 'المستأجر الحالي';
+                const currentBadgeLabel = isEn ? 'Current' : 'حالي';
+                const pastBadgeTitle = isEn ? 'Past Resident' : 'مستأجر سابق';
+                const pastBadgeLabel = isEn ? 'Vacated' : 'سابق';
+
                 const badgeHtml = t.is_active
-                    ? `<span class="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${theme.badge}" title="المستأجر الحالي">
+                    ? `<span class="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${theme.badge}" title="${currentBadgeTitle}">
                         <span class="w-1.5 h-1.5 rounded-full ${theme.dot}"></span>
-                        حالي
+                        ${currentBadgeLabel}
                        </span>`
-                    : `<span class="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-slate-200 bg-slate-100 text-slate-600" title="مستأجر سابق">
+                    : `<span class="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-slate-200 bg-slate-100 text-slate-600" title="${pastBadgeTitle}">
                         <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                        سابق
+                        ${pastBadgeLabel}
                        </span>`;
+
+                const docsTooltip = isEn ? `${t.document_count || 0} documents` : `${t.document_count || 0} مستند`;
+                const foldersTooltip = isEn ? `${t.category_count || 0} folders` : `${t.category_count || 0} مجلدات`;
+                const chevronSvg = isEn
+                    ? `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>`
+                    : `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>`;
 
                 card.innerHTML = `
                     <div class="flex items-center justify-between gap-3">
@@ -696,19 +775,19 @@
                                 <div class="flex items-center gap-2 mt-1 text-[11px] text-slate-500 flex-wrap">
                                     <span class="text-slate-600 font-medium">${cleanDuration}</span>
                                     <span class="text-slate-300">•</span>
-                                    <span class="inline-flex items-center gap-1 text-slate-600" title="${t.document_count || 0} مستند">
+                                    <span class="inline-flex items-center gap-1 text-slate-600" title="${docsTooltip}">
                                         <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                         <span class="font-semibold">${t.document_count || 0}</span>
                                     </span>
-                                    <span class="inline-flex items-center gap-1 text-slate-600" title="${t.category_count || 0} مجلدات">
+                                    <span class="inline-flex items-center gap-1 text-slate-600" title="${foldersTooltip}">
                                         <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
                                         <span class="font-semibold">${t.category_count || 0}</span>
                                     </span>
                                 </div>
                             </div>
                         </div>
-                        <div class="flex items-center text-slate-300 group-hover:text-blue-600 group-hover:-translate-x-1 transition-all flex-shrink-0">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                        <div class="flex items-center text-slate-300 group-hover:text-blue-600 group-hover:${isEn ? 'translate-x-1' : '-translate-x-1'} transition-all flex-shrink-0">
+                            ${chevronSvg}
                         </div>
                     </div>
                 `;
@@ -731,12 +810,14 @@
             const applicantsSection = document.createElement('div');
             applicantsSection.className = 'applicants-section space-y-2';
 
+            const applicantsHeaderTitle = isEn ? 'Applicants' : 'المتقدمون';
+
             const applicantsHeader = document.createElement('div');
             applicantsHeader.className = 'flex items-center justify-between px-1 mb-1.5 applicants-header';
             applicantsHeader.innerHTML = `
                 <h3 class="text-xs font-bold text-purple-800 dark:text-purple-300 flex items-center gap-1.5">
                     <svg class="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
-                    <span>المتقدمون</span>
+                    <span>${applicantsHeaderTitle}</span>
                     <span class="text-[10px] font-semibold text-purple-700 bg-purple-100 dark:bg-purple-950/60 dark:text-purple-300 px-1.5 py-0.2 rounded-full">${applicants.length}</span>
                 </h3>
             `;
@@ -747,7 +828,17 @@
                 card.className = 'applicant-profile-card tenant-profile-card p-3 rounded-xl border border-dashed border-purple-200 dark:border-purple-800/60 bg-purple-50/20 dark:bg-purple-950/20 hover:border-purple-400 hover:bg-purple-50/40 transition-all cursor-pointer group shadow-2xs hover:shadow-sm';
                 card.dataset.tenantName = t.name;
 
-                const appDateStr = t.start_date ? 'أول وثيقة: ' + String(t.start_date).substring(0, 10) : 'بانتظار أول وثيقة (تلقائي)';
+                const appDateStr = t.start_date
+                    ? (isEn ? 'First document: ' : 'أول وثيقة: ') + String(t.start_date).substring(0, 10)
+                    : (isEn ? 'Awaiting first upload' : 'بانتظار أول وثيقة (تلقائي)');
+
+                const applicantBadgeTitle = isEn ? 'Applicant - Pending Placement' : 'متقدم - لم يسكن في المنزل';
+                const applicantBadgeText = isEn ? '📋 Applicant (Pending)' : '📋 متقدم (لم يسكن)';
+                const docsTooltip = isEn ? `${t.document_count || 0} documents` : `${t.document_count || 0} مستند`;
+                const foldersTooltip = isEn ? `${t.category_count || 0} folders` : `${t.category_count || 0} مجلدات`;
+                const chevronSvg = isEn
+                    ? `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>`
+                    : `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>`;
 
                 card.innerHTML = `
                     <div class="flex items-center justify-between gap-3">
@@ -758,27 +849,27 @@
                             <div class="min-w-0 flex-1">
                                 <div class="flex items-center gap-2">
                                     <h4 class="text-xs font-bold text-slate-900 dark:text-slate-100 group-hover:text-purple-600 transition-colors truncate">${t.name}</h4>
-                                    <span class="applicant-badge inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-purple-200 dark:border-purple-800/60 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300" title="متقدم - لم يسكن في المنزل">
+                                    <span class="applicant-badge inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-purple-200 dark:border-purple-800/60 bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300" title="${applicantBadgeTitle}">
                                         <span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
-                                        📋 متقدم (لم يسكن)
+                                        ${applicantBadgeText}
                                     </span>
                                 </div>
                                 <div class="flex items-center gap-2 mt-1 text-[11px] text-slate-500 flex-wrap">
                                     <span class="text-slate-600 dark:text-slate-400 font-medium">${appDateStr}</span>
                                     <span class="text-slate-300 dark:text-slate-600">•</span>
-                                    <span class="inline-flex items-center gap-1 text-slate-600 dark:text-slate-400" title="${t.document_count || 0} مستند">
+                                    <span class="inline-flex items-center gap-1 text-slate-600 dark:text-slate-400" title="${docsTooltip}">
                                         <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                         <span class="font-semibold">${t.document_count || 0}</span>
                                     </span>
-                                    <span class="inline-flex items-center gap-1 text-slate-600 dark:text-slate-400" title="${t.category_count || 0} مجلدات">
+                                    <span class="inline-flex items-center gap-1 text-slate-600 dark:text-slate-400" title="${foldersTooltip}">
                                         <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
                                         <span class="font-semibold">${t.category_count || 0}</span>
                                     </span>
                                 </div>
                             </div>
                         </div>
-                        <div class="flex items-center text-slate-300 group-hover:text-purple-600 group-hover:-translate-x-1 transition-all flex-shrink-0">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                        <div class="flex items-center text-slate-300 group-hover:text-purple-600 group-hover:${isEn ? 'translate-x-1' : '-translate-x-1'} transition-all flex-shrink-0">
+                            ${chevronSvg}
                         </div>
                     </div>
                 `;
@@ -974,16 +1065,19 @@
 
         const tenantSelect = document.getElementById('export-archive-tenant-select');
         if (tenantSelect) {
-            tenantSelect.innerHTML = '<option value="">كامل السجل • All Records</option>';
+            const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+            const allRecordsLabel = isEn ? 'All Records' : 'كامل السجل';
+            tenantSelect.innerHTML = `<option value="">${allRecordsLabel}</option>`;
             if (profile && Array.isArray(profile.tenants)) {
                 profile.tenants.forEach(t => {
                     const opt = document.createElement('option');
                     opt.value = (t.id !== undefined && t.id !== null) ? String(t.id) : (t.name || '');
+                    const durText = getLocalizedTenureDuration(t);
                     if (t.is_active) {
-                        const dur = t.duration_str_ar ? ` (${t.duration_str_ar})` : ' (المستأجر الحالي)';
+                        const dur = durText ? ` (${durText})` : (isEn ? ' (Current Resident)' : ' (المستأجر الحالي)');
                         opt.textContent = `${t.name}${dur}`;
                     } else {
-                        const dur = t.duration_str_ar ? ` (${t.duration_str_ar})` : '';
+                        const dur = durText ? ` (${durText})` : '';
                         opt.textContent = `${t.name}${dur}`;
                     }
                     tenantSelect.appendChild(opt);
@@ -1007,10 +1101,44 @@
         }
     }
 
+    if (typeof window !== 'undefined') {
+        window.addEventListener('languageChanged', () => {
+            if (currentHouseProfile) {
+                const statsBadge = document.getElementById('stats-badge') || document.getElementById('house-stats-badge');
+                if (statsBadge) {
+                    const residents = (currentHouseProfile.tenants || []).filter(t => t.is_resident !== 0 && t.is_resident !== false);
+                    const applicants = (currentHouseProfile.tenants || []).filter(t => t.is_resident === 0 || t.is_resident === false);
+                    const totalDocs = (currentHouseProfile.archive && currentHouseProfile.archive.total_documents !== undefined)
+                        ? currentHouseProfile.archive.total_documents
+                        : 0;
+                    const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+                    if (isEn) {
+                        if (applicants.length > 0) {
+                            statsBadge.textContent = `${residents.length} Tenants · ${applicants.length} Applicants · ${totalDocs} Documents`;
+                        } else {
+                            statsBadge.textContent = `${residents.length} Tenants · ${totalDocs} Documents`;
+                        }
+                    } else {
+                        if (applicants.length > 0) {
+                            statsBadge.textContent = `${residents.length} مستأجرين · ${applicants.length} طلبات تخصيص · ${totalDocs} وثيقة`;
+                        } else {
+                            statsBadge.textContent = `${residents.length} مستأجرين · ${totalDocs} وثيقة`;
+                        }
+                    }
+                }
+                const docListEl = document.getElementById('document-list');
+                if (docListEl && (docListEl.querySelector('.tenant-profile-card') || docListEl.querySelector('.tenant-compliance-card'))) {
+                    renderHouseProfile(currentHouseProfile);
+                }
+            }
+        });
+    }
+
     window.loadHouseProfile = loadHouseProfile;
     window.renderHouseProfile = renderHouseProfile;
     window.computeTenantCompliance = computeTenantCompliance;
     window.MANDATORY_INTEGRITY_CATEGORIES = MANDATORY_INTEGRITY_CATEGORIES;
+    window.getLocalizedTenureDuration = getLocalizedTenureDuration;
     window.openExportArchiveModal = openExportArchiveModal;
     window.closeExportArchiveModal = closeExportArchiveModal;
     window.setExportFormat = setExportFormat;
@@ -1023,6 +1151,7 @@
             renderHouseProfile,
             computeTenantCompliance,
             MANDATORY_INTEGRITY_CATEGORIES,
+            getLocalizedTenureDuration,
             getTenantTenureCategory,
             TENURE_THEMES,
             openExportArchiveModal,

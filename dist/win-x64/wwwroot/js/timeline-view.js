@@ -355,9 +355,11 @@
                 ? `<span class="doc-note-badge text-[10px] bg-amber-100 text-amber-800 border border-amber-300/70 px-1.5 py-0.5 rounded flex items-center gap-1 font-semibold flex-shrink-0" title="${escapeHtml(doc.notes)}">📝 ${escapeHtml(snippet)}</span>` 
                 : '';
             const isApplicant = doc.is_resident === 0 || doc.is_resident === false;
+            const applicantTitle = window.i18n ? window.i18n.t('profile.applicant_status', 'متقدم (لم يسكن)') : 'متقدم (لم يسكن)';
+            const noTenantText = window.i18n ? (window.i18n.getLanguage() === 'ar' ? 'بدون مستأجر' : 'No Tenant') : 'No Tenant';
             const tenantBadgeHtml = isApplicant
-                ? `<span class="bg-purple-50 text-purple-700 px-2 py-0.5 rounded-md font-medium text-[10px] border border-purple-200 truncate max-w-[140px] flex items-center gap-1" title="متقدم (لم يسكن)"><span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>${escapeHtml(doc.primary_tenant || 'No Tenant')}</span>`
-                : `<span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md font-medium text-[10px] border border-slate-200 truncate max-w-[140px]">${escapeHtml(doc.primary_tenant || 'No Tenant')}</span>`;
+                ? `<span class="bg-purple-50 text-purple-700 px-2 py-0.5 rounded-md font-medium text-[10px] border border-purple-200 truncate max-w-[140px] flex items-center gap-1" title="${applicantTitle}"><span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>${escapeHtml(doc.primary_tenant || noTenantText)}</span>`
+                : `<span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md font-medium text-[10px] border border-slate-200 truncate max-w-[140px]">${escapeHtml(doc.primary_tenant || noTenantText)}</span>`;
             
             card.innerHTML = `
                 <div class="flex justify-between items-start gap-2">
@@ -559,6 +561,14 @@
     }
 
     if (typeof window !== 'undefined') {
+        window.addEventListener('languageChanged', () => {
+            const tl = (typeof currentTimeline !== 'undefined' ? currentTimeline : (typeof window !== 'undefined' ? window.currentTimeline : [])) || [];
+            const docListEl = document.getElementById('document-list');
+            if (docListEl && docListEl.querySelector('[data-vault-id]') && Array.isArray(tl) && tl.length > 0) {
+                renderTimeline(tl);
+            }
+        });
+
         window.loadTimeline = loadTimeline;
         window.renderTimeline = renderTimeline;
         window.reorderTimelineCard = reorderTimelineCard;

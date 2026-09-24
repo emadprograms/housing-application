@@ -136,7 +136,8 @@ describe('Export Archive Options Modal Component', () => {
     const tenantSelect = document.getElementById('export-archive-tenant-select');
     expect(tenantSelect.options.length).toBe(3); // All tenants + 2 tenants
     expect(tenantSelect.options[0].value).toBe('');
-    expect(tenantSelect.options[0].textContent).toBe('كامل السجل • All Records');
+    expect(tenantSelect.options[0].textContent).toMatch(/^(كامل السجل|All Records)$/);
+    expect(tenantSelect.options[0].textContent).not.toContain('•');
     expect(tenantSelect.options[0].textContent).not.toContain('🏛️');
     expect(tenantSelect.options[1].value).toBe('1');
     expect(tenantSelect.options[1].textContent).toBe('محمد مبارك (2020 – 2022)');

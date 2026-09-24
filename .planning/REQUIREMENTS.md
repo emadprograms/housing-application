@@ -21,8 +21,8 @@ Requirements for Milestone v18.0: Clean Language Separation & Localization (Arab
 
 ### English Localization for Arabic-Only Components (TRNS)
 
-- [ ] **TRNS-01**: House Profile tenancy register provides full English translations for all sections, headers, statuses, tenure duration counters, and navigation (`Tenancy Register`, `Tenants`, `Applicants`, `Active Tenant`, `Past Tenants`, `Vacated`, `Present`, `Back to House Register`, `Digital Archive Profile`).
-- [ ] **TRNS-02**: Category folders and document categories provide standardized English translations (e.g., `01 - Identity & Personal Documents`, `02 - Lease Contracts`, `03 - Clearances & Evictions`, `04 - Receipts & Payment Vouchers`, `05 - Correspondence & Notices`, `06 - Maintenance & Repairs`, `07 - Ownership & Title Deeds`, `08 - Other Documents`) alongside their Arabic originals.
+- [x] **TRNS-01**: House Profile tenancy register provides full English translations for all sections, headers, statuses, tenure duration counters, and navigation (`Tenancy Register`, `Tenants`, `Applicants`, `Active Tenant`, `Past Tenants`, `Vacated`, `Present`, `Back to House Register`, `Digital Archive Profile`).
+- [x] **TRNS-02**: Category folders and document categories provide standardized English translations (e.g., `01 - Identity & Personal Documents`, `02 - Lease Contracts`, `03 - Clearances & Evictions`, `04 - Receipts & Payment Vouchers`, `05 - Correspondence & Notices`, `06 - Maintenance & Repairs`, `07 - Ownership & Title Deeds`, `08 - Other Documents`) alongside their Arabic originals.
 - [ ] **TRNS-03**: Modals and action dialogs (House Settings, Tenant Management, Document Actions dropdown/modal, Date Change, Export Archive, Merge Documents, Delete Confirmations) render complete English translations when English is active.
 - [ ] **TRNS-04**: Ingest Station workflows (Single Document, Broadcast Notice, House Batch), drag-and-drop dropzones, file queue tables, and system toast notifications render purely in the active language.
 
@@ -62,8 +62,8 @@ Which phases cover which requirements. Populated during roadmap creation.
 | CLEAN-01 | Phase 121 | Complete |
 | CLEAN-02 | Phase 121 | Complete |
 | CLEAN-03 | Phase 121 | Complete |
-| TRNS-01 | Phase 122 | Pending |
-| TRNS-02 | Phase 122 | Pending |
+| TRNS-01 | Phase 122 | Complete |
+| TRNS-02 | Phase 122 | Complete |
 | TRNS-03 | Phase 123 | Pending |
 | TRNS-04 | Phase 123 | Pending |
 | TEST-01 | Phase 124 | Pending |
