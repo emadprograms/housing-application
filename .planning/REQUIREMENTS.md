@@ -15,9 +15,9 @@ Requirements for Milestone v18.0: Clean Language Separation & Localization (Arab
 
 ### Elimination of Intermixed Bilingual Strings (CLEAN)
 
-- [ ] **CLEAN-01**: Top navigation bar, search palette trigger, theme button, shortcuts helper, upload trigger, and user profile badge/dropdown eliminate intermixed text (e.g. `الصلاحيات • Permissions`, `تبديل • Switch`, `خروج • Logout`, `Toggle sidebar • تبديل الشريط الجانبي`), rendering purely in the active language.
-- [ ] **CLEAN-02**: Login screen and brand displays present pure English or pure Arabic without mixed subtitles or dual-language labels.
-- [ ] **CLEAN-03**: Keyboard shortcuts modal, Spotlight command palette (`⌘K`), and view options filter dropdown render purely in the selected language without slash-separated or bullet-separated bilingual strings.
+- [x] **CLEAN-01**: Top navigation bar, search palette trigger, theme button, shortcuts helper, upload trigger, and user profile badge/dropdown eliminate intermixed text (e.g. `الصلاحيات • Permissions`, `تبديل • Switch`, `خروج • Logout`, `Toggle sidebar • تبديل الشريط الجانبي`), rendering purely in the active language.
+- [x] **CLEAN-02**: Login screen and brand displays present pure English or pure Arabic without mixed subtitles or dual-language labels.
+- [x] **CLEAN-03**: Keyboard shortcuts modal, Spotlight command palette (`⌘K`), and view options filter dropdown render purely in the selected language without slash-separated or bullet-separated bilingual strings.
 
 ### English Localization for Arabic-Only Components (TRNS)
 
@@ -59,9 +59,9 @@ Which phases cover which requirements. Populated during roadmap creation.
 | LANG-01 | Phase 120 | Complete |
 | LANG-02 | Phase 120 | Complete |
 | LANG-03 | Phase 120 | Complete |
-| CLEAN-01 | Phase 121 | Pending |
-| CLEAN-02 | Phase 121 | Pending |
-| CLEAN-03 | Phase 121 | Pending |
+| CLEAN-01 | Phase 121 | Complete |
+| CLEAN-02 | Phase 121 | Complete |
+| CLEAN-03 | Phase 121 | Complete |
 | TRNS-01 | Phase 122 | Pending |
 | TRNS-02 | Phase 122 | Pending |
 | TRNS-03 | Phase 123 | Pending |
