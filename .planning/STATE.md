@@ -1,41 +1,43 @@
 ---
 gsd_state_version: 1.0
 milestone: v18.0
-milestone_name: Clean Language Separation & Localization
+milestone_name: Clean Language Separation & Localization (Arabic / English)
 status: planning
-last_updated: "2026-09-24T04:19:02.877Z"
+current_phase: 120
+last_updated: "2026-09-24T04:21:00.000Z"
 last_activity: 2026-09-24
 progress:
-  total_phases: 0
+  total_phases: 5
   completed_phases: 0
-  total_plans: 0
+  total_plans: 5
   completed_plans: 0
   percent: 0
 ---
 
 # Milestone State
 
-**Current Milestone:** v17.0: User Authentication, Roles & Permissions
-**Current Phase:** 119: Comprehensive Multi-Stack Verification & Milestone Audit
-**Status:** v17.0 milestone complete
+**Current Milestone:** v18.0 Clean Language Separation & Localization (Arabic / English)
+**Current Phase:** 120: Language Toggle & Directionality Engine
+**Status:** In progress (executing milestone phases)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: Phase 120 (Language Toggle & Directionality Engine)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-09-24 — Milestone v18.0 started
+Status: Ready for execution
+Last activity: 2026-09-24 — Milestone v18.0 started and planned
 
 ## Context
 
-Milestone v17.0 introduced complete user authentication, session management, and role-based access control (RBAC). The system seeds 4 Full Access administrators (Emad, Bubshait, Ehtezaz, Mustafa) with complete rights, and 6 restricted contributors (Nawaf, Naseem, Mulla, Mariam, Shaima, Mona) with Read & Upload permissions only. Restricted contributors are strictly prevented from deleting documents, pages, batches, custom folders, or houses across both backend API guardrails (403 Forbidden) and frontend UI controls. All 970 backend xUnit tests and all 570 frontend Vitest tests pass with 100% parity across src/ and dist/.
+Milestone v18.0 eliminates bilingual intermixing across the application. The system provides a clean, prominent header toggle button (`#lang-toggle-btn`), dynamic document directionality (`dir="rtl"` vs `dir="ltr"`), full English translations for all Arabic-only UI elements (tenancy registers, category folders, dialogs, modals, and ingestion stations), and complete separation between Arabic and English modes without dual-language string clutter.
 
 ## Target Phases
 
-- [x] Phase 116: User Data Model, Password Security & Auth API
-- [x] Phase 117: Login Screen, Session Management & Navbar User Profile
-- [x] Phase 118: Permission-Aware UI Enforcement & Zero-Delete Guards
-- [x] Phase 119: Comprehensive Multi-Stack Verification & Milestone Audit
+- [ ] Phase 120: Language Toggle & Directionality Engine
+- [ ] Phase 121: Top Navbar, Login, Shortcuts & Search Clean-Up
+- [ ] Phase 122: House Profile, Tenancy Register & Category Folders English Localization
+- [ ] Phase 123: Modals, Actions, Ingestion Station & System Messages Localization
+- [ ] Phase 124: Localization Testing, Automated Suite & Multi-Stack Verification
 
 ## Quick Tasks Completed
 

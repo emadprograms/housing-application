@@ -2,6 +2,7 @@
 
 ## Milestones
 
+- 🟡 **v18.0 Clean Language Separation & Localization (Arabic / English)** — Phases 120-124 (in progress)
 - ✅ **v17.0 User Authentication, Roles & Permissions** — Phases 116-119 (shipped 2026-09-17)
 - ✅ **v16.1 Document-Anchored Tenancy Dates & Minimalist Register** — Phase 115 (shipped 2026-09-14)
 - ✅ **v16.0 Settings Streamlining & Applicant Alignment** — Phase 114 (shipped 2026-09-13)
@@ -15,6 +16,52 @@
 - ✅ **v8.0 Web-Based File Viewer** — Phases 81-83 (shipped 2026-09-02)
 
 ## Phases
+
+### 🟡 v18.0 Clean Language Separation & Localization (Arabic / English)
+
+- [ ] Phase 120: Language Toggle & Directionality Engine (0/1 plans)
+- [ ] Phase 121: Top Navbar, Login, Shortcuts & Search Clean-Up (0/1 plans)
+- [ ] Phase 122: House Profile, Tenancy Register & Category Folders English Localization (0/1 plans)
+- [ ] Phase 123: Modals, Actions, Ingestion Station & System Messages Localization (0/1 plans)
+- [ ] Phase 124: Localization Testing, Automated Suite & Multi-Stack Verification (0/1 plans)
+
+#### Phase 120: Language Toggle & Directionality Engine
+**Goal:** Implement client-side i18n module with localStorage persistence, a prominent header toggle button in `#top-navbar`, and dynamic document directionality (`dir="rtl"` vs `dir="ltr"`).
+**Requirements:** LANG-01, LANG-02, LANG-03
+**Success Criteria:**
+1. A dedicated `#lang-toggle-btn` button appears in `#top-navbar` showing the language toggle indicator (`EN` / `عربي`).
+2. Clicking the toggle changes language between Arabic and English, persisting choice in `localStorage.getItem('app_language')`.
+3. Document root direction snaps between `rtl` and `ltr` (`document.documentElement.dir`) with appropriate layout mirroring.
+
+#### Phase 121: Top Navbar, Login, Shortcuts & Search Clean-Up
+**Goal:** Strip all intermixed bilingual strings from top navigation, user profile badge/dropdown, login screen, search palette, and shortcut helper modals.
+**Requirements:** CLEAN-01, CLEAN-02, CLEAN-03
+**Success Criteria:**
+1. Top navbar elements, view dropdowns, search trigger, and tooltips display pure English in EN mode and pure Arabic in AR mode without slash-delimited or bullet-separated bilingual strings.
+2. Login screen and brand title present pure English or pure Arabic without mixed subtitles.
+3. User profile badge and role dropdown display single-language titles and descriptions (`Admin` / `مدير النظام`, `Contributor` / `محرر`).
+
+#### Phase 122: House Profile, Tenancy Register & Category Folders English Localization
+**Goal:** Introduce complete English translations for the House Profile, Tenancy Register, and Category Folders so users never see Arabic-only elements in English mode.
+**Requirements:** TRNS-01, TRNS-02
+**Success Criteria:**
+1. House Profile tenancy register displays fully localized English labels for `Tenants`, `Applicants`, tenure duration, active status badges, and back navigation in English mode.
+2. Category folders render standardized English names (e.g. `01 - Identity & Personal Documents`, `02 - Lease Contracts`, etc.) in English mode and Arabic in Arabic mode.
+
+#### Phase 123: Modals, Actions, Ingestion Station & System Messages Localization
+**Goal:** Localize all dialog modals (House Settings, Tenant Management, Document Actions, Date Change, Export Archive, Merge Documents, Delete Confirmations), Ingestion Station workflows, and system toast notifications.
+**Requirements:** TRNS-03, TRNS-04
+**Success Criteria:**
+1. House Settings, Tenant Management, Export Archive, Merge, and Delete modals render purely in the selected language.
+2. Ingest Station drag-and-drop dropzones, tables, and buttons render in pure English in English mode.
+3. Error messages, confirmation alerts, and toast notifications reflect the active language.
+
+#### Phase 124: Localization Testing, Automated Suite & Multi-Stack Verification
+**Goal:** Author automated unit and component tests for localization and verify that all existing 667+ tests pass with zero regressions.
+**Requirements:** TEST-01, TEST-02
+**Success Criteria:**
+1. New automated Vitest tests verify language switching, direction toggling, dictionary lookups, and DOM rendering.
+2. All 45 test files (667+ tests) pass cleanly with zero failures or regressions.
 
 <details>
 <summary>✅ v17.0 User Authentication, Roles & Permissions (Phases 116-119) — SHIPPED 2026-09-17</summary>
@@ -113,6 +160,11 @@ See [.planning/milestones/v11.0-ROADMAP.md](milestones/v11.0-ROADMAP.md) for ful
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |---|---|---|---|---|
+| 120. Language Toggle & Directionality Engine | v18.0 | 0/1 | In Progress | — |
+| 121. Top Navbar, Login, Shortcuts & Search Clean-Up | v18.0 | 0/1 | Planned | — |
+| 122. House Profile, Tenancy Register & Category Folders English Localization | v18.0 | 0/1 | Planned | — |
+| 123. Modals, Actions, Ingestion Station & System Messages Localization | v18.0 | 0/1 | Planned | — |
+| 124. Localization Testing, Automated Suite & Multi-Stack Verification | v18.0 | 0/1 | Planned | — |
 | 109. Pure .NET Core Architecture & Python Elimination | v15.0 | 1/1 | Complete | 2026-09-13 |
 | 110. Database Schema & Vacancy Guardrails for Applicants | v15.0 | 1/1 | Complete | 2026-09-13 |
 | 111. Segregated Tenancy & Applicant Register UI | v15.0 | 1/1 | Complete | 2026-09-13 |
