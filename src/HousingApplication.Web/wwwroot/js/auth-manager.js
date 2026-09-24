@@ -91,7 +91,8 @@
                     if (urlStr.includes('/api/') && !urlStr.includes('/api/auth/login') && !urlStr.includes('/api/auth/me')) {
                         self.currentUser = null;
                         self.updateNavbarProfile();
-                        self.openLoginModal('انتهت الجلسة. يرجى تسجيل الدخول مجدداً • Session expired. Please log in.');
+                        const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+                        self.openLoginModal(isEn ? 'Session expired. Please log in.' : 'انتهت الجلسة. يرجى تسجيل الدخول مجدداً');
                     }
                 }
 
@@ -100,7 +101,8 @@
                     const urlStr = typeof resource === 'string' ? resource : resource.url || '';
                     if (urlStr.includes('/api/')) {
                         if (typeof window.showToast === 'function') {
-                            window.showToast('عذراً: ليس لديك صلاحية حذف الوثائق أو العناصر (قراءة ورفع فقط) • Deletion is restricted for Contributor accounts.', 'error');
+                            const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+                            window.showToast(isEn ? 'Deletion is restricted for Contributor accounts.' : 'عذراً: ليس لديك صلاحية حذف الوثائق أو العناصر (قراءة ورفع فقط)', 'error');
                         }
                     }
                 }
@@ -121,7 +123,8 @@
                     const password = passwordInput ? passwordInput.value : '';
 
                     if (!username) {
-                        this.showLoginError('يرجى إدخال اسم المستخدم • Please enter username');
+                        const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+                        this.showLoginError(isEn ? 'Please enter username' : 'يرجى إدخال اسم المستخدم');
                         return;
                     }
 
@@ -188,6 +191,12 @@
                     this.closeLoginModal();
                 });
             }
+
+            // Listen for language changes to update profile and user chips
+            window.addEventListener('languageChanged', () => {
+                this.updateNavbarProfile();
+                this.renderUserChips();
+            });
         }
 
         async loadUsers() {
@@ -215,6 +224,7 @@
 
             const admins = this.users.filter(u => u.role === 'Admin');
             const contributors = this.users.filter(u => u.role === 'Contributor');
+            const isEn = window.i18n && window.i18n.getLanguage() === 'en';
 
             let html = `
                 <div class="space-y-3">
@@ -222,9 +232,9 @@
                         <div class="flex items-center justify-between mb-1.5 px-0.5">
                             <span class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                                <span>مدراء النظام (صلاحيات كاملة • Full Access)</span>
+                                <span>${isEn ? 'System Administrators (Full Access)' : 'مدراء النظام (صلاحيات كاملة)'}</span>
                             </span>
-                            <span class="text-[10px] text-slate-400">قراءة + رفع + حذف</span>
+                            <span class="text-[10px] text-slate-400">${isEn ? 'Read + Upload + Delete' : 'قراءة + رفع + حذف'}</span>
                         </div>
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
                             ${admins.map(u => `
@@ -242,9 +252,9 @@
                         <div class="flex items-center justify-between mb-1.5 px-0.5">
                             <span class="text-[11px] font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                                <span>الموظفون (قراءة ورفع فقط • Read &amp; Upload)</span>
+                                <span>${isEn ? 'Staff (Read & Upload Only)' : 'الموظفون (قراءة ورفع فقط)'}</span>
                             </span>
-                            <span class="text-[10px] text-slate-400">الحذف محجوب</span>
+                            <span class="text-[10px] text-slate-400">${isEn ? 'Deletion Restricted' : 'الحذف محجوب'}</span>
                         </div>
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
                             ${contributors.map(u => `
@@ -383,8 +393,12 @@
                     this.notifyStateChanged();
 
                     if (typeof window.showToast === 'function') {
-                        const roleLabel = isAdminRole ? 'صلاحيات كاملة' : 'قراءة ورفع فقط';
-                        window.showToast(`مرحباً ${this.currentUser.displayName} (${roleLabel})`, 'success');
+                        const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+                        const roleLabel = isAdminRole
+                            ? (isEn ? 'Full Access' : 'صلاحيات كاملة')
+                            : (isEn ? 'Read & Upload' : 'قراءة ورفع فقط');
+                        const welcome = isEn ? `Welcome ${this.currentUser.displayName} (${roleLabel})` : `مرحباً ${this.currentUser.displayName} (${roleLabel})`;
+                        window.showToast(welcome, 'success');
                     }
                     return true;
                 }
@@ -392,7 +406,8 @@
                 // Path 2: Backend explicitly rejected credentials (401 Unauthorized)
                 if (res && res.status === 401) {
                     this.currentUser = null;
-                    const errMessage = data.message || data.error || 'اسم المستخدم أو كلمة المرور غير صحيحة • Invalid username or password';
+                    const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+                    const errMessage = data.message || data.error || (isEn ? 'Invalid username or password' : 'اسم المستخدم أو كلمة المرور غير صحيحة');
                     this.showLoginError(errMessage);
                     return false;
                 }
@@ -425,20 +440,26 @@
                     this.notifyStateChanged();
 
                     if (typeof window.showToast === 'function') {
-                        const roleLabel = isAdmin ? 'صلاحيات كاملة' : 'قراءة ورفع فقط';
-                        window.showToast(`مرحباً ${this.currentUser.displayName} (${roleLabel})`, 'success');
+                        const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+                        const roleLabel = isAdmin
+                            ? (isEn ? 'Full Access' : 'صلاحيات كاملة')
+                            : (isEn ? 'Read & Upload' : 'قراءة ورفع فقط');
+                        const welcome = isEn ? `Welcome ${this.currentUser.displayName} (${roleLabel})` : `مرحباً ${this.currentUser.displayName} (${roleLabel})`;
+                        window.showToast(welcome, 'success');
                     }
                     return true;
                 }
 
                 this.currentUser = null;
-                const errMessage = (data && (data.message || data.error)) || 'اسم المستخدم أو كلمة المرور غير صحيحة • Invalid credentials';
+                const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+                const errMessage = (data && (data.message || data.error)) || (isEn ? 'Invalid credentials' : 'اسم المستخدم أو كلمة المرور غير صحيحة');
                 this.showLoginError(errMessage);
                 return false;
             } catch (err) {
                 this.currentUser = null;
                 console.error('[AuthManager] Login unexpected error:', err);
-                this.showLoginError('فشل تسجيل الدخول • Login failed');
+                const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+                this.showLoginError(isEn ? 'Login failed' : 'فشل تسجيل الدخول');
                 return false;
             } finally {
                 this.setLoading(false);
@@ -458,11 +479,12 @@
 
             this.currentUser = null;
             this.updateNavbarProfile();
-            this.openLoginModal('تم تسجيل الخروج بنجاح • Logged out successfully');
+            const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+            this.openLoginModal(isEn ? 'Logged out successfully' : 'تم تسجيل الخروج بنجاح');
             this.notifyStateChanged();
 
             if (typeof window.showToast === 'function') {
-                window.showToast('تم تسجيل الخروج • Logged out', 'success');
+                window.showToast(isEn ? 'Logged out' : 'تم تسجيل الخروج', 'success');
             }
         }
 
@@ -559,9 +581,9 @@
                     avatarBadge.textContent = '?';
                     avatarBadge.className = 'w-6 h-6 rounded-full bg-slate-500 text-white font-bold text-[11px] flex items-center justify-center shadow-xs';
                 }
-                if (nameElem) nameElem.textContent = 'غير مسجل';
+                if (nameElem) nameElem.textContent = window.i18n ? window.i18n.t('auth.not_logged_in') : 'غير مسجل';
                 if (roleBadge) {
-                    roleBadge.textContent = 'تسجيل الدخول';
+                    roleBadge.textContent = window.i18n ? window.i18n.t('auth.login_cta') : 'تسجيل الدخول';
                     roleBadge.className = 'text-[9px] font-semibold text-slate-500 leading-tight';
                 }
                 return;
@@ -582,10 +604,10 @@
 
             if (roleBadge) {
                 if (isAdmin) {
-                    roleBadge.textContent = 'صلاحيات كاملة • Full Access';
+                    roleBadge.textContent = window.i18n ? window.i18n.t('auth.full_access_badge') : 'صلاحيات كاملة';
                     roleBadge.className = 'text-[9px] font-semibold text-emerald-600 dark:text-emerald-400 leading-tight truncate';
                 } else {
-                    roleBadge.textContent = 'قراءة ورفع فقط • Read & Upload';
+                    roleBadge.textContent = window.i18n ? window.i18n.t('auth.read_upload_badge') : 'قراءة ورفع فقط';
                     roleBadge.className = 'text-[9px] font-semibold text-blue-600 dark:text-blue-400 leading-tight truncate';
                 }
             }
@@ -600,18 +622,18 @@
             }
             if (dropdownRoleBadge) {
                 if (isAdmin) {
-                    dropdownRoleBadge.textContent = 'مدير نظام • Admin';
+                    dropdownRoleBadge.textContent = window.i18n ? window.i18n.t('common.admin') : 'مدير النظام';
                     dropdownRoleBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800';
                 } else {
-                    dropdownRoleBadge.textContent = 'موظف • Contributor';
+                    dropdownRoleBadge.textContent = window.i18n ? window.i18n.t('common.contributor') : 'محرر ومراجع';
                     dropdownRoleBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-200 dark:border-blue-800';
                 }
             }
             if (dropdownRoleDesc) {
                 if (isAdmin) {
-                    dropdownRoleDesc.textContent = 'صلاحيات كاملة: قراءة، رفع، تعديل وحذف كافة الوثائق والمنازل.';
+                    dropdownRoleDesc.textContent = window.i18n ? window.i18n.t('auth.admin_desc') : 'صلاحيات كاملة: قراءة، رفع، تعديل وحذف كافة الوثائق والمنازل.';
                 } else {
-                    dropdownRoleDesc.textContent = 'صلاحيات محدودة: قراءة واستعراض ورفع الوثائق. خاصية الحذف محجوبة بالكامل.';
+                    dropdownRoleDesc.textContent = window.i18n ? window.i18n.t('auth.contributor_desc') : 'صلاحيات محدودة: قراءة واستعراض ورفع الوثائق. خاصية الحذف محجوبة بالكامل.';
                 }
             }
         }

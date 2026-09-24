@@ -56,7 +56,7 @@
             'nav.theme_toggle_light': 'تفعيل الوضع الفاتح (Shift+D)',
             'nav.upload_doc': 'رفع وثيقة جديدة (⌘I)',
             'nav.user_profile': 'الملف الشخصي والصلاحيات',
-            'nav.lang_toggle_title': 'Switch to English / التحويل للإنجليزية',
+            'nav.lang_toggle_title': 'التحويل إلى اللغة الإنجليزية',
             'nav.lang_indicator': 'EN',
             'nav.view_options': 'خيارات العرض',
             'nav.filter_houses': 'تصفية المنازل',
@@ -122,7 +122,48 @@
             'doc.empty_folder': 'لا توجد وثائق في هذا المجلد',
             'doc.empty_timeline': 'لا توجد وثائق في الخط الزمني',
             'doc.timeline_view': 'الخط الزمني الشامل',
-            'doc.categories_view': 'مجلدات التصنيفات'
+            'doc.categories_view': 'مجلدات التصنيفات',
+
+            // Shortcuts Modal
+            'shortcuts.title': 'دليل اختصارات لوحة المفاتيح',
+            'shortcuts.subtitle': 'تنقل سريع وتشغيل فوري للأرشيف باستخدام مفاتيح الاختصار.',
+            'shortcuts.search_title': 'البحث الفوري الشامل',
+            'shortcuts.search_desc': 'البحث السريع في المنازل والمستأجرين والوثائق',
+            'shortcuts.sidebar_title': 'إظهار / إخفاء الشريط الجانبي',
+            'shortcuts.sidebar_desc': 'تبديل عرض قائمة الأحياء والتنقل',
+            'shortcuts.upload_title': 'رفع وإيداع وثيقة جديدة',
+            'shortcuts.upload_desc': 'فتح نافذة الإيداع السريع للوثائق',
+            'shortcuts.quicklook_title': 'المعاينة السريعة للوثائق',
+            'shortcuts.quicklook_desc': 'استعراض سريع للوثيقة بدون فتح نافذة التحرير',
+            'shortcuts.close_title': 'إغلاق النوافذ المنبثقة',
+            'shortcuts.close_desc': 'إغلاق النافذة النشطة أو شاشة المعاينة',
+            'shortcuts.theme_title': 'تبديل المظهر الداكن والفاتح',
+            'shortcuts.theme_desc': 'التبديل الفوري بين الوضع الليلي والنهاري',
+            'shortcuts.help_title': 'دليل الاختصارات',
+            'shortcuts.help_desc': 'عرض هذه النافذة التعريفية بالمفاتيح',
+
+            // Command Palette / Search
+            'search.section_commands': 'الأوامر السريعة',
+            'search.section_houses': 'المنازل',
+            'search.section_tenants': 'المستأجرون',
+            'search.section_documents': 'الوثائق',
+            'search.no_results': 'لم يتم العثور على نتائج',
+            'search.no_results_desc': 'جرّب البحث برقم منزل أو اسم مستأجر أو عنوان وثيقة مختلف.',
+            'search.results_count': 'نتيجة',
+            'search.command_theme': 'تبديل المظهر الداكن / الفاتح',
+            'search.command_theme_desc': 'التبديل بين الوضع الليلي والنهاري (Shift+D)',
+
+            // Auth & Roles
+            'auth.full_access_badge': 'صلاحيات كاملة',
+            'auth.read_upload_badge': 'قراءة ورفع فقط',
+            'auth.admin_title': 'مدير النظام',
+            'auth.contributor_title': 'محرر ومراجع',
+            'auth.admin_desc': 'صلاحيات كاملة: قراءة، رفع، تعديل وحذف كافة الوثائق والمنازل.',
+            'auth.contributor_desc': 'صلاحيات محدودة: قراءة واستعراض ورفع الوثائق. خاصية الحذف محجوبة بالكامل.',
+            'auth.logged_out_success': 'تم تسجيل الخروج بنجاح',
+            'auth.logged_out': 'تم تسجيل الخروج',
+            'auth.not_logged_in': 'غير مسجل',
+            'auth.login_cta': 'تسجيل الدخول'
         },
         en: {
             // General & Common
@@ -167,7 +208,7 @@
             'nav.theme_toggle_light': 'Switch to Light Mode (Shift+D)',
             'nav.upload_doc': 'Upload Document (⌘I)',
             'nav.user_profile': 'User Profile & Permissions',
-            'nav.lang_toggle_title': 'التحويل إلى اللغة العربية / Switch to Arabic',
+            'nav.lang_toggle_title': 'Switch to Arabic',
             'nav.lang_indicator': 'عربي',
             'nav.view_options': 'View Options',
             'nav.filter_houses': 'Filter Houses',
@@ -233,7 +274,48 @@
             'doc.empty_folder': 'No documents found in this folder',
             'doc.empty_timeline': 'No documents found in the timeline',
             'doc.timeline_view': 'Chronological Timeline',
-            'doc.categories_view': 'Category Folders'
+            'doc.categories_view': 'Category Folders',
+
+            // Shortcuts Modal
+            'shortcuts.title': 'Keyboard Shortcuts Guide',
+            'shortcuts.subtitle': 'Quickly navigate and operate the archive with key bindings.',
+            'shortcuts.search_title': 'Global Spotlight Search',
+            'shortcuts.search_desc': 'Instant search across houses, tenants, and files',
+            'shortcuts.sidebar_title': 'Toggle Sidebar Navigation',
+            'shortcuts.sidebar_desc': 'Expand or collapse the areas navigation list',
+            'shortcuts.upload_title': 'Ingest & Upload Document',
+            'shortcuts.upload_desc': 'Open the fast document ingestion station',
+            'shortcuts.quicklook_title': 'Spacebar Quick Look Preview',
+            'shortcuts.quicklook_desc': 'Instantly inspect documents without opening edit dialogs',
+            'shortcuts.close_title': 'Close Active Modal or Preview',
+            'shortcuts.close_desc': 'Dismiss any open dialog or preview overlay',
+            'shortcuts.theme_title': 'Toggle Dark / Light Mode',
+            'shortcuts.theme_desc': 'Switch seamlessly between light and dark themes',
+            'shortcuts.help_title': 'Keyboard Shortcuts Guide',
+            'shortcuts.help_desc': 'Display this keyboard shortcuts reference dialog',
+
+            // Command Palette / Search
+            'search.section_commands': 'Commands',
+            'search.section_houses': 'Houses',
+            'search.section_tenants': 'Tenants',
+            'search.section_documents': 'Documents',
+            'search.no_results': 'No results found',
+            'search.no_results_desc': 'Try searching with a different house number, tenant, or keyword.',
+            'search.results_count': 'results',
+            'search.command_theme': 'Toggle Dark / Light Theme',
+            'search.command_theme_desc': 'Switch theme appearance (Shift+D)',
+
+            // Auth & Roles
+            'auth.full_access_badge': 'Full Access',
+            'auth.read_upload_badge': 'Read & Upload',
+            'auth.admin_title': 'System Administrator',
+            'auth.contributor_title': 'Contributor & Reviewer',
+            'auth.admin_desc': 'Full access: Read, upload, edit, and delete all documents and houses.',
+            'auth.contributor_desc': 'Limited access: Read and upload documents. All deletion capabilities are restricted.',
+            'auth.logged_out_success': 'Logged out successfully',
+            'auth.logged_out': 'Logged out',
+            'auth.not_logged_in': 'Guest',
+            'auth.login_cta': 'Sign In'
         }
     };
 

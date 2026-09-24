@@ -123,13 +123,18 @@
         if (!searchResults) return;
         activeResultIndex = -1;
         currentResultItems = [];
+        const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+        const title = isEn ? 'Spotlight Search' : 'البحث الفوري الشامل';
+        const desc = isEn
+            ? 'Search by house number (e.g. 500), tenant name, or document title.'
+            : 'ابحث برقم المنزل (مثل 500 أو ٥٠٠) أو اسم المستأجر أو عنوان الوثيقة.';
         searchResults.innerHTML = `
             <div class="py-10 text-center text-slate-400">
-                <div class="w-10 h-10 mx-auto mb-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400">
+                <div class="w-10 h-10 mx-auto mb-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 </div>
-                <p class="text-xs font-semibold text-slate-600">Command Palette</p>
-                <p class="text-[11px] text-slate-400 mt-0.5">Search by house number (e.g. 500 or ٥٠٠), tenant name, or document title.</p>
+                <p class="text-xs font-semibold text-slate-600 dark:text-slate-300">${title}</p>
+                <p class="text-[11px] text-slate-400 mt-0.5">${desc}</p>
             </div>
         `;
         if (resultCountEl) resultCountEl.textContent = '';
@@ -212,11 +217,19 @@
             if (['dark', 'light', 'theme', 'mode', 'داكن', 'فاتح', 'وضع', 'مظهر'].some(t => qTrim.includes(t))) {
                 const current = (typeof window.getTheme === 'function') ? window.getTheme() : 'light';
                 const next = current === 'dark' ? 'Light' : 'Dark';
+                const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+                const cmdTitle = isEn
+                    ? `Toggle ${next} Theme`
+                    : `تبديل إلى الوضع ${next === 'Dark' ? 'الداكن' : 'الفاتح'}`;
+                const cmdSubtitle = isEn
+                    ? `Currently in ${current} theme (Shift+D)`
+                    : `الوضع الحالي ${current === 'dark' ? 'الداكن' : 'الفاتح'} (Shift+D)`;
+
                 results.unshift({
                     id: 'cmd_toggle_theme',
                     type: 'command',
-                    title: `Toggle ${next} Mode / الوضع ${next === 'Dark' ? 'الداكن' : 'الفاتح'}`,
-                    subtitle: `Currently in ${current} mode • Switch theme (Shift+D)`,
+                    title: cmdTitle,
+                    subtitle: cmdSubtitle,
                     action: () => {
                         if (typeof window.toggleTheme === 'function') {
                             window.toggleTheme();
@@ -241,13 +254,16 @@
     function renderGroupedResults(results) {
         if (!searchResults) return;
         if (!results || results.length === 0) {
+            const noRes = window.i18n ? window.i18n.t('search.no_results') : 'No results found';
+            const noResDesc = window.i18n ? window.i18n.t('search.no_results_desc') : 'Try searching with a different house number, tenant, or keyword.';
             searchResults.innerHTML = `
                 <div class="py-10 text-center text-slate-400">
-                    <p class="text-xs font-semibold text-slate-600">No results found</p>
-                    <p class="text-[11px] text-slate-400 mt-0.5">Try searching with a different house number, tenant, or keyword.</p>
+                    <p class="text-xs font-semibold text-slate-600 dark:text-slate-300">${noRes}</p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">${noResDesc}</p>
                 </div>
             `;
-            if (resultCountEl) resultCountEl.textContent = '0 results';
+            const countLabel = window.i18n ? window.i18n.t('search.results_count') : 'results';
+            if (resultCountEl) resultCountEl.textContent = `0 ${countLabel}`;
             activeResultIndex = -1;
             currentResultItems = [];
             return;
@@ -266,7 +282,8 @@
         currentResultItems = [];
 
         if (resultCountEl) {
-            resultCountEl.textContent = `${results.length} results`;
+            const countLabel = window.i18n ? window.i18n.t('search.results_count') : 'results';
+            resultCountEl.textContent = `${results.length} ${countLabel}`;
         }
 
         // Helper to append a section
@@ -302,7 +319,7 @@
 
         // 0. Commands Section
         createSection(
-            'Commands',
+            window.i18n ? window.i18n.t('search.section_commands') : 'Commands',
             `<svg class="w-3.5 h-3.5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>`,
             commands.length,
             commands,
@@ -335,7 +352,7 @@
 
         // 1. Houses Section
         createSection(
-            'Houses',
+            window.i18n ? window.i18n.t('search.section_houses') : 'Houses',
             `<svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>`,
             houses.length,
             houses,
@@ -366,7 +383,7 @@
 
         // 2. Tenants Section
         createSection(
-            'Tenants',
+            window.i18n ? window.i18n.t('search.section_tenants') : 'Tenants',
             `<svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>`,
             tenants.length,
             tenants,
@@ -412,7 +429,8 @@
                     };
                     avatarIcon = '📋';
                     if (!extraInfoText) {
-                        extraInfoText = '📋 متقدم (لم يسكن)';
+                        const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+                        extraInfoText = isEn ? '📋 Applicant (Pending)' : '📋 متقدم (لم يسكن)';
                     }
                 } else if (isCurrent) {
                     if (durCat === 'medium') {
@@ -464,7 +482,7 @@
 
         // 3. Documents Section (with hierarchical breadcrumbs & direct PDF view)
         createSection(
-            'Documents',
+            window.i18n ? window.i18n.t('search.section_documents') : 'Documents',
             `<svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`,
             documents.length,
             documents,

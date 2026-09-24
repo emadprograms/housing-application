@@ -274,7 +274,7 @@ describe('AuthManager, Login Screen & Session UI (Phase 117)', () => {
         const nameElem = document.getElementById('user-display-name');
         expect(nameElem.textContent).toBe('Emad');
         const roleBadge = document.getElementById('user-role-badge');
-        expect(roleBadge.textContent).toContain('Full Access');
+        expect(['Full Access', 'صلاحيات كاملة', 'صلاحيات كاملة • Full Access']).toContain(roleBadge.textContent);
 
         // Verification of event
         expect(eventDetail).not.toBeNull();
@@ -325,7 +325,7 @@ describe('AuthManager, Login Screen & Session UI (Phase 117)', () => {
         const nameElem = document.getElementById('user-display-name');
         expect(nameElem.textContent).toBe('Nawaf');
         const roleBadge = document.getElementById('user-role-badge');
-        expect(roleBadge.textContent).toContain('Read & Upload');
+        expect(['Read & Upload', 'قراءة ورفع فقط', 'قراءة ورفع فقط • Read & Upload']).toContain(roleBadge.textContent);
 
         // Verification of event
         expect(eventDetail).not.toBeNull();

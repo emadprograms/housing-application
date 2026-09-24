@@ -20,7 +20,7 @@
 ### 🟡 v18.0 Clean Language Separation & Localization (Arabic / English)
 
 - [x] Phase 120: Language Toggle & Directionality Engine (1/1 plans) — completed 2026-09-24
-- [ ] Phase 121: Top Navbar, Login, Shortcuts & Search Clean-Up (0/1 plans)
+- [x] Phase 121: Top Navbar, Login, Shortcuts & Search Clean-Up (1/1 plans) — completed 2026-09-24
 - [ ] Phase 122: House Profile, Tenancy Register & Category Folders English Localization (0/1 plans)
 - [ ] Phase 123: Modals, Actions, Ingestion Station & System Messages Localization (0/1 plans)
 - [ ] Phase 124: Localization Testing, Automated Suite & Multi-Stack Verification (0/1 plans)
