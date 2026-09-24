@@ -3,33 +3,36 @@
 **Defined:** 2026-09-24  
 **Core Value:** A high-performance document management system and web dashboard for housing digital archives, delivering clean language separation with a dedicated header toggle, full English and Arabic localizations, and zero intermixed bilingual text.
 
-## Milestone v18.0 Requirements
+## Milestone v18.1 Requirements
 
-Requirements for Milestone v18.0: Clean Language Separation & Localization (Arabic / English).
+Requirements for Milestone v18.1: UI & Localization Consistency Polish.
 
-### Language Switcher & Directionality Engine (LANG)
+### Move & Copy Modals Localization (MOVE)
 
-- [x] **LANG-01**: User can toggle between Arabic (`ar`) and English (`en`) via a dedicated, intuitive button (`#lang-toggle-btn`) in the top navigation bar (`#top-navbar`) displaying the language indicator (`EN` / `عربي`).
-- [x] **LANG-02**: Active language preference is persisted across browser refreshes and sessions in `localStorage` (`app_language`), defaulting cleanly to Arabic.
-- [x] **LANG-03**: Switching language dynamically updates the document directionality (`dir="rtl"` for Arabic, `dir="ltr"` for English) and the `lang` attribute on `<html>`, adjusting flex ordering, text alignment, and icon chevron orientations.
+- [ ] **MOVE-01**: User opening Move Document modal (single or batch) sees standard category folder options translated according to the active language (e.g. `05 - Contracts` in English vs `05 - عقود` in Arabic) while preserving underlying category mapping and compatibility.
+- [ ] **MOVE-02**: User opening Copy Document modal (single or batch) sees standard category folder options translated according to the active language.
+- [ ] **MOVE-03**: Move and Copy modal optgroup labels (`Standard Folders`, `Custom Folders`), action options (`+ Create New Folder...`), and modal subtitles dynamically render in the active language without hardcoded English or Arabic strings.
 
-### Elimination of Intermixed Bilingual Strings (CLEAN)
+### House Profile Tabs & Navigation Localization (TAB)
 
-- [x] **CLEAN-01**: Top navigation bar, search palette trigger, theme button, shortcuts helper, upload trigger, and user profile badge/dropdown eliminate intermixed text (e.g. `الصلاحيات • Permissions`, `تبديل • Switch`, `خروج • Logout`, `Toggle sidebar • تبديل الشريط الجانبي`), rendering purely in the active language.
-- [x] **CLEAN-02**: Login screen and brand displays present pure English or pure Arabic without mixed subtitles or dual-language labels.
-- [x] **CLEAN-03**: Keyboard shortcuts modal, Spotlight command palette (`⌘K`), and view options filter dropdown render purely in the selected language without slash-separated or bullet-separated bilingual strings.
+- [ ] **TAB-01**: In house view, the first segmented tab dynamically displays pure localized text (`Tenants` / `سجل المستأجرين`) and the adjacent timeline tab displays pure localized text (`House Timeline` / `التسلسل الزمني للمنزل`), eliminating side-by-side language intermixing.
+- [ ] **TAB-02**: In tenant drill-down view, the segmented tabs dynamically display pure localized text (`Folders` / `المجلدات` and `Tenant Timeline` / `التسلسل الزمني للمستأجر`).
+- [ ] **TAB-03**: Router navigation subscribes to the `languageChanged` event so tab titles, tooltips, and header breadcrumbs immediately re-render in the active language when toggled while viewing a house or tenant without requiring a page reload.
 
-### English Localization for Arabic-Only Components (TRNS)
+### Tenant Selectors & Header Stats Polish (TSEL)
 
-- [x] **TRNS-01**: House Profile tenancy register provides full English translations for all sections, headers, statuses, tenure duration counters, and navigation (`Tenancy Register`, `Tenants`, `Applicants`, `Active Tenant`, `Past Tenants`, `Vacated`, `Present`, `Back to House Register`, `Digital Archive Profile`).
-- [x] **TRNS-02**: Category folders and document categories provide standardized English translations (e.g., `01 - Identity & Personal Documents`, `02 - Lease Contracts`, `03 - Clearances & Evictions`, `04 - Receipts & Payment Vouchers`, `05 - Correspondence & Notices`, `06 - Maintenance & Repairs`, `07 - Ownership & Title Deeds`, `08 - Other Documents`) alongside their Arabic originals.
-- [x] **TRNS-03**: Modals and action dialogs (House Settings, Tenant Management, Document Actions dropdown/modal, Date Change, Export Archive, Merge Documents, Delete Confirmations) render complete English translations when English is active.
-- [x] **TRNS-04**: Ingest Station workflows (Single Document, Broadcast Notice, House Batch), drag-and-drop dropzones, file queue tables, and system toast notifications render purely in the active language.
+- [ ] **TSEL-01**: In Move & Copy tenant dropdowns (`formatBatchTenantLabel`), active tenant indicator renders in the active language (` (Current Tenant)` in English vs ` (المستأجر الحالي)` in Arabic).
+- [ ] **TSEL-02**: In House Profile view, the top navbar house stats badge (`#stats-badge`) renders clean localized metrics in both languages (`N Tenants • M Documents` in English vs `N مستأجرين • M وثائق` in Arabic) without hardcoded English words.
 
-### Localization Testing & Regression Guard (TEST)
+### Management Modals & Edge Strings Clean-up (EDGE)
 
-- [x] **TEST-01**: Comprehensive automated tests verify language toggle behavior, `localStorage` persistence, DOM directionality switches (`dir` attribute), and dictionary lookup completeness for all UI strings.
-- [x] **TEST-02**: All existing frontend Vitest tests (45 test files, 667 tests) and backend suites remain 100% passing with zero regressions in either Arabic or English mode.
+- [ ] **EDGE-01**: Manage Tenants modal (`tenant-manager.js`) eliminates residual hardcoded bilingual bullets (` • `) and `(لم يسكن)` in tooltips, placeholder text, and empty states.
+- [ ] **EDGE-02**: Single document action modal (`doc-manager.js`) mode buttons (`Apply Changes`, `Duplicate Document`) and custom folder options render purely in the active language.
+
+### Automated Verification & Regression Guard (TEST)
+
+- [ ] **TEST-01**: Automated unit and component tests verify that Move/Copy modal folder names, tab labels, tenant suffixes, and navbar stats dynamically re-render on language toggle in both Arabic and English modes.
+- [ ] **TEST-02**: Full test suite remains 100% green with zero regressions across all frontend and backend tests, with 1:1 distribution synchronization between `src/` and `dist/`.
 
 ## v2 Requirements
 
@@ -38,42 +41,21 @@ Deferred to future releases.
 ### Multi-Language Expansion
 
 - **MULTI-01**: Support for third language (e.g. Urdu or French) in the i18n translation dictionary.
-- **MULTI-02**: Automatic browser language detection fallback (`navigator.language`).
-
-## Out of Scope
-
-Explicitly excluded to protect milestone focus.
-
-| Feature | Reason |
-|---------|--------|
-| Server-side database content translation | User-uploaded document scans, PDFs, and person names in the database remain in their original recorded script. |
-| Third languages beyond Arabic and English | The core operational staff exclusively uses Arabic and English; additional languages add unnecessary overhead. |
-| Backend API localized error messages | Backend returns standard machine-readable JSON status codes and errors; frontend translates messages locally. |
+- **MULTI-02**: Dynamic custom folder translation alias system for user-created non-standard categories.
 
 ## Traceability
 
-Which phases cover which requirements. Populated during roadmap creation.
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LANG-01 | Phase 120 | Complete |
-| LANG-02 | Phase 120 | Complete |
-| LANG-03 | Phase 120 | Complete |
-| CLEAN-01 | Phase 121 | Complete |
-| CLEAN-02 | Phase 121 | Complete |
-| CLEAN-03 | Phase 121 | Complete |
-| TRNS-01 | Phase 122 | Complete |
-| TRNS-02 | Phase 122 | Complete |
-| TRNS-03 | Phase 123 | Complete |
-| TRNS-04 | Phase 123 | Complete |
-| TEST-01 | Phase 124 | Complete |
-| TEST-02 | Phase 124 | Complete |
-
-**Coverage:**
-- v18.0 requirements: 12 total
-- Mapped to phases: 12
-- Unmapped: 0 ✓
-
----
-*Requirements defined: 2026-09-24*
-*Last updated: 2026-09-24 for v18.0 milestone*
+| MOVE-01 | Phase 125 | Pending |
+| MOVE-02 | Phase 125 | Pending |
+| MOVE-03 | Phase 125 | Pending |
+| TAB-01 | Phase 126 | Pending |
+| TAB-02 | Phase 126 | Pending |
+| TAB-03 | Phase 126 | Pending |
+| TSEL-01 | Phase 127 | Pending |
+| TSEL-02 | Phase 127 | Pending |
+| EDGE-01 | Phase 127 | Pending |
+| EDGE-02 | Phase 127 | Pending |
+| TEST-01 | Phase 128 | Pending |
+| TEST-02 | Phase 128 | Pending |

@@ -6,37 +6,36 @@ status: planning
 last_updated: "2026-09-24T08:03:13.456Z"
 last_activity: 2026-09-24
 progress:
-  total_phases: 0
+  total_phases: 4
   completed_phases: 0
-  total_plans: 0
+  total_plans: 4
   completed_plans: 0
   percent: 0
 ---
 
 # Milestone State
 
-**Current Milestone:** v18.0 Clean Language Separation & Localization (Arabic / English)
-**Current Phase:** 124: Localization Testing, Automated Suite & Multi-Stack Verification
-**Status:** Completed (all phases executed and verified)
+**Current Milestone:** v18.1 UI & Localization Consistency Polish  
+**Current Phase:** 125: Move & Copy Modals Folder & Options Localization  
+**Status:** In Progress (Milestone started, ready to execute)  
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-09-24 — Milestone v18.1 started
+Phase: Phase 125 (Move & Copy Modals Folder & Options Localization)
+Plan: Ready to plan / execute
+Status: Ready
+Last activity: 2026-09-24 — Milestone v18.1 started (Phases 125-128 defined)
 
 ## Context
 
-Milestone v18.0 eliminates bilingual intermixing across the application. Phase 120 established the core i18n engine (`i18n.js`), header language toggle button (`#lang-toggle-btn`), document directionality (`dir="rtl"` vs `dir="ltr"`), and persistent language state. Phase 121 cleaned up the top navbar, user profile badge/dropdown, login screen, shortcuts helper modal, and command palette search. Phase 122 localized the house profile, tenancy register, tenure durations, compliance audit banner, and category folders. Phase 123 localized all dialog modals, viewer actions, page editor, merge subsystem, and toast notifications. Phase 124 completed full automated verification with 49/49 Vitest test suites and 704/704 tests passing, zero intermixed strings, and 100% distribution parity.
+Milestone v18.1 resolves remaining small issues, hardcoded strings, and localization edge cases. Phase 125 addresses Move and Copy document modal folder options, optgroup labels, and subtitles. Phase 126 addresses House Profile tabs and router dynamic re-evaluation on language switch. Phase 127 polishes tenant active suffixes, top navbar stats badge formatting, and management modal strings. Phase 128 delivers automated verification and regression testing.
 
 ## Target Phases
 
-- [x] Phase 120: Language Toggle & Directionality Engine
-- [x] Phase 121: Top Navbar, Login, Shortcuts & Search Clean-Up
-- [x] Phase 122: House Profile, Tenancy Register & Category Folders English Localization
-- [x] Phase 123: Modals, Actions, Ingestion Station & System Messages Localization
-- [x] Phase 124: Localization Testing, Automated Suite & Multi-Stack Verification
+- [ ] Phase 125: Move & Copy Modals Folder & Options Localization
+- [ ] Phase 126: House Profile Tabs & Router Navigation Dynamic Localization
+- [ ] Phase 127: Tenant Suffixes, Header Stats & Management Modals Clean-Up
+- [ ] Phase 128: Automated Localization Suite & Full Regression Verification
 
 ## Quick Tasks Completed
 
