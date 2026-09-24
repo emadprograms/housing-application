@@ -4,9 +4,15 @@
 
 A high-performance document management system and web dashboard for housing digital archives. It stores scanned documents in an immutable vault with relational SQLite metadata, delivering sub-10ms queries, dual Tree/Grid views, tenure color-coding, multi-tenant chronological timelines, category folder drill-downs, phonetic/fuzzy global search, in-browser PDF viewing, and one-click ZIP/PDF archive exports. Built natively on a pure ASP.NET Core 8.0 Minimal API architecture and vanilla JS, with zero Python runtime dependencies.
 
-## Current Milestone: Preparing Next Milestone
+## Current Milestone: v18.0 Clean Language Separation & Localization (Arabic / English)
 
-**Status:** v17.0 Shipped. Use `/gsd-new-milestone` to plan the next version.
+**Goal:** Eliminate bilingual intermixing across the application by introducing a dedicated header language toggle, complete English and Arabic localizations for all UI elements, dynamic RTL/LTR directional support, and clean localized strings without hardcoded bilingual text.
+
+**Target features:**
+- Dedicated Header Language Toggle button (`#lang-toggle-btn`) in `#top-navbar` with persistent preference (`localStorage`).
+- Complete English localization for all UI components, modals, buttons, tooltips, registers, folders, and status messages.
+- Clean language separation: eliminate intermixed bilingual strings (e.g. `مدير النظام • Admin`, `تحميل / Upload`, `المستأجرون / Tenants`), displaying either pure Arabic or pure English according to the active language.
+- Dynamic directional (RTL / LTR) switching with appropriate typography and layout alignment.
 
 ## Past Milestones
 
@@ -491,5 +497,22 @@ Documents are safely stored once in an immutable vault with relational SQLite me
 | Direct SQL API Endpoints | Querying indexed SQLite tables instead of walking disk folders reduces tree rendering latency from seconds to <10ms. | ✓ Completed (Phase 95). |
 | Playwright E2E Verification | Verifies real browser behavior against actual database records, guaranteeing zero regressions across Tree, Grid, Search, and PDF viewing. | ✓ Completed (Phase 96). |
 
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd-transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd-complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
 ---
-*Last updated: 2026-09-17 after v17.0 milestone*
+*Last updated: 2026-09-24 for v18.0 milestone*
