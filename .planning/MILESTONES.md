@@ -1,5 +1,18 @@
 # Milestones History
 
+## v18.1 UI & Localization Consistency Polish (Shipped: 2026-09-24)
+
+**Phases completed:** 4 phases (125-128), 4 plans, 717 Vitest tests across 50 test files (100% passing)
+
+**Key accomplishments:**
+
+- **Move & Copy Modals Folder & Options Localization (Phase 125):** Localized standard folder options (01-13) in both single and batch Move/Copy dialogs via `window.i18n.localizeCategory`, with localized optgroup labels (`Standard Folders` / `المجلدات القياسية`), custom folder headers, creation action (`+ Create New Folder...`), and modal subtitles.
+- **House Profile Tabs & Router Dynamic Localization (Phase 126):** Localized segmented tabs in house view (`Tenants` / `سجل المستأجرين` & `House Timeline` / `التسلسل الزمني للمنزل`) and tenant view (`Folders` / `المجلدات` & `Tenant Timeline` / `التسلسل الزمني للمستأجر`), eliminating side-by-side language mixing, with dynamic reactive updates on `languageChanged`.
+- **Tenant Suffixes, Header Stats & Management Modals Clean-Up (Phase 127):** Dynamic localization of active tenant indicators (`(Current Tenant)` / `(المستأجر الحالي)`) and applicants in dropdowns; top navbar stats badge localization (`N Categories (M Docs)` / `N مجلدات (M وثائق)`); cleaned up Manage Tenants tooltips/placeholders and single doc action modal buttons without bilingual bullets.
+- **Automated Localization Suite & Full Regression Verification (Phase 128):** Created dedicated test suite in `localization_edge_cases.test.js` (12 tests) and verified 100% test pass rate across all 50 test files (717/717 tests passing) with zero static asset diffs between `src/` and `dist/`.
+
+---
+
 ## v18.0 Clean Language Separation & Localization (Arabic / English) (Shipped: 2026-09-24)
 
 **Phases completed:** 5 phases (120-124), 5 plans, 704 Vitest tests across 49 test files (100% passing)

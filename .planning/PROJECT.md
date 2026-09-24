@@ -4,17 +4,21 @@
 
 A high-performance document management system and web dashboard for housing digital archives. It stores scanned documents in an immutable vault with relational SQLite metadata, delivering sub-10ms queries, dual Tree/Grid views, tenure color-coding, multi-tenant chronological timelines, category folder drill-downs, phonetic/fuzzy global search, in-browser PDF viewing, and one-click ZIP/PDF archive exports. Built natively on a pure ASP.NET Core 8.0 Minimal API architecture and vanilla JS, with zero Python runtime dependencies.
 
-## Current Milestone: v18.1 UI & Localization Consistency Polish
+## Current State
 
-**Goal:** Eliminate remaining hardcoded strings, dropdown inconsistencies, and edge-case bilingual text across Document Move/Copy modals, House Profile tabs, navbar stats, and management dialogs, ensuring 100% pure language rendering in both Arabic and English modes.
-
-**Target features:**
-- Move & Copy Document Modals Folder Names & Options Localization: Standard folder names, optgroup labels, and custom folder actions rendered dynamically according to the active language.
-- House Profile Tabs & Navigation Dynamic Localization: Dynamically localize house vs tenant tabs (`Tenants` / `Folders` and `House Timeline` / `Tenant Timeline`), subscribe `router.js` to `languageChanged`, and remove side-by-side language mixing.
-- Tenant Selection Lists & Navbar Badges Language Parity: Replace hardcoded Arabic suffixes (`(المستأجر الحالي)`) with localized equivalents (`(Current Tenant)`), and localize top navbar house stats badge (`Tenants • Applicants • Documents`) in Arabic mode.
-- Management Dialogs & System Edge Strings Cleanup: Remove residual hardcoded text, fallback strings with ` • `, and unlocalized button labels across `tenant-manager.js`, `doc-manager.js`, and `index.html`.
+Milestone v18.1 (UI & Localization Consistency Polish) successfully completed and shipped on 2026-09-24. All 50 Vitest test suites (717 tests) are passing 100% green. 1:1 static asset parity between `src/` and `dist/` is verified with 0 differences.
 
 ## Past Milestones
+
+<details>
+<summary>v18.1 UI & Localization Consistency Polish (Shipped: 2026-09-24)</summary>
+
+- **Move & Copy Modals Folder & Options Localization (Phase 125):** Localized standard folder options (01-13) in both single and batch Move/Copy dialogs via `window.i18n.localizeCategory`, with localized optgroup labels (`Standard Folders` / `المجلدات القياسية`), custom folder headers, creation action (`+ Create New Folder...`), and modal subtitles.
+- **House Profile Tabs & Router Dynamic Localization (Phase 126):** Localized segmented tabs in house view (`Tenants` / `سجل المستأجرين` & `House Timeline` / `التسلسل الزمني للمنزل`) and tenant view (`Folders` / `المجلدات` & `Tenant Timeline` / `التسلسل الزمني للمستأجر`), eliminating side-by-side language mixing, with dynamic reactive updates on `languageChanged`.
+- **Tenant Suffixes, Header Stats & Management Modals Clean-Up (Phase 127):** Dynamic localization of active tenant indicators (`(Current Tenant)` / `(المستأجر الحالي)`) and applicants in dropdowns; top navbar stats badge localization (`N Categories (M Docs)` / `N مجلدات (M وثائق)`); cleaned up Manage Tenants tooltips/placeholders and single doc action modal buttons without bilingual bullets.
+- **Automated Localization Suite & Full Regression Verification (Phase 128):** Created dedicated test suite in `localization_edge_cases.test.js` (12 tests) and verified 100% test pass rate across all 50 test files (717/717 tests passing) with zero static asset diffs between `src/` and `dist/`.
+
+</details>
 
 <details>
 <summary>v18.0 Clean Language Separation & Localization (Arabic / English) (Shipped: 2026-09-24)</summary>

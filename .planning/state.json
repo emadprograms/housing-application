@@ -1,93 +1,12 @@
 {
   "contract": "1.0.0",
   "flavor": "core",
-  "milestone": "v18.1",
-  "phases": [
-    {
-      "number": "120",
-      "name": "Language Toggle & Directionality Engine",
-      "status": "complete"
-    },
-    {
-      "number": "121",
-      "name": "Top Navbar, Login, Shortcuts & Search Clean-Up",
-      "status": "in_progress"
-    },
-    {
-      "number": "122",
-      "name": "House Profile, Tenancy Register & Category Folders English Localization",
-      "status": "pending"
-    },
-    {
-      "number": "123",
-      "name": "Modals, Actions, Ingestion Station & System Messages Localization",
-      "status": "pending"
-    },
-    {
-      "number": "124",
-      "name": "Localization Testing, Automated Suite & Multi-Stack Verification",
-      "status": "pending"
-    },
-    {
-      "number": "109",
-      "name": "Pure .NET Core Architecture & Python Elimination",
-      "status": "complete"
-    },
-    {
-      "number": "110",
-      "name": "Database Schema & Vacancy Guardrails for Applicants",
-      "status": "complete"
-    },
-    {
-      "number": "111",
-      "name": "Segregated Tenancy & Applicant Register UI",
-      "status": "complete"
-    },
-    {
-      "number": "112",
-      "name": "House Settings Modal & Ingestion Badging",
-      "status": "complete"
-    },
-    {
-      "number": "113",
-      "name": "End-to-End Test Suite Verification & Milestone Audit",
-      "status": "complete"
-    },
-    {
-      "number": "114",
-      "name": "Settings Modal Simplification & Applicant Clean-Up",
-      "status": "complete"
-    },
-    {
-      "number": "115",
-      "name": "Document-Anchored Tenancy Dates & Minimalist Register",
-      "status": "complete"
-    },
-    {
-      "number": "116",
-      "name": "User Data Model, Password Security & Auth API",
-      "status": "complete"
-    },
-    {
-      "number": "117",
-      "name": "Login Screen, Session Management & Navbar User Profile",
-      "status": "complete"
-    },
-    {
-      "number": "118",
-      "name": "Permission-Aware UI Enforcement & Zero-Delete Guards",
-      "status": "complete"
-    },
-    {
-      "number": "119",
-      "name": "Comprehensive Multi-Stack Verification & Milestone Audit",
-      "status": "complete"
-    }
-  ],
+  "milestone": "v18.1 — UI & Localization Consistency Polish",
+  "phases": [],
   "next": {
-    "command": "/gsd-discuss-phase",
-    "label": "Discuss the first phase",
-    "reason": "Project initialized — plan your first phase"
+    "command": "/gsd-new-milestone",
+    "label": "Start a new milestone",
+    "reason": "All phases complete — start a new milestone"
   },
-  "updated_at": "2026-09-24T08:03:13.478Z"
+  "updated_at": "2026-09-24T08:47:55.879Z"
 }
