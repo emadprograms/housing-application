@@ -19,7 +19,7 @@
 
 ### 🟡 v18.0 Clean Language Separation & Localization (Arabic / English)
 
-- [ ] Phase 120: Language Toggle & Directionality Engine (0/1 plans)
+- [x] Phase 120: Language Toggle & Directionality Engine (1/1 plans) — completed 2026-09-24
 - [ ] Phase 121: Top Navbar, Login, Shortcuts & Search Clean-Up (0/1 plans)
 - [ ] Phase 122: House Profile, Tenancy Register & Category Folders English Localization (0/1 plans)
 - [ ] Phase 123: Modals, Actions, Ingestion Station & System Messages Localization (0/1 plans)
@@ -160,8 +160,8 @@ See [.planning/milestones/v11.0-ROADMAP.md](milestones/v11.0-ROADMAP.md) for ful
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |---|---|---|---|---|
-| 120. Language Toggle & Directionality Engine | v18.0 | 0/1 | In Progress | — |
-| 121. Top Navbar, Login, Shortcuts & Search Clean-Up | v18.0 | 0/1 | Planned | — |
+| 120. Language Toggle & Directionality Engine | v18.0 | 1/1 | Complete | 2026-09-24 |
+| 121. Top Navbar, Login, Shortcuts & Search Clean-Up | v18.0 | 0/1 | In Progress | — |
 | 122. House Profile, Tenancy Register & Category Folders English Localization | v18.0 | 0/1 | Planned | — |
 | 123. Modals, Actions, Ingestion Station & System Messages Localization | v18.0 | 0/1 | Planned | — |
 | 124. Localization Testing, Automated Suite & Multi-Stack Verification | v18.0 | 0/1 | Planned | — |

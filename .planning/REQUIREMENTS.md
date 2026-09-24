@@ -9,9 +9,9 @@ Requirements for Milestone v18.0: Clean Language Separation & Localization (Arab
 
 ### Language Switcher & Directionality Engine (LANG)
 
-- [ ] **LANG-01**: User can toggle between Arabic (`ar`) and English (`en`) via a dedicated, intuitive button (`#lang-toggle-btn`) in the top navigation bar (`#top-navbar`) displaying the language indicator (`EN` / `عربي`).
-- [ ] **LANG-02**: Active language preference is persisted across browser refreshes and sessions in `localStorage` (`app_language`), defaulting cleanly to Arabic.
-- [ ] **LANG-03**: Switching language dynamically updates the document directionality (`dir="rtl"` for Arabic, `dir="ltr"` for English) and the `lang` attribute on `<html>`, adjusting flex ordering, text alignment, and icon chevron orientations.
+- [x] **LANG-01**: User can toggle between Arabic (`ar`) and English (`en`) via a dedicated, intuitive button (`#lang-toggle-btn`) in the top navigation bar (`#top-navbar`) displaying the language indicator (`EN` / `عربي`).
+- [x] **LANG-02**: Active language preference is persisted across browser refreshes and sessions in `localStorage` (`app_language`), defaulting cleanly to Arabic.
+- [x] **LANG-03**: Switching language dynamically updates the document directionality (`dir="rtl"` for Arabic, `dir="ltr"` for English) and the `lang` attribute on `<html>`, adjusting flex ordering, text alignment, and icon chevron orientations.
 
 ### Elimination of Intermixed Bilingual Strings (CLEAN)
 
@@ -56,9 +56,9 @@ Which phases cover which requirements. Populated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| LANG-01 | Phase 120 | Pending |
-| LANG-02 | Phase 120 | Pending |
-| LANG-03 | Phase 120 | Pending |
+| LANG-01 | Phase 120 | Complete |
+| LANG-02 | Phase 120 | Complete |
+| LANG-03 | Phase 120 | Complete |
 | CLEAN-01 | Phase 121 | Pending |
 | CLEAN-02 | Phase 121 | Pending |
 | CLEAN-03 | Phase 121 | Pending |
