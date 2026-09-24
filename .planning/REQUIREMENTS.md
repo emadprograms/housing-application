@@ -23,13 +23,13 @@ Requirements for Milestone v18.0: Clean Language Separation & Localization (Arab
 
 - [x] **TRNS-01**: House Profile tenancy register provides full English translations for all sections, headers, statuses, tenure duration counters, and navigation (`Tenancy Register`, `Tenants`, `Applicants`, `Active Tenant`, `Past Tenants`, `Vacated`, `Present`, `Back to House Register`, `Digital Archive Profile`).
 - [x] **TRNS-02**: Category folders and document categories provide standardized English translations (e.g., `01 - Identity & Personal Documents`, `02 - Lease Contracts`, `03 - Clearances & Evictions`, `04 - Receipts & Payment Vouchers`, `05 - Correspondence & Notices`, `06 - Maintenance & Repairs`, `07 - Ownership & Title Deeds`, `08 - Other Documents`) alongside their Arabic originals.
-- [ ] **TRNS-03**: Modals and action dialogs (House Settings, Tenant Management, Document Actions dropdown/modal, Date Change, Export Archive, Merge Documents, Delete Confirmations) render complete English translations when English is active.
-- [ ] **TRNS-04**: Ingest Station workflows (Single Document, Broadcast Notice, House Batch), drag-and-drop dropzones, file queue tables, and system toast notifications render purely in the active language.
+- [x] **TRNS-03**: Modals and action dialogs (House Settings, Tenant Management, Document Actions dropdown/modal, Date Change, Export Archive, Merge Documents, Delete Confirmations) render complete English translations when English is active.
+- [x] **TRNS-04**: Ingest Station workflows (Single Document, Broadcast Notice, House Batch), drag-and-drop dropzones, file queue tables, and system toast notifications render purely in the active language.
 
 ### Localization Testing & Regression Guard (TEST)
 
-- [ ] **TEST-01**: Comprehensive automated tests verify language toggle behavior, `localStorage` persistence, DOM directionality switches (`dir` attribute), and dictionary lookup completeness for all UI strings.
-- [ ] **TEST-02**: All existing frontend Vitest tests (45 test files, 667 tests) and backend suites remain 100% passing with zero regressions in either Arabic or English mode.
+- [x] **TEST-01**: Comprehensive automated tests verify language toggle behavior, `localStorage` persistence, DOM directionality switches (`dir` attribute), and dictionary lookup completeness for all UI strings.
+- [x] **TEST-02**: All existing frontend Vitest tests (45 test files, 667 tests) and backend suites remain 100% passing with zero regressions in either Arabic or English mode.
 
 ## v2 Requirements
 
@@ -64,10 +64,10 @@ Which phases cover which requirements. Populated during roadmap creation.
 | CLEAN-03 | Phase 121 | Complete |
 | TRNS-01 | Phase 122 | Complete |
 | TRNS-02 | Phase 122 | Complete |
-| TRNS-03 | Phase 123 | Pending |
-| TRNS-04 | Phase 123 | Pending |
-| TEST-01 | Phase 124 | Pending |
-| TEST-02 | Phase 124 | Pending |
+| TRNS-03 | Phase 123 | Complete |
+| TRNS-04 | Phase 123 | Complete |
+| TEST-01 | Phase 124 | Complete |
+| TEST-02 | Phase 124 | Complete |
 
 **Coverage:**
 - v18.0 requirements: 12 total
