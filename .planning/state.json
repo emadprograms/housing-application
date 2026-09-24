@@ -1,8 +1,33 @@
 {
   "contract": "1.0.0",
   "flavor": "core",
-  "milestone": "v18.0",
+  "milestone": "v18.1",
   "phases": [
+    {
+      "number": "120",
+      "name": "Language Toggle & Directionality Engine",
+      "status": "complete"
+    },
+    {
+      "number": "121",
+      "name": "Top Navbar, Login, Shortcuts & Search Clean-Up",
+      "status": "in_progress"
+    },
+    {
+      "number": "122",
+      "name": "House Profile, Tenancy Register & Category Folders English Localization",
+      "status": "pending"
+    },
+    {
+      "number": "123",
+      "name": "Modals, Actions, Ingestion Station & System Messages Localization",
+      "status": "pending"
+    },
+    {
+      "number": "124",
+      "name": "Localization Testing, Automated Suite & Multi-Stack Verification",
+      "status": "pending"
+    },
     {
       "number": "109",
       "name": "Pure .NET Core Architecture & Python Elimination",
@@ -64,5 +89,5 @@
     "label": "Discuss the first phase",
     "reason": "Project initialized — plan your first phase"
   },
-  "updated_at": "2026-09-24T04:19:02.890Z"
+  "updated_at": "2026-09-24T08:03:13.478Z"
 }

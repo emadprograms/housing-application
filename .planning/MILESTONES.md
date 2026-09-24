@@ -1,12 +1,16 @@
 # Milestones History
 
-## v17.0 User Authentication, Roles & Permissions (Shipped: 2026-09-23)
+## v18.0 Clean Language Separation & Localization (Arabic / English) (Shipped: 2026-09-24)
 
-**Phases completed:** 4 phases, 4 plans, 0 tasks
+**Phases completed:** 5 phases (120-124), 5 plans, 704 Vitest tests across 49 test files (100% passing)
 
 **Key accomplishments:**
 
-- (none recorded)
+- **Language Switcher & Directionality Engine (Phase 120):** Dedicated `#lang-toggle-btn` in `#top-navbar` with persistent preference (`localStorage`), complete Arabic and English dictionaries in `i18n.js`, and dynamic document directionality switches (`dir="rtl"` vs `dir="ltr"`).
+- **Elimination of Intermixed Bilingual Strings (Phase 121):** Removed all ` • ` and ` / ` dual-language strings from top navigation, login motion, user profile badge/dropdown, shortcuts modal, and command palette.
+- **House Profile, Tenancy Register & Category Folders Localization (Phase 122):** Provided full English and Arabic localizations for the House Profile, Tenancy Register, tenure durations, compliance audit checklist, and all 13 standard category folders.
+- **Modals, Actions, Ingestion Station & System Messages Localization (Phase 123):** Localized all interactive dialogs (House Settings, Tenant Management, Document Actions, Date Change, Export Archive, Merge Documents, Delete Confirmations), Ingest Station workflows, and system toast notifications.
+- **Automated Verification & Regression Guard (Phase 124):** Added 4 dedicated localization test suites (37 unit tests) and verified 100% pass rate across all 49 test files (704/704 passing) with zero static asset drift.
 
 ---
 

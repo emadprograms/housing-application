@@ -4,17 +4,28 @@
 
 A high-performance document management system and web dashboard for housing digital archives. It stores scanned documents in an immutable vault with relational SQLite metadata, delivering sub-10ms queries, dual Tree/Grid views, tenure color-coding, multi-tenant chronological timelines, category folder drill-downs, phonetic/fuzzy global search, in-browser PDF viewing, and one-click ZIP/PDF archive exports. Built natively on a pure ASP.NET Core 8.0 Minimal API architecture and vanilla JS, with zero Python runtime dependencies.
 
-## Current Milestone: v18.0 Clean Language Separation & Localization (Arabic / English)
+## Current Milestone: v18.1 UI & Localization Consistency Polish
 
-**Goal:** Eliminate bilingual intermixing across the application by introducing a dedicated header language toggle, complete English and Arabic localizations for all UI elements, dynamic RTL/LTR directional support, and clean localized strings without hardcoded bilingual text.
+**Goal:** Eliminate remaining hardcoded strings, dropdown inconsistencies, and edge-case bilingual text across Document Move/Copy modals, House Profile tabs, navbar stats, and management dialogs, ensuring 100% pure language rendering in both Arabic and English modes.
 
 **Target features:**
-- Dedicated Header Language Toggle button (`#lang-toggle-btn`) in `#top-navbar` with persistent preference (`localStorage`).
-- Complete English localization for all UI components, modals, buttons, tooltips, registers, folders, and status messages.
-- Clean language separation: eliminate intermixed bilingual strings (e.g. `مدير النظام • Admin`, `تحميل / Upload`, `المستأجرون / Tenants`), displaying either pure Arabic or pure English according to the active language.
-- Dynamic directional (RTL / LTR) switching with appropriate typography and layout alignment.
+- Move & Copy Document Modals Folder Names & Options Localization: Standard folder names, optgroup labels, and custom folder actions rendered dynamically according to the active language.
+- House Profile Tabs & Navigation Dynamic Localization: Dynamically localize house vs tenant tabs (`Tenants` / `Folders` and `House Timeline` / `Tenant Timeline`), subscribe `router.js` to `languageChanged`, and remove side-by-side language mixing.
+- Tenant Selection Lists & Navbar Badges Language Parity: Replace hardcoded Arabic suffixes (`(المستأجر الحالي)`) with localized equivalents (`(Current Tenant)`), and localize top navbar house stats badge (`Tenants • Applicants • Documents`) in Arabic mode.
+- Management Dialogs & System Edge Strings Cleanup: Remove residual hardcoded text, fallback strings with ` • `, and unlocalized button labels across `tenant-manager.js`, `doc-manager.js`, and `index.html`.
 
 ## Past Milestones
+
+<details>
+<summary>v18.0 Clean Language Separation & Localization (Arabic / English) (Shipped: 2026-09-24)</summary>
+
+- **Language Switcher & Directionality Engine (Phase 120):** Dedicated `#lang-toggle-btn` in `#top-navbar` with persistent preference (`localStorage`), complete Arabic and English dictionaries in `i18n.js`, and dynamic document directionality switches (`dir="rtl"` vs `dir="ltr"`).
+- **Elimination of Intermixed Bilingual Strings (Phase 121):** Removed all ` • ` and ` / ` dual-language strings from top navigation, login motion, user profile badge/dropdown, shortcuts modal, and command palette.
+- **House Profile, Tenancy Register & Category Folders Localization (Phase 122):** Provided full English and Arabic localizations for the House Profile, Tenancy Register, tenure durations, compliance audit checklist, and all 13 standard category folders.
+- **Modals, Actions, Ingestion Station & System Messages Localization (Phase 123):** Localized all interactive dialogs (House Settings, Tenant Management, Document Actions, Date Change, Export Archive, Merge Documents, Delete Confirmations), Ingest Station workflows, and system toast notifications.
+- **Automated Verification & Regression Guard (Phase 124):** Added 4 dedicated localization test suites (37 unit tests) and verified 100% pass rate across all 49 test files (704/704 passing) with zero static asset drift.
+
+</details>
 
 <details>
 <summary>v17.0 User Authentication, Roles & Permissions (Shipped: 2026-09-17)</summary>
