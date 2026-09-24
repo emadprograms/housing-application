@@ -408,8 +408,9 @@
         
         const initialTenant = activeEditorDoc.tenant || activeEditorDoc.tenant_name || activeEditorDoc.primary_tenant || '';
         if (editorSubtitle) {
-            const cat = activeEditorDoc.category || 'عام';
-            const ten = initialTenant ? initialTenant : 'جاري التحميل...';
+            const isAr = window.i18n ? window.i18n.getLanguage() === 'ar' : true;
+            const cat = activeEditorDoc.category || (isAr ? 'عام' : 'General');
+            const ten = initialTenant ? initialTenant : (isAr ? 'جاري التحميل...' : 'Loading...');
             editorSubtitle.textContent = `${cat} • ${ten}`;
         }
 
@@ -459,15 +460,21 @@
                         editorTitle.textContent = resolvedArabicTitle;
                     }
                     if (editorSubtitle) {
-                        const displayTenant = resolvedTenantName ? resolvedTenantName : 'كامل المنزل (عام)';
-                        editorSubtitle.textContent = `${activeEditorDoc.category || 'عام'} • ${displayTenant}`;
+                        const isAr = window.i18n ? window.i18n.getLanguage() === 'ar' : true;
+                        const defaultTenantName = window.i18n ? window.i18n.t('editor.general_house') : 'كامل المنزل (عام)';
+                        const displayTenant = resolvedTenantName ? resolvedTenantName : defaultTenantName;
+                        const cat = activeEditorDoc.category || (isAr ? 'عام' : 'General');
+                        editorSubtitle.textContent = `${cat} • ${displayTenant}`;
                     }
                 }
             } catch (mErr) {
                 console.warn('Document metadata fetch warning:', mErr);
             } finally {
                 if (editorSubtitle && (!activeEditorDoc.tenant_name && !initialTenant)) {
-                    editorSubtitle.textContent = `${activeEditorDoc.category || 'عام'} • كامل المنزل (عام)`;
+                    const isAr = window.i18n ? window.i18n.getLanguage() === 'ar' : true;
+                    const defaultTenantName = window.i18n ? window.i18n.t('editor.general_house') : 'كامل المنزل (عام)';
+                    const cat = activeEditorDoc.category || (isAr ? 'عام' : 'General');
+                    editorSubtitle.textContent = `${cat} • ${defaultTenantName}`;
                 }
             }
         })();
@@ -486,7 +493,10 @@
                 const totalPages = activePdfDoc.numPages;
 
                 if (editorPageCountBadge) {
-                    editorPageCountBadge.textContent = `${totalPages} صفحة • ${totalPages} page${totalPages > 1 ? 's' : ''}`;
+                    const isAr = window.i18n ? window.i18n.getLanguage() === 'ar' : false;
+                    editorPageCountBadge.textContent = isAr 
+                        ? `${totalPages} ${totalPages === 1 ? 'صفحة' : 'صفحات'}` 
+                        : `${totalPages} page${totalPages > 1 ? 's' : ''}`;
                 }
 
                 currentPageOrder = Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -563,9 +573,14 @@
             card.classList.add('border-blue-500', 'ring-2', 'ring-blue-400/50', 'bg-blue-50/20');
         }
 
+        const deletePageTitle = window.i18n ? window.i18n.t('editor.delete_page') : 'Delete page';
+        const rotatePageTitle = window.i18n ? window.i18n.t('editor.rotate_tooltip') : 'Rotate 90° clockwise';
+        const moveEarlierTitle = window.i18n ? window.i18n.t('editor.move_earlier') : 'Move earlier';
+        const moveLaterTitle = window.i18n ? window.i18n.t('editor.move_later') : 'Move later';
+
         const canDelete = (typeof window !== 'undefined' && window.authManager) ? window.authManager.hasDeletePermission() : true;
         const deleteBtnHtml = canDelete
-            ? `<button type="button" class="btn-card-delete p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer" title="Delete page • حذف الصفحة">
+            ? `<button type="button" class="btn-card-delete p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer" title="${deletePageTitle}">
                 <svg class="w-4 h-4 text-rose-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
             </button>`
             : '<div class="w-4"></div>';
@@ -575,15 +590,15 @@
             <div class="px-3 py-2 bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-700/80 flex items-center justify-between gap-1 flex-shrink-0">
                 <div class="flex items-center gap-1">
                     ${deleteBtnHtml}
-                    <button type="button" class="btn-card-rotate p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/50 transition-colors cursor-pointer" title="Rotate 90° clockwise • تدوير الصفحة 90 درجة">
+                    <button type="button" class="btn-card-rotate p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/50 transition-colors cursor-pointer" title="${rotatePageTitle}">
                         <svg class="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                     </button>
                 </div>
                 <div class="flex items-center gap-1">
-                    <button type="button" class="btn-move-left p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/40 disabled:opacity-30 disabled:pointer-events-none transition-all" title="Move earlier • تقديم الصفحة" ${displayPos <= 1 ? 'disabled' : ''}>
+                    <button type="button" class="btn-move-left p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/40 disabled:opacity-30 disabled:pointer-events-none transition-all" title="${moveEarlierTitle}" ${displayPos <= 1 ? 'disabled' : ''}>
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
                     </button>
-                    <button type="button" class="btn-move-right p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/40 disabled:opacity-30 disabled:pointer-events-none transition-all" title="Move later • تأخير الصفحة" ${displayPos >= totalPages ? 'disabled' : ''}>
+                    <button type="button" class="btn-move-right p-1 rounded-md text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/40 disabled:opacity-30 disabled:pointer-events-none transition-all" title="${moveLaterTitle}" ${displayPos >= totalPages ? 'disabled' : ''}>
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                     </button>
                     <div class="card-checkbox-pill w-5 h-5 rounded-md border flex items-center justify-center transition-all ml-1 ${isSelected ? 'bg-blue-600 border-blue-600 text-white shadow-2xs' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-transparent'}">
@@ -751,8 +766,10 @@
 
     function updateSelectionUI() {
         const count = selectedPageNumbers.size;
+        const isAr = window.i18n ? window.i18n.getLanguage() === 'ar' : false;
+
         if (editorSelectedCount) {
-            editorSelectedCount.textContent = count > 0 ? `(${count} selected • محدد)` : '';
+            editorSelectedCount.textContent = count > 0 ? (isAr ? `(${count} محدد)` : `(${count} selected)`) : '';
         }
 
         if (btnDeleteSelected) {
@@ -765,7 +782,9 @@
                 btnDeleteSelected.disabled = count === 0;
                 const textSpan = btnDeleteSelected.querySelector('.btn-text');
                 if (textSpan) {
-                    textSpan.textContent = count > 0 ? `Delete Selected (${count})` : 'Delete Selected';
+                    textSpan.textContent = count > 0 
+                        ? (isAr ? `حذف المحدد (${count})` : `Delete Selected (${count})`) 
+                        : (isAr ? 'حذف الصفحات المحددة' : 'Delete Selected');
                 }
             }
         }
@@ -774,7 +793,9 @@
             btnRotateSelected.disabled = count === 0;
             const textSpan = btnRotateSelected.querySelector('.btn-text');
             if (textSpan) {
-                textSpan.textContent = count > 0 ? `Rotate 90° (${count})` : 'Rotate 90° (تدوير)';
+                textSpan.textContent = count > 0 
+                    ? (isAr ? `تدوير 90° (${count})` : `Rotate 90° (${count})`) 
+                    : (isAr ? 'تدوير 90°' : 'Rotate 90°');
             }
         }
 
@@ -782,7 +803,9 @@
             btnCopySelected.disabled = count === 0;
             const textSpan = btnCopySelected.querySelector('.btn-text');
             if (textSpan) {
-                textSpan.textContent = count > 0 ? `Copy Selected (${count})...` : 'Copy Pages...';
+                textSpan.textContent = count > 0 
+                    ? (isAr ? `نسخ المحدد (${count})...` : `Copy Selected (${count})...`) 
+                    : (isAr ? 'نسخ الصفحات...' : 'Copy Pages...');
             }
         }
 
@@ -790,7 +813,9 @@
             btnExtractSelected.disabled = count === 0;
             const textSpan = btnExtractSelected.querySelector('.btn-text');
             if (textSpan) {
-                textSpan.textContent = count > 0 ? `Move Selected (${count})...` : 'Move Pages...';
+                textSpan.textContent = count > 0 
+                    ? (isAr ? `فصل ونقل (${count})...` : `Separate & Move (${count})...`) 
+                    : (isAr ? 'فصل ونقل...' : 'Separate & Move...');
             }
         }
     }
@@ -1225,7 +1250,11 @@
                 const toast = (typeof showToast === 'function') ? showToast : (typeof window !== 'undefined' ? window.showToast : null);
                 if (toast) {
                     const count = pagesToRotate.length;
-                    toast(`تم تدوير وحفظ ${count > 1 ? count + ' صفحات' : 'الصفحة'} بنجاح • Rotated ${count} page${count > 1 ? 's' : ''} (90°)`, 'success');
+                    const isAr = window.i18n ? window.i18n.getLanguage() === 'ar' : false;
+                    const msg = isAr 
+                        ? `تم تدوير وحفظ ${count > 1 ? count + ' صفحات' : 'الصفحة'} بنجاح (90°)` 
+                        : `Rotated ${count} page${count > 1 ? 's' : ''} (90°) successfully`;
+                    toast(msg, 'success');
                 }
             } else {
                 // Revert visual transform on error
@@ -1242,7 +1271,7 @@
                     }
                 });
                 const toast = (typeof showToast === 'function') ? showToast : (typeof window !== 'undefined' ? window.showToast : null);
-                if (toast) toast('Failed to rotate pages • فشل تدوير الصفحات', 'error');
+                if (toast) toast(window.i18n ? window.i18n.t('toast.rotate_failed') : 'Failed to rotate pages', 'error');
             }
         } catch (err) {
             console.error('Rotate pages error:', err);
@@ -1259,7 +1288,7 @@
                 }
             });
             const toast = (typeof showToast === 'function') ? showToast : (typeof window !== 'undefined' ? window.showToast : null);
-            if (toast) toast('Error rotating pages • خطأ أثناء تدوير الصفحات', 'error');
+            if (toast) toast(window.i18n ? window.i18n.t('toast.rotate_failed') : 'Error rotating pages', 'error');
         } finally {
             isRotating = false;
         }
@@ -1271,11 +1300,14 @@
         const canDelete = (typeof window !== 'undefined' && window.authManager) ? window.authManager.hasDeletePermission() : true;
         if (!canDelete) {
             const toast = (typeof showToast === 'function') ? showToast : (typeof window !== 'undefined' ? window.showToast : null);
-            if (toast) toast('عذراً: ليس لديك صلاحية حذف صفحات الوثائق (قراءة ورفع فقط) • Page deletion is restricted for Contributor accounts.', 'error');
+            if (toast) toast(window.i18n ? window.i18n.t('toast.delete_page_restricted') : 'Page deletion is restricted for Contributor accounts.', 'error');
             return;
         }
 
-        const confirmMsg = `Are you sure you want to delete Page ${displayPos}? This cannot be undone.\n\nهل أنت متأكد من حذف الصفحة ${displayPos} نهائياً؟`;
+        const isAr = window.i18n ? window.i18n.getLanguage() === 'ar' : false;
+        const confirmMsg = isAr
+            ? `هل أنت متأكد من حذف الصفحة ${displayPos} نهائياً؟ هذا الإجراء لا يمكن التراجع عنه.`
+            : `Are you sure you want to delete Page ${displayPos}? This cannot be undone.`;
         if (!window.confirm(confirmMsg)) return;
 
         await executeDeletePages([pageNum]);
@@ -1287,12 +1319,15 @@
         const canDelete = (typeof window !== 'undefined' && window.authManager) ? window.authManager.hasDeletePermission() : true;
         if (!canDelete) {
             const toast = (typeof showToast === 'function') ? showToast : (typeof window !== 'undefined' ? window.showToast : null);
-            if (toast) toast('عذراً: ليس لديك صلاحية حذف صفحات الوثائق (قراءة ورفع فقط) • Page deletion is restricted for Contributor accounts.', 'error');
+            if (toast) toast(window.i18n ? window.i18n.t('toast.delete_page_restricted') : 'Page deletion is restricted for Contributor accounts.', 'error');
             return;
         }
 
         const count = selectedPageNumbers.size;
-        const confirmMsg = `Are you sure you want to delete ${count} selected page${count > 1 ? 's' : ''}? This cannot be undone.\n\nهل أنت متأكد من حذف ${count} صفحة محددة نهائياً؟`;
+        const isAr = window.i18n ? window.i18n.getLanguage() === 'ar' : false;
+        const confirmMsg = isAr
+            ? `هل أنت متأكد من حذف ${count} صفحة محددة نهائياً؟ هذا الإجراء لا يمكن التراجع عنه.`
+            : `Are you sure you want to delete ${count} selected page${count > 1 ? 's' : ''}? This cannot be undone.`;
         if (!window.confirm(confirmMsg)) return;
 
         await executeDeletePages(Array.from(selectedPageNumbers));
@@ -1304,7 +1339,7 @@
         const canDelete = (typeof window !== 'undefined' && window.authManager) ? window.authManager.hasDeletePermission() : true;
         if (!canDelete) {
             const toast = (typeof showToast === 'function') ? showToast : (typeof window !== 'undefined' ? window.showToast : null);
-            if (toast) toast('عذراً: ليس لديك صلاحية حذف صفحات الوثائق (قراءة ورفع فقط) • Page deletion is restricted for Contributor accounts.', 'error');
+            if (toast) toast(window.i18n ? window.i18n.t('toast.delete_page_restricted') : 'Page deletion is restricted for Contributor accounts.', 'error');
             return;
         }
         const area = activeEditorDoc.area_id || 'default';
@@ -1384,9 +1419,11 @@
     async function openExtractSubmodal(initialMode = 'move') {
         if (!activeEditorDoc) return;
         if (selectedPageNumbers.size === 0) {
+            const isAr = window.i18n ? window.i18n.getLanguage() === 'ar' : false;
             const toast = (typeof showToast === 'function') ? showToast : (typeof window !== 'undefined' ? window.showToast : null);
-            if (toast) toast('Please select at least one page to separate • يرجى تحديد صفحة واحدة على الأقل', 'info');
-            else alert('Please select at least one page to separate • يرجى تحديد صفحة واحدة على الأقل');
+            const selectWarn = isAr ? 'يرجى تحديد صفحة واحدة على الأقل' : 'Please select at least one page to separate';
+            if (toast) toast(selectWarn, 'info');
+            else alert(selectWarn);
             return;
         }
 
@@ -1416,7 +1453,10 @@
         const count = selectedPageNumbers.size;
         const submodalCountBadge = document.getElementById('extract-pages-count-badge');
         if (submodalCountBadge) {
-            submodalCountBadge.textContent = `${count} صفحة محددة • ${count} page${count > 1 ? 's' : ''}`;
+            const isAr = window.i18n ? window.i18n.getLanguage() === 'ar' : false;
+            submodalCountBadge.textContent = isAr 
+                ? `${count} ${count === 1 ? 'صفحة محددة' : 'صفحات محددة'}` 
+                : `${count} page${count > 1 ? 's' : ''} selected`;
         }
 
         // Populate Categories
@@ -1458,15 +1498,20 @@
         if (extractTenantSelect) {
             extractTenantSelect.innerHTML = '';
 
+            const isAr = window.i18n ? window.i18n.getLanguage() === 'ar' : true;
+            const generalText = window.i18n ? window.i18n.t('editor.general_house') : 'كامل المنزل (عام)';
+            const residentSuffix = isAr ? ' (ساكن)' : ' (Resident)';
+            const applicantSuffix = isAr ? ' (متقدم)' : ' (Applicant)';
+
             const generalOpt = document.createElement('option');
             generalOpt.value = '';
-            generalOpt.textContent = 'كامل المنزل (عام) • General House Document';
+            generalOpt.textContent = generalText;
             extractTenantSelect.appendChild(generalOpt);
 
             if (activeEditorDoc.tenant_name && activeEditorDoc.tenant_id) {
                 const initOpt = document.createElement('option');
                 initOpt.value = activeEditorDoc.tenant_id;
-                initOpt.textContent = `${activeEditorDoc.tenant_name} (ساكن)`;
+                initOpt.textContent = `${activeEditorDoc.tenant_name}${residentSuffix}`;
                 initOpt.selected = true;
                 extractTenantSelect.appendChild(initOpt);
             }
@@ -1485,7 +1530,7 @@
                             tenants.forEach(t => {
                                 const opt = document.createElement('option');
                                 opt.value = t.id;
-                                opt.textContent = t.is_resident === 1 ? `${t.name} (ساكن)` : `${t.name} (متقدم)`;
+                                opt.textContent = t.is_resident === 1 ? `${t.name}${residentSuffix}` : `${t.name}${applicantSuffix}`;
                                 if (t.id === activeEditorDoc.tenant_id) {
                                     opt.selected = true;
                                     tenantMatched = true;
@@ -1577,10 +1622,13 @@
 
             const data = await res.json();
 
-            const actionVerb = isMove ? 'moved & separated' : 'copied';
-            const actionVerbAr = isMove ? 'تم النقل والفصل' : 'تم النسخ';
+            const isAr = window.i18n ? window.i18n.getLanguage() === 'ar' : false;
+            const destName = data.new_title || targetCat;
+            const successMsg = isAr
+                ? (isMove ? `تم النقل والفصل إلى "${destName}" بنجاح!` : `تم النسخ إلى "${destName}" بنجاح!`)
+                : (isMove ? `Successfully moved & separated into "${destName}"!` : `Successfully copied into "${destName}"!`);
             if (toast) {
-                toast(`Successfully ${actionVerb} into "${data.new_title || targetCat}"! (${actionVerbAr})`, 'success');
+                toast(successMsg, 'success');
             }
 
             closeExtractSubmodal();

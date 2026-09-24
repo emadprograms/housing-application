@@ -2261,13 +2261,13 @@
             btn.classList.remove('bg-blue-950/40', 'text-blue-300', 'border-blue-600/50', 'hover:bg-blue-800/60');
             btn.classList.add('bg-blue-600', 'text-white', 'border-blue-500', 'shadow-xs', 'ring-2', 'ring-blue-400/40');
             btn.setAttribute('aria-pressed', 'true');
-            btn.title = 'Translation active (English overlay enabled) — Click to view original scan • الترجمة مفعلة — انقر لإظهار المسح الأصلي';
+            btn.title = window.i18n ? window.i18n.t('toast.viewer_translate_active') : 'Translation active (English overlay enabled) — Click to view original scan';
             if (label) label.textContent = 'English (Active)';
         } else {
             btn.classList.add('bg-blue-950/40', 'text-blue-300', 'border-blue-600/50', 'hover:bg-blue-800/60');
             btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-500', 'shadow-xs', 'ring-2', 'ring-blue-400/40');
             btn.setAttribute('aria-pressed', 'false');
-            btn.title = 'Translate document to English (Offline) • ترجمة المستند للإنجليزية';
+            btn.title = window.i18n ? window.i18n.t('toast.viewer_translate_btn') : 'Translate document to English (Offline)';
             if (label) label.textContent = 'English';
         }
     }
@@ -2765,7 +2765,7 @@
                 </div>
                 <div style="display:flex;align-items:center;gap:10px;">
                     <span style="font-size:11px;color:#94a3b8;">${translatedLines.length} line${translatedLines.length === 1 ? '' : 's'}</span>
-                    <button type="button" class="btn-peek-scan" title="Toggle scan visibility • إظهار / إخفاء الأصل" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:rgba(51,65,85,0.7);border:1px solid rgba(148,163,184,0.35);color:#93c5fd;cursor:pointer;transition:all 0.15s ease;">
+                    <button type="button" class="btn-peek-scan" title="${window.i18n ? window.i18n.t('toast.viewer_peek_scan') : 'Toggle scan visibility'}" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:rgba(51,65,85,0.7);border:1px solid rgba(148,163,184,0.35);color:#93c5fd;cursor:pointer;transition:all 0.15s ease;">
                         <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                     </button>
                 </div>
@@ -3438,11 +3438,11 @@
             if (isFullscreen) {
                 expandIcon.classList.add('hidden');
                 collapseIcon.classList.remove('hidden');
-                if (expandBtn) expandBtn.title = 'Exit fullscreen • تصغير الشاشة';
+                if (expandBtn) expandBtn.title = window.i18n ? window.i18n.t('toast.viewer_exit_fullscreen') : 'Exit fullscreen';
             } else {
                 expandIcon.classList.remove('hidden');
                 collapseIcon.classList.add('hidden');
-                if (expandBtn) expandBtn.title = 'Toggle fullscreen • شاشة كاملة';
+                if (expandBtn) expandBtn.title = window.i18n ? window.i18n.t('toast.viewer_fullscreen') : 'Toggle fullscreen';
             }
         }
     }
@@ -3547,8 +3547,8 @@
             }
         }
         toggleBtn.title = isTab 
-            ? 'Using Tab viewer — Click to switch to Computer viewer • وضع التابلت — انقر للتبديل إلى وضع الكمبيوتر' 
-            : 'Using Computer viewer — Click to switch to Tab viewer • وضع الكمبيوتر — انقر للتبديل إلى وضع التابلت';
+            ? (window.i18n ? window.i18n.t('toast.viewer_tab_mode') : 'Using Tab viewer — Click to switch to Computer viewer') 
+            : (window.i18n ? window.i18n.t('toast.viewer_pc_mode') : 'Using Computer viewer — Click to switch to Tab viewer');
     }
 
     let lastOpenDocVaultId = null;

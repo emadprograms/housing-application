@@ -150,7 +150,8 @@
             updateRowNumbers();
         } catch (err) {
             console.error(err);
-            tenantModalRows.innerHTML = '<p class="text-xs text-rose-500 py-3 text-center">Error loading tenants • حدث خطأ أثناء تحميل المستأجرين.</p>';
+            const errText = (typeof window !== 'undefined' && window.i18n) ? window.i18n.t('house_settings.error_loading_tenants') : 'Error loading tenants.';
+            tenantModalRows.innerHTML = `<p class="text-xs text-rose-500 py-3 text-center">${errText}</p>`;
         }
     }
 
@@ -217,14 +218,21 @@
         }
         row.dataset.lastDocDate = lastDocArrival || '';
 
-        const residentStartTitle = 'Start date is always selected as the first document and is auto if there is no document • تاريخ البدء يُحدّد دائماً من تاريخ أول وثيقة، ويكون تلقائياً عند عدم وجود وثائق';
-        const applicantStartTitle = 'Application / Order Date • تاريخ الطلب/التخصيص';
-        const residentEndTitle = 'End date is always selected as the last document and is auto if there is no document • تاريخ الانتهاء يُحدّد دائماً من تاريخ آخر وثيقة، ويكون تلقائياً عند عدم وجود وثائق';
-        const applicantEndTitle = 'N/A (لم يسكن)';
+        const tApi = (typeof window !== 'undefined' && window.i18n) ? window.i18n : null;
+        const residentStartTitle = tApi ? tApi.t('house_settings.start_date_tooltip') : 'Start date is set from first document, or auto if none';
+        const applicantStartTitle = tApi ? tApi.t('house_settings.app_order_date') : 'Application / Order Date';
+        const residentEndTitle = tApi ? tApi.t('house_settings.end_date_tooltip') : 'End date is set from last document, or auto if none';
+        const applicantEndTitle = tApi ? tApi.t('house_settings.did_not_reside') : 'N/A (Did not reside)';
+
+        const autoFirstText = tApi ? tApi.t('house_settings.auto_first_upload') : 'Auto (on first upload)';
+        const autoUploadText = tApi ? tApi.t('house_settings.auto_on_upload') : 'Auto (on upload)';
+        const residentOptText = tApi ? tApi.t('house_settings.tenant_type_resident') : '🏠 Resident';
+        const applicantOptText = tApi ? tApi.t('house_settings.tenant_type_applicant') : '📋 Applicant';
+        const tenantTypeTitle = tApi ? tApi.t('house_settings.tenant_type') : 'Tenant Type';
 
         const startInputHtml = (startVal && String(startVal).trim())
             ? `<input type="text" readonly value="${String(startVal).substring(0, 10)}" title="${isApplicant ? applicantStartTitle : residentStartTitle}" class="tenant-start-input w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-mono font-medium cursor-default" />`
-            : `<input type="text" readonly value="تلقائي (عند أول رفع)" title="${isApplicant ? applicantStartTitle : residentStartTitle}" class="tenant-start-input w-full px-2 py-1.5 text-xs rounded-lg border border-dashed border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 font-medium cursor-default" />`;
+            : `<input type="text" readonly value="${autoFirstText}" title="${isApplicant ? applicantStartTitle : residentStartTitle}" class="tenant-start-input w-full px-2 py-1.5 text-xs rounded-lg border border-dashed border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 font-medium cursor-default" />`;
 
         const endInputTitle = isApplicant ? applicantEndTitle : residentEndTitle;
         const effectiveEndVal = (isApplicant || isPresent || endVal === 'present')
@@ -238,9 +246,9 @@
                        class="tenant-name-input w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-1.5 focus:ring-blue-500/20 focus:border-blue-500 bg-white font-medium" required />
             </div>
             <div class="sm:col-span-2">
-                <select class="tenant-type-select w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-1.5 focus:ring-blue-500/20 focus:border-blue-500 bg-white font-medium" title="Tenant Type • نوع المستأجر">
-                    <option value="resident"${!isApplicant ? ' selected' : ''}>🏠 Resident • مقيم</option>
-                    <option value="applicant"${isApplicant ? ' selected' : ''}>📋 Applicant • متقدم</option>
+                <select class="tenant-type-select w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-1.5 focus:ring-blue-500/20 focus:border-blue-500 bg-white font-medium" title="${tenantTypeTitle}">
+                    <option value="resident"${!isApplicant ? ' selected' : ''}>${residentOptText}</option>
+                    <option value="applicant"${isApplicant ? ' selected' : ''}>${applicantOptText}</option>
                 </select>
             </div>
             <div class="sm:col-span-3">
@@ -248,12 +256,12 @@
             </div>
             <div class="sm:col-span-2">
                 <input type="text" readonly value="${effectiveEndVal}" ${isApplicant || isPresent ? 'disabled' : ''} title="${endInputTitle}"
-                       placeholder="${!isApplicant && !isPresent && !effectiveEndVal ? 'تلقائي (عند الرفع)' : ''}"
+                       placeholder="${!isApplicant && !isPresent && !effectiveEndVal ? autoUploadText : ''}"
                        class="tenant-end-input w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 font-mono font-medium cursor-default ${isApplicant || isPresent ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200'}" />
             </div>
             <div class="sm:col-span-1 flex items-center justify-between sm:justify-center">
                 <span class="text-xs font-semibold text-slate-600 sm:hidden">Present:</span>
-                <input type="checkbox" class="tenant-present-check w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 ${isApplicant ? 'cursor-not-allowed opacity-30' : 'cursor-pointer'}" ${isApplicant ? 'disabled' : (isPresent ? 'checked' : '')} title="Present (Currently residing)" />
+                <input type="checkbox" class="tenant-present-check w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 ${isApplicant ? 'cursor-not-allowed opacity-30' : 'cursor-pointer'}" ${isApplicant ? 'disabled' : (isPresent ? 'checked' : '')} title="Present" />
             </div>
             <div class="sm:col-span-1 flex items-center justify-end sm:justify-center">
                 <button type="button" class="btn-remove-row text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer" title="Delete Tenant">
@@ -460,7 +468,7 @@
         const canDelete = (typeof window !== 'undefined' && window.authManager) ? window.authManager.hasDeletePermission() : true;
         if (!canDelete) {
             const toast = (typeof showToast === 'function') ? showToast : (typeof window !== 'undefined' ? window.showToast : null);
-            if (toast) toast('عذراً: ليس لديك صلاحية حذف المنازل (قراءة ورفع فقط) • House deletion is restricted for Contributor accounts.', 'error');
+            if (toast) toast((typeof window !== 'undefined' && window.i18n) ? window.i18n.t('toast.delete_house_restricted') : 'House deletion is restricted for Contributor accounts.', 'error');
             return;
         }
 
@@ -521,7 +529,7 @@
         const canDelete = (typeof window !== 'undefined' && window.authManager) ? window.authManager.hasDeletePermission() : true;
         if (!canDelete) {
             const toast = (typeof showToast === 'function') ? showToast : (typeof window !== 'undefined' ? window.showToast : null);
-            if (toast) toast('عذراً: ليس لديك صلاحية حذف المنازل (قراءة ورفع فقط) • House deletion is restricted for Contributor accounts.', 'error');
+            if (toast) toast((typeof window !== 'undefined' && window.i18n) ? window.i18n.t('toast.delete_house_restricted') : 'House deletion is restricted for Contributor accounts.', 'error');
             return;
         }
 
@@ -599,7 +607,10 @@
 
             const toastFn = (typeof showToast === 'function') ? showToast : (typeof window.showToast === 'function' ? window.showToast : null);
             if (toastFn) {
-                toastFn(`تم حذف المنزل '${deletedHouseName}' بنجاح / House '${deletedHouseName}' was deleted`, 'success');
+                const delMsg = (typeof window !== 'undefined' && window.i18n && window.i18n.getLanguage() === 'ar')
+                    ? `تم حذف المنزل '${deletedHouseName}' بنجاح`
+                    : `House '${deletedHouseName}' was deleted successfully`;
+                toastFn(delMsg, 'success');
             }
         } catch (err) {
             console.error(err);

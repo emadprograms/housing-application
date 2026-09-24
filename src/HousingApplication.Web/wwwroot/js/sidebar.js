@@ -112,7 +112,7 @@
             if (resizer) resizer.classList.add('hidden');
 
             if (toggleBtn) {
-                toggleBtn.title = 'Expand sidebar (Ctrl+B) • توسيع الشريط الجانبي';
+                toggleBtn.title = (typeof window !== 'undefined' && window.i18n) ? window.i18n.t('toast.expand_sidebar') : 'Expand sidebar (Ctrl+B)';
                 toggleBtn.setAttribute('aria-expanded', 'false');
                 toggleBtn.classList.add('text-blue-600', 'dark:text-blue-400', 'bg-blue-50', 'dark:bg-blue-900/30', 'border-blue-200', 'dark:border-blue-800');
             }
@@ -131,7 +131,7 @@
             if (resizer) resizer.classList.remove('hidden');
 
             if (toggleBtn) {
-                toggleBtn.title = 'Collapse sidebar (Ctrl+B) • طي الشريط الجانبي';
+                toggleBtn.title = (typeof window !== 'undefined' && window.i18n) ? window.i18n.t('toast.collapse_sidebar') : 'Collapse sidebar (Ctrl+B)';
                 toggleBtn.setAttribute('aria-expanded', 'true');
                 toggleBtn.classList.remove('text-blue-600', 'dark:text-blue-400', 'bg-blue-50', 'dark:bg-blue-900/30', 'border-blue-200', 'dark:border-blue-800');
             }
@@ -167,6 +167,18 @@
                 toggleSidebar(true);
             }
         } catch (e) {}
+
+        if (typeof window !== 'undefined' && !window._sidebarLangListenerAttached) {
+            window._sidebarLangListenerAttached = true;
+            window.addEventListener('languageChanged', () => {
+                const s = document.getElementById('sidebar');
+                const isCollapsed = s && s.classList.contains('hidden');
+                const btn = document.getElementById('sidebar-toggle-btn');
+                if (btn && window.i18n) {
+                    btn.title = window.i18n.t(isCollapsed ? 'toast.expand_sidebar' : 'toast.collapse_sidebar');
+                }
+            });
+        }
 
         if (typeof window !== 'undefined' && !window._sidebarShortcutAttached) {
             window._sidebarShortcutAttached = true;

@@ -58,11 +58,13 @@
 
         if (theme === 'dark') {
             btn.innerHTML = SUN_ICON;
-            btn.title = 'Switch to Light Mode (Shift+D) / تفعيل الوضع الفاتح';
+            const titleLight = (typeof window !== 'undefined' && window.i18n) ? window.i18n.t('toast.switch_theme_light') : 'Switch to Light Mode (Shift+D)';
+            btn.title = titleLight;
             btn.setAttribute('aria-label', 'Switch to Light Mode');
         } else {
             btn.innerHTML = MOON_ICON;
-            btn.title = 'Switch to Dark Mode (Shift+D) / تفعيل الوضع الداكن';
+            const titleDark = (typeof window !== 'undefined' && window.i18n) ? window.i18n.t('toast.switch_theme_dark') : 'Switch to Dark Mode (Shift+D)';
+            btn.title = titleDark;
             btn.setAttribute('aria-label', 'Switch to Dark Mode');
         }
     }
@@ -203,6 +205,10 @@
         }
     }
 
+    function handleLanguageChanged() {
+        updateToggleButton(getTheme());
+    }
+
     function initTheme() {
         // Apply current theme (without persisting if no preference was previously stored)
         const stored = getStoredTheme();
@@ -221,6 +227,10 @@
             // Keyboard shortcut Shift+D
             document.removeEventListener('keydown', handleKeyDown);
             document.addEventListener('keydown', handleKeyDown);
+
+            // Re-render button tooltip when language switches
+            window.removeEventListener('languageChanged', handleLanguageChanged);
+            window.addEventListener('languageChanged', handleLanguageChanged);
         }
 
         // Listen for OS system theme change if no explicit manual preference

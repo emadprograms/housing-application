@@ -1073,7 +1073,7 @@
         const canDelete = (typeof window !== 'undefined' && window.authManager) ? window.authManager.hasDeletePermission() : true;
         if (!canDelete) {
             const toast = (typeof showToast === 'function') ? showToast : (typeof window !== 'undefined' ? window.showToast : null);
-            if (toast) toast('عذراً: ليس لديك صلاحية حذف الوثائق (قراءة ورفع فقط) • Deletion is restricted for Contributor accounts.', 'error');
+            if (toast) toast(window.i18n ? window.i18n.t('toast.delete_doc_restricted') : 'Document deletion is restricted for Contributor accounts.', 'error');
             return;
         }
 
@@ -1254,7 +1254,7 @@
                 <svg class="w-3.5 h-3.5 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/></svg>
                 <span>Copy Document</span>
             </button>
-            <button type="button" class="doc-menu-item-edit-pages w-full px-3.5 py-2 text-left flex items-center gap-2.5 font-medium text-amber-700 hover:bg-amber-50 transition-colors cursor-pointer" title="Edit, split, reorder, or delete pages in this document • تعديل وفصل الصفحات">
+            <button type="button" class="doc-menu-item-edit-pages w-full px-3.5 py-2 text-left flex items-center gap-2.5 font-medium text-amber-700 hover:bg-amber-50 transition-colors cursor-pointer" title="${window.i18n ? window.i18n.t('editor.title') : 'Document Page Editor'}">
                 <svg class="w-3.5 h-3.5 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879a3 3 0 11-4.242-4.242L10.758 10M12 12L9.121 9.121m0 0a3 3 0 10-4.242 4.242L7.758 16"/></svg>
                 <span>✂️ Edit &amp; Split Pages</span>
             </button>
@@ -1700,7 +1700,7 @@
         const canDelete = (typeof window !== 'undefined' && window.authManager) ? window.authManager.hasDeletePermission() : true;
         if (!canDelete) {
             const toast = (typeof showToast === 'function') ? showToast : (typeof window !== 'undefined' ? window.showToast : null);
-            if (toast) toast('عذراً: ليس لديك صلاحية حذف الوثائق (قراءة ورفع فقط) • Deletion is restricted for Contributor accounts.', 'error');
+            if (toast) toast(window.i18n ? window.i18n.t('toast.delete_doc_restricted') : 'Document deletion is restricted for Contributor accounts.', 'error');
             return;
         }
 
@@ -2228,7 +2228,10 @@
         }
         const totalPages = activeMergeDocs.reduce((acc, d) => acc + (d.page_count || d.pages_count || 1), 0);
         if (mergeDocsCountBadge) {
-            mergeDocsCountBadge.textContent = `${activeMergeDocs.length} ${activeMergeDocs.length === 1 ? 'doc' : 'docs'} • ${totalPages} pages`;
+            const isAr = window.i18n ? window.i18n.getLanguage() === 'ar' : false;
+            const docsText = isAr ? `${activeMergeDocs.length} مستند` : `${activeMergeDocs.length} ${activeMergeDocs.length === 1 ? 'doc' : 'docs'}`;
+            const pagesText = isAr ? `${totalPages} صفحة` : `${totalPages} ${totalPages === 1 ? 'page' : 'pages'}`;
+            mergeDocsCountBadge.textContent = `${docsText} • ${pagesText}`;
         }
 
         if (mergePreviewCards) {
@@ -2240,6 +2243,9 @@
             }
 
             if (activeMergeDocs.length > 0) {
+                const moveEarlierTitle = window.i18n ? window.i18n.t('merge.move_earlier') : 'Move earlier';
+                const moveLaterTitle = window.i18n ? window.i18n.t('merge.move_later') : 'Move later';
+
                 activeMergeDocs.forEach((doc, idx) => {
                     const title = doc.brief_arabic_title || doc.title || doc.file_name || doc.filename || `وثيقة ${idx + 1}`;
                     const cat = doc.category || doc.folder || activeMergeFallbackCategory || 'عام';
@@ -2248,7 +2254,9 @@
 
                     let badgeLabel = `#${idx + 1}`;
                     if (activeMergeDocs.length === 2) {
-                        badgeLabel = isFirst ? '#1 (البداية)' : '#2 (النهاية)';
+                        badgeLabel = isFirst 
+                            ? (window.i18n ? window.i18n.t('merge.start_doc') : '#1 (البداية)')
+                            : (window.i18n ? window.i18n.t('merge.end_doc') : '#2 (النهاية)');
                     }
 
                     const card = document.createElement('div');
@@ -2266,10 +2274,10 @@
                         <div class="px-3 py-2 bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-700/80 flex items-center justify-between gap-1 flex-shrink-0">
                             <span class="px-2 py-0.5 rounded text-xs font-bold font-mono ${isFirst ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}">${badgeLabel}</span>
                             <div class="flex items-center gap-1">
-                                <button type="button" class="btn-card-move-left p-1 rounded-md text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 disabled:opacity-25 disabled:pointer-events-none transition-all cursor-pointer" ${idx === 0 ? 'disabled' : ''} title="Move earlier • تقديم">
+                                <button type="button" class="btn-card-move-left p-1 rounded-md text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 disabled:opacity-25 disabled:pointer-events-none transition-all cursor-pointer" ${idx === 0 ? 'disabled' : ''} title="${moveEarlierTitle}">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
                                 </button>
-                                <button type="button" class="btn-card-move-right p-1 rounded-md text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 disabled:opacity-25 disabled:pointer-events-none transition-all cursor-pointer" ${idx === activeMergeDocs.length - 1 ? 'disabled' : ''} title="Move later • تأخير">
+                                <button type="button" class="btn-card-move-right p-1 rounded-md text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 disabled:opacity-25 disabled:pointer-events-none transition-all cursor-pointer" ${idx === activeMergeDocs.length - 1 ? 'disabled' : ''} title="${moveLaterTitle}">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                                 </button>
                             </div>
@@ -2325,7 +2333,7 @@
                         connector.className = 'flex flex-col items-center justify-center px-1 flex-shrink-0 self-center';
                         if (activeMergeDocs.length === 2) {
                             connector.innerHTML = `
-                                <button type="button" class="btn-merge-inline-swap p-2.5 rounded-full bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-700 text-emerald-600 dark:text-emerald-400 shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer" title="Swap order • تبديل الترتيب">
+                                <button type="button" class="btn-merge-inline-swap p-2.5 rounded-full bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 border border-slate-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-700 text-emerald-600 dark:text-emerald-400 shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer" title="${window.i18n ? window.i18n.t('merge.swap') : 'Swap order'}">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
                                 </button>
                             `;
@@ -2417,6 +2425,10 @@
             return;
         }
 
+        const removeDocTitle = window.i18n ? window.i18n.t('merge.remove_doc') : 'Remove document';
+        const moveEarlierTitle = window.i18n ? window.i18n.t('merge.move_earlier') : 'Move earlier';
+        const moveLaterTitle = window.i18n ? window.i18n.t('merge.move_later') : 'Move later';
+
         activeMergeDocs.forEach((doc, idx) => {
             const card = document.createElement('div');
             card.className = 'page-editor-card relative bg-white dark:bg-slate-800 rounded-2xl border-2 border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all flex flex-col overflow-hidden select-none group';
@@ -2428,14 +2440,14 @@
             card.innerHTML = `
                 <!-- Card Top Bar: Order Badge & Reorder Controls -->
                 <div class="px-3 py-2 bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-700/80 flex items-center justify-between gap-1 flex-shrink-0">
-                    <button type="button" class="btn-merge-remove p-1 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer" title="Remove document • إزالة">
+                    <button type="button" class="btn-merge-remove p-1 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer" title="${removeDocTitle}">
                         <svg class="w-4 h-4 text-rose-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                     </button>
                     <div class="flex items-center gap-1.5">
-                        <button type="button" class="btn-merge-up p-1 rounded-md text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 disabled:opacity-25 disabled:pointer-events-none transition-all cursor-pointer" ${idx === 0 ? 'disabled' : ''} title="Move earlier • تقديم">
+                        <button type="button" class="btn-merge-up p-1 rounded-md text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 disabled:opacity-25 disabled:pointer-events-none transition-all cursor-pointer" ${idx === 0 ? 'disabled' : ''} title="${moveEarlierTitle}">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
                         </button>
-                        <button type="button" class="btn-merge-down p-1 rounded-md text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 disabled:opacity-25 disabled:pointer-events-none transition-all cursor-pointer" ${idx === activeMergeDocs.length - 1 ? 'disabled' : ''} title="Move later • تأخير">
+                        <button type="button" class="btn-merge-down p-1 rounded-md text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 disabled:opacity-25 disabled:pointer-events-none transition-all cursor-pointer" ${idx === activeMergeDocs.length - 1 ? 'disabled' : ''} title="${moveLaterTitle}">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                         </button>
                         <span class="px-2 py-0.5 rounded text-xs font-bold font-mono bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 ml-1">#${idx + 1}</span>
@@ -2534,7 +2546,7 @@
             mergeDeleteSources.disabled = !canDelete;
             const container = mergeDeleteSources.closest('label') || mergeDeleteSources.parentElement;
             if (container) {
-                container.title = isRestricted ? 'حذف المستندات المصدر محجوب للموظفين • Deletion restricted for Contributors' : '';
+                container.title = isRestricted ? (window.i18n ? window.i18n.t('toast.delete_doc_restricted') : 'Deletion restricted for Contributors') : '';
                 container.classList.toggle('opacity-50', isRestricted);
             }
         }

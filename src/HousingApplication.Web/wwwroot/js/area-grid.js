@@ -900,20 +900,27 @@
             const orderedTenants = [...residents, ...applicants];
             const totalDocs = house.total_documents || 0;
 
-            let countBadgeText = '0 Tenants';
+            const isAr = (typeof window !== 'undefined' && window.i18n && window.i18n.getLanguage() === 'ar');
+            let countBadgeText = isAr ? '0 مستأجر' : '0 Tenants';
             if (residents.length > 0 && applicants.length > 0) {
-                countBadgeText = `${residents.length} ${residents.length === 1 ? 'Tenant' : 'Tenants'} • ${applicants.length} ${applicants.length === 1 ? 'Applicant' : 'Applicants'}`;
+                countBadgeText = isAr
+                    ? `${residents.length} ساكن — ${applicants.length} متقدم`
+                    : `${residents.length} ${residents.length === 1 ? 'Tenant' : 'Tenants'} — ${applicants.length} ${applicants.length === 1 ? 'Applicant' : 'Applicants'}`;
             } else if (residents.length > 0) {
-                countBadgeText = `${residents.length} ${residents.length === 1 ? 'Tenant' : 'Tenants'}`;
+                countBadgeText = isAr
+                    ? `${residents.length} ${residents.length === 1 ? 'ساكن' : 'سكان'}`
+                    : `${residents.length} ${residents.length === 1 ? 'Tenant' : 'Tenants'}`;
             } else if (applicants.length > 0) {
-                countBadgeText = `${applicants.length} ${applicants.length === 1 ? 'Applicant' : 'Applicants'}`;
+                countBadgeText = isAr
+                    ? `${applicants.length} متقدم`
+                    : `${applicants.length} ${applicants.length === 1 ? 'Applicant' : 'Applicants'}`;
             }
 
             let tenantsHtml = '';
             if (orderedTenants.length === 0) {
                 tenantsHtml = `
                     <div class="py-2.5 px-3 bg-slate-50 rounded-lg border border-slate-100 text-center">
-                        <p class="text-[11px] text-slate-400 italic">No tenants recorded</p>
+                        <p class="text-[11px] text-slate-400 italic">${isAr ? 'لا يوجد مستأجرون مسجلون' : 'No tenants recorded'}</p>
                     </div>
                 `;
             } else {
@@ -928,10 +935,10 @@
                             if (t.is_resident === 0) {
                                 cardBg = 'bg-purple-50/30 border-purple-200/60 dark:bg-purple-950/20 dark:border-purple-800/40';
                                 nameClass = 'font-medium text-purple-900 dark:text-purple-200';
-                                tenantIcon = `<span class="w-5 h-5 rounded-md bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 flex items-center justify-center flex-shrink-0" title="Applicant • متقدم">
+                                tenantIcon = `<span class="w-5 h-5 rounded-md bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 flex items-center justify-center flex-shrink-0" title="${isAr ? 'متقدم' : 'Applicant'}">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                                 </span>`;
-                                tenureText = t.subtitle ? `${t.subtitle} • متقدم` : 'Applicant • متقدم';
+                                tenureText = t.subtitle ? (isAr ? `${t.subtitle} — متقدم` : `${t.subtitle} — Applicant`) : (isAr ? 'متقدم' : 'Applicant');
                             } else {
                                 const isCurrent = Boolean(
                                     (house.current_tenant && t.name === house.current_tenant) 

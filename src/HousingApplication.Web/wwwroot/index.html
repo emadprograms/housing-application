@@ -415,10 +415,10 @@
                                 <span id="tab-timeline-label" class="truncate whitespace-nowrap min-w-0">Timeline</span>
                             </button>
                         </div>
-                        <button id="btn-export-house-archive" type="button" title="Export House Archive (ZIP / PDF Dossier) / تحميل أرشيف المنزل" class="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 border border-transparent hover:border-blue-200 dark:hover:border-blue-800/60 rounded-lg transition-all flex items-center justify-center flex-shrink-0 cursor-pointer shadow-2xs" aria-label="Export House Archive">
+                        <button id="btn-export-house-archive" type="button" data-i18n-title="export.title" title="Export House Archive" class="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 border border-transparent hover:border-blue-200 dark:hover:border-blue-800/60 rounded-lg transition-all flex items-center justify-center flex-shrink-0 cursor-pointer shadow-2xs" aria-label="Export House Archive">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                         </button>
-                        <button id="btn-manage-tenants" type="button" title="House Settings • إعدادات المنزل" class="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 rounded-lg transition-all flex items-center justify-center flex-shrink-0 cursor-pointer shadow-2xs" aria-label="House Settings">
+                        <button id="btn-manage-tenants" type="button" data-i18n-title="house_profile.settings_tooltip" title="House Settings" class="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 rounded-lg transition-all flex items-center justify-center flex-shrink-0 cursor-pointer shadow-2xs" aria-label="House Settings">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -437,14 +437,14 @@
                     <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 w-full max-w-5xl overflow-hidden flex flex-col h-full">
                         <div class="px-3 sm:px-4 py-2.5 sm:py-3 bg-slate-900 text-white flex justify-between items-center gap-2 sm:gap-3 border-b border-slate-800 flex-shrink-0">
                             <div class="flex items-center gap-2 min-w-0 flex-1">
-                                <button id="viewer-close-btn" type="button" class="text-slate-400 hover:text-white p-1.5 -ml-1 rounded-lg hover:bg-slate-800 transition-colors flex-shrink-0 cursor-pointer" title="Close document / إغلاق المستند">
+                                <button id="viewer-close-btn" type="button" class="text-slate-400 hover:text-white p-1.5 -ml-1 rounded-lg hover:bg-slate-800 transition-colors flex-shrink-0 cursor-pointer" data-i18n-title="common.close" title="Close document">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                                 </button>
-                                <button id="viewer-expand-btn" type="button" class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition-colors flex-shrink-0 cursor-pointer" title="Toggle fullscreen / شاشة كاملة">
+                                <button id="viewer-expand-btn" type="button" class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition-colors flex-shrink-0 cursor-pointer" data-i18n-title="toast.viewer_fullscreen" title="Toggle fullscreen">
                                     <svg id="viewer-expand-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
                                     <svg id="viewer-collapse-icon" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 4v4H5m0 0l5-5M15 4v4h4m0 0l-5-5M9 20v-4H5m0 0l5 5M15 20v-4h4m0 0l-5 5"/></svg>
                                 </button>
-                                <div id="viewer-category-badge" class="hidden text-xs text-slate-300 bg-slate-800 border border-slate-700/80 px-2.5 py-1 rounded-lg flex items-center gap-1.5 font-medium flex-shrink-0 shadow-2xs" title="Category / التصنيف">
+                                <div id="viewer-category-badge" class="hidden text-xs text-slate-300 bg-slate-800 border border-slate-700/80 px-2.5 py-1 rounded-lg flex items-center gap-1.5 font-medium flex-shrink-0 shadow-2xs" data-i18n-title="categories.title" title="Category">
                                     <svg class="w-3.5 h-3.5 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
                                     <span id="viewer-category-val" class="truncate max-w-[140px] sm:max-w-[180px]"></span>
                                 </div>
@@ -452,23 +452,23 @@
                                 <span id="viewer-peek-badge" class="hidden text-[10px] bg-blue-500/20 text-blue-300 border border-blue-400/30 px-2 py-0.5 rounded font-medium flex-shrink-0">Live Peek</span>
                             </div>
                             <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-                                <button id="viewer-edit-pages-btn" type="button" class="text-xs text-amber-300 hover:text-white bg-amber-950/40 hover:bg-amber-800/60 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg border border-amber-600/50 flex items-center gap-1.5 transition-colors cursor-pointer" title="Edit Pages (Delete, Separate, Reorder) • تعديل وفصل الصفحات">
+                                <button id="viewer-edit-pages-btn" type="button" class="text-xs text-amber-300 hover:text-white bg-amber-950/40 hover:bg-amber-800/60 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg border border-amber-600/50 flex items-center gap-1.5 transition-colors cursor-pointer" data-i18n-title="editor.title" title="Document Page Editor">
                                     <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879a3 3 0 11-4.242-4.242L10.758 10M12 12L9.121 9.121m0 0a3 3 0 10-4.242 4.242L7.758 16"/></svg>
-                                    <span class="hidden sm:inline font-medium">Edit Pages</span>
+                                    <span class="hidden sm:inline font-medium" data-i18n="doc.edit_pages">Edit Pages</span>
                                 </button>
-                                <button id="viewer-translate-btn" type="button" class="text-xs text-blue-300 hover:text-white bg-blue-950/40 hover:bg-blue-800/60 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg border border-blue-600/50 flex items-center gap-1.5 transition-all cursor-pointer" title="Translate document to English (Offline) • ترجمة المستند للإنجليزية" aria-label="Translate Document to English" aria-pressed="false">
+                                <button id="viewer-translate-btn" type="button" class="text-xs text-blue-300 hover:text-white bg-blue-950/40 hover:bg-blue-800/60 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg border border-blue-600/50 flex items-center gap-1.5 transition-all cursor-pointer" data-i18n-title="doc.translate" title="Translate document to English" aria-label="Translate Document to English" aria-pressed="false">
                                     <svg class="w-3.5 h-3.5 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
                                     </svg>
                                     <span id="viewer-translate-label" class="font-medium">English</span>
                                 </button>
-                                <button id="viewer-mode-toggle" type="button" class="text-xs text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg border border-slate-700 flex items-center gap-1.5 transition-colors cursor-pointer" title="Toggle viewer mode (Computer / Tab) • تبديل وضع العارض (كمبيوتر / تابلت)">
+                                <button id="viewer-mode-toggle" type="button" class="text-xs text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg border border-slate-700 flex items-center gap-1.5 transition-colors cursor-pointer" data-i18n-title="toast.viewer_tab_mode" title="Toggle viewer mode">
                                     <svg id="viewer-mode-icon" class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                                     <span id="viewer-mode-label">Computer</span>
                                 </button>
-                                <a id="viewer-download" href="#" target="_blank" download class="text-xs text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg border border-slate-700 flex items-center gap-1.5 transition-colors cursor-pointer" title="Download original PDF / تنزيل الملف الأصلي">
+                                <a id="viewer-download" href="#" target="_blank" download class="text-xs text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg border border-slate-700 flex items-center gap-1.5 transition-colors cursor-pointer" data-i18n-title="common.download" title="Download">
                                     <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                                    <span class="hidden md:inline">Download</span>
+                                    <span class="hidden md:inline" data-i18n="common.download">Download</span>
                                 </a>
                             </div>
                         </div>
@@ -481,7 +481,7 @@
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                                 </svg>
-                                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Loading document... • جاري تحميل الوثيقة...</span>
+                                <span class="text-sm font-medium text-slate-700 dark:text-slate-300" data-i18n="doc.loading">Loading document...</span>
                             </div>
                             <div id="pdf-viewer-error" class="hidden absolute inset-0 bg-white/95 dark:bg-slate-900/95 flex flex-col items-center justify-center p-6 text-center z-20">
                                 <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 flex items-center justify-center mb-3">
@@ -490,8 +490,8 @@
                                 <h4 class="text-sm font-semibold text-slate-900 dark:text-white mb-1">Unable to preview document inline</h4>
                                 <p id="pdf-viewer-error-msg" class="text-xs text-slate-500 dark:text-slate-400 mb-4 max-w-md">The document could not be rendered.</p>
                                 <div class="flex items-center gap-2">
-                                    <button id="pdf-viewer-retry-btn" type="button" class="px-3 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">Retry • إعادة المحاولة</button>
-                                    <a id="pdf-viewer-fallback-link" href="#" target="_blank" class="px-3 py-1.5 text-xs font-medium bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-300 transition-colors">Open Directly • فتح مباشرة</a>
+                                    <button id="pdf-viewer-retry-btn" type="button" class="px-3 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer" data-i18n="doc.retry">Retry</button>
+                                    <a id="pdf-viewer-fallback-link" href="#" target="_blank" class="px-3 py-1.5 text-xs font-medium bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-300 transition-colors" data-i18n="doc.open_direct">Open Directly</a>
                                 </div>
                             </div>
                         </div>
@@ -506,8 +506,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
                         </div>
-                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Select a document to preview</p>
-                        <p class="text-[11px] text-slate-400 dark:text-slate-500 font-arabic mt-1">اختر مستنداً للمعاينة</p>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400" data-i18n="doc.select_preview">Select a document to preview</p>
                     </div>
                 </div>
                 
@@ -546,15 +545,15 @@
                     <span class="text-[11px] text-slate-400 hidden sm:inline-flex items-center gap-1.5 mr-2">
                         <kbd class="px-1.5 py-0.5 text-[10px] bg-slate-800 border border-slate-700 rounded text-slate-300 font-mono">Space</kbd> or <kbd class="px-1.5 py-0.5 text-[10px] bg-slate-800 border border-slate-700 rounded text-slate-300 font-mono">Esc</kbd>
                     </span>
-                    <button id="quick-look-edit-pages" type="button" class="text-xs text-amber-300 hover:text-white bg-amber-950/40 hover:bg-amber-800/60 px-2.5 py-1.5 rounded-lg border border-amber-600/50 flex items-center gap-1.5 transition-colors cursor-pointer" title="Edit Pages (Delete, Separate, Reorder) • تعديل وفصل الصفحات">
+                    <button id="quick-look-edit-pages" type="button" class="text-xs text-amber-300 hover:text-white bg-amber-950/40 hover:bg-amber-800/60 px-2.5 py-1.5 rounded-lg border border-amber-600/50 flex items-center gap-1.5 transition-colors cursor-pointer" data-i18n-title="editor.title" title="Edit Pages">
                         <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879a3 3 0 11-4.242-4.242L10.758 10M12 12L9.121 9.121m0 0a3 3 0 10-4.242 4.242L7.758 16"/></svg>
-                        <span>Edit Pages</span>
+                        <span data-i18n="doc.edit_pages">Edit Pages</span>
                     </button>
                     <button id="quick-look-open-full" type="button" class="text-xs text-slate-200 hover:text-white bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-700 flex items-center gap-1.5 transition-colors cursor-pointer" title="Open full document viewer">
-                        <span>View PDF</span>
+                        <span data-i18n="doc.view_pdf">View PDF</span>
                         <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                     </button>
-                    <button id="quick-look-close" type="button" class="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer" title="Close (Esc)">
+                    <button id="quick-look-close" type="button" class="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer" data-i18n-title="common.close" title="Close (Esc)">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
@@ -588,8 +587,7 @@
                 <div class="bg-amber-50/70 border border-amber-200 rounded-xl p-4 shadow-2xs">
                     <div class="flex items-center justify-between mb-2">
                         <label for="doc-inspector-notes-input" class="text-xs font-bold text-amber-900 flex items-center gap-1.5">
-                            <span>📝 Additional Notes & Annotations</span>
-                            <span class="text-[11px] font-medium text-amber-700">(ملاحظات المستند)</span>
+                            <span data-i18n="doc_action.notes">📝 Additional Notes</span>
                         </label>
                         <span id="doc-inspector-notes-status" class="text-[11px] text-amber-700 font-medium transition-opacity opacity-0">Saved</span>
                     </div>
@@ -597,7 +595,7 @@
                     <div class="flex items-center justify-between mt-2 pt-1.5 border-t border-amber-200/50 text-[10px] text-amber-800/80">
                         <span class="flex items-center gap-1">
                             <svg class="w-3 h-3 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            <span>Autosaves continuously • Highlighted in yellow</span>
+                            <span>Autosaves continuously — Highlighted in yellow</span>
                         </span>
                         <span class="text-amber-700/70 font-medium">Auto-saves on typing / blur</span>
                     </div>
@@ -673,13 +671,13 @@
                         <div>
                             <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
                                 <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                                <span>Tenants • المستأجرون</span>
+                                <span data-i18n="house_settings.tenants">Tenants</span>
                             </h4>
-                            <p class="text-[11px] text-slate-500 mt-0.5">Residency timelines for automatic document matching</p>
+                            <p class="text-[11px] text-slate-500 mt-0.5" data-i18n="house_settings.residency_timelines">Residency timelines for automatic document matching</p>
                         </div>
                         <button id="btn-add-tenant-row" type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200/80 rounded-lg transition-colors cursor-pointer shadow-2xs flex-shrink-0">
                             <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                            <span>Add Tenant</span>
+                            <span data-i18n="house_settings.add_tenant">Add Tenant</span>
                         </button>
                     </div>
 
@@ -688,38 +686,36 @@
                         <!-- Table Column Headers -->
                         <div class="hidden sm:grid sm:grid-cols-12 gap-2 sm:gap-3 px-4 py-2.5 bg-slate-50/80 border-b border-slate-200/80 text-[10px] font-bold text-slate-500 uppercase tracking-wider items-center rounded-t-xl">
                             <div class="sm:col-span-3">
-                                <span>Tenant Name • اسم المستأجر</span>
+                                <span data-i18n="house_settings.tenant_name">Tenant Name</span>
                             </div>
                             <div class="sm:col-span-2">
-                                <span>Type • النوع</span>
+                                <span data-i18n="house_settings.tenant_type">Type</span>
                             </div>
                             <div class="sm:col-span-3 flex items-center gap-1 whitespace-nowrap">
-                                <span>Start Date • تاريخ البدء</span>
+                                <span data-i18n="house_settings.start_date">Start Date</span>
                                 <div class="relative group/help inline-flex items-center">
-                                    <span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold cursor-help hover:bg-blue-100 hover:text-blue-700 transition-colors" title="Start date is always selected as the first document and is auto if there is no document • تاريخ البدء يُحدّد دائماً من تاريخ أول وثيقة، ويكون تلقائياً عند عدم وجود وثائق">?</span>
+                                    <span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold cursor-help hover:bg-blue-100 hover:text-blue-700 transition-colors" data-i18n-title="house_settings.start_date_tooltip">?</span>
                                     <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover/help:block w-48 p-2 bg-slate-900 text-white text-[11px] leading-tight rounded-lg shadow-lg z-50 pointer-events-none text-center font-normal normal-case">
-                                        Start date is always selected as the first document and is auto if there is no document.
-                                        <div class="text-[10px] text-slate-300 mt-1 font-arabic">تاريخ البدء يُحدّد دائماً من أول وثيقة، ويكون تلقائياً عند عدم وجود وثائق.</div>
+                                        <span data-i18n="house_settings.start_date_tooltip">Start date is always selected as the first document and is auto if there is no document.</span>
                                         <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900"></div>
                                     </div>
                                 </div>
                             </div>
                             <div class="sm:col-span-2 flex items-center gap-1 whitespace-nowrap">
-                                <span>End Date • تاريخ الانتهاء</span>
+                                <span data-i18n="house_settings.end_date">End Date</span>
                                 <div class="relative group/help inline-flex items-center">
-                                    <span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold cursor-help hover:bg-blue-100 hover:text-blue-700 transition-colors" title="End date is always selected as the last document. If currently residing, check Present • تاريخ الانتهاء يُحدّد دائماً من تاريخ آخر وثيقة. إذا كان يسكن حالياً، حدد (حالي)">?</span>
+                                    <span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold cursor-help hover:bg-blue-100 hover:text-blue-700 transition-colors" data-i18n-title="house_settings.end_date_tooltip">?</span>
                                     <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover/help:block w-48 p-2 bg-slate-900 text-white text-[11px] leading-tight rounded-lg shadow-lg z-50 pointer-events-none text-center font-normal normal-case">
-                                        End date is always selected as the last document. If currently residing, check Present.
-                                        <div class="text-[10px] text-slate-300 mt-1 font-arabic">تاريخ الانتهاء يُحدّد دائماً من تاريخ آخر وثيقة. إذا كان يسكن حالياً، حدد (حالي).</div>
+                                        <span data-i18n="house_settings.end_date_tooltip">End date is always selected as the last document. If currently residing, check Present.</span>
                                         <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900"></div>
                                     </div>
                                 </div>
                             </div>
                             <div class="sm:col-span-1 text-center">
-                                <span>Present</span>
+                                <span data-i18n="house_settings.present">Present</span>
                             </div>
                             <div class="sm:col-span-1 text-center">
-                                <span>Delete</span>
+                                <span data-i18n="house_settings.delete">Delete</span>
                             </div>
                         </div>
 
@@ -741,21 +737,21 @@
                         <svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                         </svg>
-                        <h4 class="text-xs font-bold text-rose-700 uppercase tracking-wider">Danger Zone • منطقة الخطر</h4>
+                        <h4 class="text-xs font-bold text-rose-700 uppercase tracking-wider" data-i18n="house_settings.danger_zone">Danger Zone</h4>
                     </div>
 
                     <div class="p-3.5 rounded-xl border border-rose-200 bg-rose-50/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div class="space-y-1 min-w-0 flex-1">
-                            <div class="text-xs font-bold text-rose-800">
-                                Delete House • حذف المنزل
+                            <div class="text-xs font-bold text-rose-800" data-i18n="house_settings.delete_house">
+                                Delete House
                             </div>
-                            <p class="text-[11px] text-slate-600 leading-relaxed text-left">
-                                حذف هذا المنزل نهائياً مع كافة المستأجرين والوثائق والملفات من القرص. لا يمكن التراجع عن هذا الإجراء.
+                            <p class="text-[11px] text-slate-600 leading-relaxed" data-i18n="house_settings.delete_house_desc">
+                                Permanently delete this house along with all tenants, documents, and files from disk. This action cannot be undone.
                             </p>
                         </div>
                         <button id="btn-open-delete-house" type="button" class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-xs font-bold text-rose-700 bg-white hover:bg-rose-100 hover:text-rose-800 border border-rose-300 hover:border-rose-400 rounded-xl transition-all shadow-2xs cursor-pointer flex-shrink-0">
                             <svg class="w-3.5 h-3.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                            <span>Delete House</span>
+                            <span data-i18n="house_settings.delete_house_btn">Delete House</span>
                         </button>
                     </div>
                 </div>
@@ -763,9 +759,9 @@
 
             <!-- Modal Footer -->
             <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/70 flex justify-end gap-3 flex-shrink-0">
-                <button id="tenant-modal-cancel" type="button" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer">Cancel</button>
+                <button id="tenant-modal-cancel" type="button" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer" data-i18n="common.cancel">Cancel</button>
                 <button id="tenant-modal-save" type="button" class="px-4 py-2 text-xs font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-all flex items-center gap-2 shadow-sm shadow-blue-500/25 cursor-pointer">
-                    <span id="tenant-save-btn-text">Save Changes</span>
+                    <span id="tenant-save-btn-text" data-i18n="common.save">Save Changes</span>
                 </button>
             </div>
         </div>
@@ -808,24 +804,24 @@
 
                 <!-- Document Arabic Title -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Document Title (Arabic / Display)</label>
-                    <input id="doc-modal-arabic-title" type="text" dir="rtl" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 focus:bg-white" placeholder="اسم المستند..." />
+                    <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="doc_action.doc_title">Document Title</label>
+                    <input id="doc-modal-arabic-title" type="text" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 focus:bg-white" placeholder="Document title..." data-i18n-placeholder="doc_action.doc_title_placeholder" />
                 </div>
 
                 <!-- Document Date -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Document Date</label>
+                    <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="doc_action.doc_date">Document Date</label>
                     <input id="doc-modal-date" type="date" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 focus:bg-white" />
                 </div>
 
                 <!-- Target Folder (Category) -->
                 <div>
                     <div class="flex items-center justify-between mb-1">
-                        <label class="text-xs font-bold text-slate-700">Folder (Category)</label>
+                        <label class="text-xs font-bold text-slate-700" data-i18n="doc_action.category_folder">Folder (Category)</label>
                         <!-- Action Mode: Move vs Copy -->
                         <div class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-[11px]">
-                            <button id="btn-mode-move" type="button" class="px-2.5 py-0.5 rounded-md font-semibold bg-white text-blue-600 shadow-2xs">Move</button>
-                            <button id="btn-mode-copy" type="button" class="px-2.5 py-0.5 rounded-md font-semibold text-slate-600 hover:text-slate-900">Copy (Duplicate)</button>
+                            <button id="btn-mode-move" type="button" class="px-2.5 py-0.5 rounded-md font-semibold bg-white text-blue-600 shadow-2xs" data-i18n="doc_action.move">Move</button>
+                            <button id="btn-mode-copy" type="button" class="px-2.5 py-0.5 rounded-md font-semibold text-slate-600 hover:text-slate-900" data-i18n="doc_action.copy">Copy (Duplicate)</button>
                         </div>
                     </div>
                     <select id="doc-modal-folder-select" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 focus:bg-white">
@@ -833,14 +829,14 @@
                     </select>
                     <!-- Custom folder input (shown when '+ Create New Folder...' is selected) -->
                     <div id="doc-custom-folder-container" class="mt-2 hidden">
-                        <input id="doc-custom-folder-input" type="text" placeholder="Enter new folder name (e.g. مستندات بنكية)..." class="w-full px-3 py-1.5 text-xs border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-blue-50/40 text-slate-800" />
-                        <p class="text-[10px] text-slate-400 mt-1">Will be automatically assigned the next sequential number (e.g. 14 - ...).</p>
+                        <input id="doc-custom-folder-input" type="text" placeholder="Enter new folder name (e.g. Bank Statements)..." data-i18n-placeholder="doc_action.new_folder_placeholder" class="w-full px-3 py-1.5 text-xs border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-blue-50/40 text-slate-800" />
+                        <p class="text-[10px] text-slate-400 mt-1" data-i18n="doc_action.new_folder_hint">Will be automatically assigned the next sequential number (e.g. 14 - ...).</p>
                     </div>
                 </div>
 
                 <!-- Tenant Assignment (within house) -->
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Assigned Tenant (Within House)</label>
+                    <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="doc_action.assigned_tenant">Assigned Tenant (Within House)</label>
                     <select id="doc-modal-tenant-select" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 focus:bg-white">
                         <!-- Populated dynamically with house tenants -->
                     </select>
@@ -854,15 +850,15 @@
             <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/70 flex justify-end gap-3">
                 <button id="btn-doc-delete" type="button" onclick="if(typeof window.handleDeleteDoc==='function')window.handleDeleteDoc(event);" class="px-3.5 py-2 text-xs font-bold text-rose-600 hover:text-white bg-rose-50 hover:bg-rose-600 border border-rose-200 rounded-xl transition-all mr-auto flex items-center gap-1.5 cursor-pointer shadow-2xs">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                    <span>Delete Document</span>
+                    <span data-i18n="doc_action.delete_doc">Delete Document</span>
                 </button>
-                <button id="btn-doc-edit-pages" type="button" class="px-3.5 py-2 text-xs font-bold text-amber-700 hover:text-white bg-amber-50 hover:bg-amber-600 border border-amber-200 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs" title="Edit, split, reorder, or delete pages in this document">
+                <button id="btn-doc-edit-pages" type="button" class="px-3.5 py-2 text-xs font-bold text-amber-700 hover:text-white bg-amber-50 hover:bg-amber-600 border border-amber-200 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs" title="Edit, split, reorder, or delete pages in this document" data-i18n-title="doc.edit_pages">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879a3 3 0 11-4.242-4.242L10.758 10M12 12L9.121 9.121m0 0a3 3 0 10-4.242 4.242L7.758 16"/></svg>
-                    <span>✂️ Edit Pages</span>
+                    <span data-i18n="doc_action.edit_pages">✂️ Edit Pages</span>
                 </button>
-                <button id="doc-modal-cancel" type="button" onclick="if(typeof window.closeDocModal==='function')window.closeDocModal();" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs">Cancel</button>
+                <button id="doc-modal-cancel" type="button" onclick="if(typeof window.closeDocModal==='function')window.closeDocModal();" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs" data-i18n="common.cancel">Cancel</button>
                 <button id="doc-modal-submit" type="button" class="px-4 py-2 text-xs font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-all flex items-center gap-2 shadow-sm shadow-blue-500/25">
-                    <span id="doc-modal-submit-text">💾 Apply Changes</span>
+                    <span id="doc-modal-submit-text" data-i18n="doc_action.apply_changes">💾 Apply Changes</span>
                 </button>
             </div>
         </div>
@@ -880,11 +876,11 @@
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-slate-900 tracking-tight" id="change-doc-date-title">Change Document Date</h3>
-                        <p class="text-xs text-slate-500 truncate max-w-[260px]" id="change-doc-date-subtitle">Update document date</p>
+                        <h3 class="text-base font-bold text-slate-900 tracking-tight" id="change-doc-date-title" data-i18n="change_date.title">Change Document Date</h3>
+                        <p class="text-xs text-slate-500 truncate max-w-[260px]" id="change-doc-date-subtitle" data-i18n="change_date.subtitle">Update document date</p>
                     </div>
                 </div>
-                <button id="change-doc-date-close" type="button" onclick="if(typeof window.closeChangeDocDateModal==='function')window.closeChangeDocDateModal();" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" aria-label="Close modal">
+                <button id="change-doc-date-close" type="button" onclick="if(typeof window.closeChangeDocDateModal==='function')window.closeChangeDocDateModal();" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" aria-label="Close modal" data-i18n-aria="common.close">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
@@ -892,9 +888,9 @@
             <!-- Modal Body -->
             <div class="p-6 space-y-4">
                 <div>
-                    <label for="change-doc-date-input" class="block text-xs font-bold text-slate-700 mb-1.5">Document Date (التاريخ)</label>
+                    <label for="change-doc-date-input" class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="change_date.label">Document Date</label>
                     <input id="change-doc-date-input" type="date" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none bg-slate-50 focus:bg-white" />
-                    <p class="text-[11px] text-slate-400 mt-1">Updates document timeline ordering and residency allocation.</p>
+                    <p class="text-[11px] text-slate-400 mt-1" data-i18n="change_date.hint">Updates document timeline ordering and residency allocation.</p>
                 </div>
 
                 <div id="change-doc-date-status" class="py-1 text-xs font-medium hidden"></div>
@@ -902,9 +898,9 @@
 
             <!-- Modal Footer -->
             <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/70 flex justify-end gap-3">
-                <button id="btn-change-date-cancel" type="button" onclick="if(typeof window.closeChangeDocDateModal==='function')window.closeChangeDocDateModal();" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer">Cancel</button>
+                <button id="btn-change-date-cancel" type="button" onclick="if(typeof window.closeChangeDocDateModal==='function')window.closeChangeDocDateModal();" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer" data-i18n="common.cancel">Cancel</button>
                 <button id="btn-change-date-save" type="button" onclick="if(typeof window.saveChangeDocDate==='function')window.saveChangeDocDate();" class="px-4 py-2 text-xs font-bold text-white bg-purple-600 rounded-xl hover:bg-purple-700 transition-all flex items-center gap-2 shadow-sm shadow-purple-500/25 cursor-pointer">
-                    <span id="btn-change-date-save-text">Save Date</span>
+                    <span id="btn-change-date-save-text" data-i18n="change_date.save_btn">Save Date</span>
                 </button>
             </div>
         </div>
@@ -1077,13 +1073,13 @@
                         <!-- New Tenant Input (Toggled) -->
                         <div id="ingest-new-tenant-container" class="mt-2 hidden">
                             <div class="flex items-center gap-2">
-                                <input id="ingest-new-tenant-input" type="text" placeholder="Enter new tenant name (الاسم)..." class="w-full px-3 py-1.5 text-xs border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-blue-50/40 text-slate-800 font-medium" />
-                                <select id="ingest-new-tenant-type" class="px-2 py-1.5 text-xs border border-blue-200 rounded-xl bg-blue-50/40 text-slate-700 font-medium focus:outline-none flex-shrink-0" title="Tenant Type • نوع المستأجر">
-                                    <option value="resident">🏠 Resident</option>
-                                    <option value="applicant">📋 Applicant</option>
+                                <input id="ingest-new-tenant-input" type="text" data-i18n-placeholder="ingest.new_tenant_placeholder" placeholder="Enter new tenant name..." class="w-full px-3 py-1.5 text-xs border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-blue-50/40 text-slate-800 font-medium" />
+                                <select id="ingest-new-tenant-type" class="px-2 py-1.5 text-xs border border-blue-200 rounded-xl bg-blue-50/40 text-slate-700 font-medium focus:outline-none flex-shrink-0" data-i18n-title="ingest.tenant_type_title" title="Tenant Type">
+                                    <option value="resident" data-i18n="ingest.tenant_type_resident">🏠 Resident</option>
+                                    <option value="applicant" data-i18n="ingest.tenant_type_applicant">📋 Applicant</option>
                                 </select>
                             </div>
-                            <p class="text-[10px] text-slate-400 mt-1">Will be automatically registered as a resident or applicant in this house.</p>
+                            <p class="text-[10px] text-slate-400 mt-1" data-i18n="ingest.new_tenant_hint">Will be automatically registered as a resident or applicant in this house.</p>
                         </div>
                     </div>
 
@@ -1361,26 +1357,26 @@
             </div>
             <div class="p-6 space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1.5">المستأجر • Target Tenant</label>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="batch.target_tenant">Target Tenant</label>
                     <select id="batch-move-tenant-select" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none bg-slate-50 focus:bg-white font-medium">
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Target Category Folder</label>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="batch.target_folder">Target Category Folder</label>
                     <select id="batch-move-folder-select" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none bg-slate-50 focus:bg-white font-medium">
                         <!-- Standard 13 folders + custom folders + '+ Create New Folder...' -->
                     </select>
                     <div id="batch-move-custom-folder-container" class="mt-2 hidden">
-                        <input id="batch-move-custom-folder-input" type="text" placeholder="Enter new folder name (e.g. مستندات بنكية)..." class="w-full px-3 py-2 text-xs border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none bg-amber-50/40 text-slate-800" />
-                        <p class="text-[10px] text-slate-400 mt-1">Will be automatically assigned the next sequential number (e.g. 14 - ...).</p>
+                        <input id="batch-move-custom-folder-input" type="text" placeholder="Enter new folder name (e.g. Bank Statements)..." data-i18n-placeholder="doc_action.new_folder_placeholder" class="w-full px-3 py-2 text-xs border border-amber-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none bg-amber-50/40 text-slate-800" />
+                        <p class="text-[10px] text-slate-400 mt-1" data-i18n="doc_action.new_folder_hint">Will be automatically assigned the next sequential number (e.g. 14 - ...).</p>
                     </div>
                 </div>
             </div>
             <div class="px-6 py-3.5 border-t border-slate-100 bg-slate-50/70 flex justify-end gap-3">
-                <button id="btn-batch-move-cancel" type="button" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors shadow-2xs cursor-pointer">Cancel</button>
+                <button id="btn-batch-move-cancel" type="button" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors shadow-2xs cursor-pointer" data-i18n="common.cancel">Cancel</button>
                 <button id="btn-batch-move-confirm" type="button" class="px-4 py-2 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-xl transition-all shadow-sm shadow-amber-500/25 flex items-center gap-2 cursor-pointer">
                     <span id="batch-move-spinner" class="hidden animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full"></span>
-                    <span id="batch-move-btn-text">Move Documents</span>
+                    <span id="batch-move-btn-text" data-i18n="batch.move_btn">Move Documents</span>
                 </button>
             </div>
         </div>
@@ -1395,36 +1391,36 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/></svg>
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-slate-900 tracking-tight">Copy Selected Documents</h3>
-                        <p id="batch-copy-subtitle" class="text-xs text-slate-500">Add documents to another category folder.</p>
+                        <h3 class="text-base font-bold text-slate-900 tracking-tight" data-i18n="batch.copy_title">Copy Selected Documents</h3>
+                        <p id="batch-copy-subtitle" class="text-xs text-slate-500" data-i18n="batch.copy_subtitle">Add documents to another category folder.</p>
                     </div>
                 </div>
-                <button id="batch-copy-close" type="button" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
+                <button id="batch-copy-close" type="button" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" data-i18n-aria="common.close">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
             <div class="p-6 space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1.5">المستأجر • Target Tenant</label>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="batch.target_tenant">Target Tenant</label>
                     <select id="batch-copy-tenant-select" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-slate-50 focus:bg-white font-medium">
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Target Category Folder</label>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="batch.target_folder">Target Category Folder</label>
                     <select id="batch-copy-folder-select" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-slate-50 focus:bg-white font-medium">
                         <!-- Standard 13 folders + custom folders + '+ Create New Folder...' -->
                     </select>
                     <div id="batch-copy-custom-folder-container" class="mt-2 hidden">
-                        <input id="batch-copy-custom-folder-input" type="text" placeholder="Enter new folder name (e.g. مستندات بنكية)..." class="w-full px-3 py-2 text-xs border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-indigo-50/40 text-slate-800" />
-                        <p class="text-[10px] text-slate-400 mt-1">Will be automatically assigned the next sequential number (e.g. 14 - ...).</p>
+                        <input id="batch-copy-custom-folder-input" type="text" placeholder="Enter new folder name (e.g. Bank Statements)..." data-i18n-placeholder="doc_action.new_folder_placeholder" class="w-full px-3 py-2 text-xs border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-indigo-50/40 text-slate-800" />
+                        <p class="text-[10px] text-slate-400 mt-1" data-i18n="doc_action.new_folder_hint">Will be automatically assigned the next sequential number (e.g. 14 - ...).</p>
                     </div>
                 </div>
             </div>
             <div class="px-6 py-3.5 border-t border-slate-100 bg-slate-50/70 flex justify-end gap-3">
-                <button id="btn-batch-copy-cancel" type="button" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors shadow-2xs cursor-pointer">Cancel</button>
+                <button id="btn-batch-copy-cancel" type="button" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors shadow-2xs cursor-pointer" data-i18n="common.cancel">Cancel</button>
                 <button id="btn-batch-copy-confirm" type="button" class="px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-all shadow-sm shadow-indigo-500/25 flex items-center gap-2 cursor-pointer">
                     <span id="batch-copy-spinner" class="hidden animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full"></span>
-                    <span id="batch-copy-btn-text">Copy Documents</span>
+                    <span id="batch-copy-btn-text" data-i18n="batch.copy_btn">Copy Documents</span>
                 </button>
             </div>
         </div>
@@ -1477,26 +1473,26 @@
                     </div>
                     <div class="min-w-0 flex-1">
                         <div class="flex items-center gap-2">
-                            <h3 class="font-bold text-sm sm:text-base truncate text-white" id="merge-docs-title">دمج المستندات • Merge Documents</h3>
-                            <span id="merge-docs-count-badge" class="text-xs px-2.5 py-0.5 rounded-full font-medium bg-slate-800 text-emerald-400 border border-slate-700 flex-shrink-0">0 docs • 0 pages</span>
+                            <h3 class="font-bold text-sm sm:text-base truncate text-white" id="merge-docs-title" data-i18n="merge.title">Merge Documents</h3>
+                            <span id="merge-docs-count-badge" class="text-xs px-2.5 py-0.5 rounded-full font-medium bg-slate-800 text-emerald-400 border border-slate-700 flex-shrink-0">0 docs</span>
                         </div>
-                        <p class="text-xs text-slate-400 truncate" id="merge-docs-subtitle">دمج ملفات PDF بالتسلسل المطلوب مع معاينة كاملة</p>
+                        <p class="text-xs text-slate-400 truncate" id="merge-docs-subtitle" data-i18n="merge.subtitle">Merge PDF files in desired sequence with full preview</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
                     <!-- Zoom Controls (Card Sizing) -->
                     <div class="flex items-center bg-slate-800/90 border border-slate-700/80 rounded-xl p-0.5 text-xs text-slate-300 shadow-inner">
-                        <button id="btn-merge-zoom-out" type="button" class="p-1.5 hover:text-white hover:bg-slate-700/70 rounded-lg transition-all cursor-pointer disabled:opacity-30 disabled:pointer-events-none" title="Zoom out cards (Ctrl - or Ctrl+Scroll) • تصغير البطاقات">
+                        <button id="btn-merge-zoom-out" type="button" class="p-1.5 hover:text-white hover:bg-slate-700/70 rounded-lg transition-all cursor-pointer disabled:opacity-30 disabled:pointer-events-none" title="Zoom out cards" data-i18n-title="merge.zoom_out">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4"/></svg>
                         </button>
-                        <button id="btn-merge-zoom-reset" type="button" class="px-2 py-1 font-mono text-[11px] font-semibold hover:text-white hover:bg-slate-700/70 rounded-lg transition-all cursor-pointer select-none" title="Reset card size (Ctrl 0) • استعادة الحجم الافتراضي">
+                        <button id="btn-merge-zoom-reset" type="button" class="px-2 py-1 font-mono text-[11px] font-semibold hover:text-white hover:bg-slate-700/70 rounded-lg transition-all cursor-pointer select-none" title="Reset card size" data-i18n-title="merge.zoom_reset">
                             <span id="merge-zoom-level-label">100%</span>
                         </button>
-                        <button id="btn-merge-zoom-in" type="button" class="p-1.5 hover:text-white hover:bg-slate-700/70 rounded-lg transition-all cursor-pointer disabled:opacity-30 disabled:pointer-events-none" title="Zoom in cards (Ctrl + or Ctrl+Scroll) • تكبير البطاقات">
+                        <button id="btn-merge-zoom-in" type="button" class="p-1.5 hover:text-white hover:bg-slate-700/70 rounded-lg transition-all cursor-pointer disabled:opacity-30 disabled:pointer-events-none" title="Zoom in cards" data-i18n-title="merge.zoom_in">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
                         </button>
                     </div>
-                    <button id="merge-docs-close" type="button" class="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer" aria-label="Close" title="Close • إغلاق">
+                    <button id="merge-docs-close" type="button" class="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer" aria-label="Close" title="Close" data-i18n-title="common.close" data-i18n-aria="common.close">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
@@ -1508,20 +1504,20 @@
                     <div class="flex items-center justify-between mb-4">
                         <span class="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
                             <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/></svg>
-                            <span>ترتيب المستندات • Reorder Documents</span>
+                            <span data-i18n="merge.reorder_step_title">Reorder Documents</span>
                         </span>
-                        <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">استخدم أزرار الأسهم على البطاقات للتقديم والتأخير • Use arrows on cards to reorder</span>
+                        <span class="text-xs text-slate-500 dark:text-slate-400 font-medium" data-i18n="merge.reorder_step_desc">Use arrows on cards to reorder</span>
                     </div>
                     <div id="merge-docs-list" class="merge-grid-dynamic grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 pb-12">
                         <!-- Populated dynamically with visual cards -->
                     </div>
                 </div>
                 <div class="px-4 sm:px-6 py-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3 flex-shrink-0 shadow-lg">
-                    <button id="btn-merge-reorder-cancel" type="button" class="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer">
-                        Cancel • إلغاء
+                    <button id="btn-merge-reorder-cancel" type="button" class="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer" data-i18n="common.cancel">
+                        Cancel
                     </button>
                     <button id="btn-merge-reorder-continue" type="button" class="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all shadow-sm shadow-emerald-500/25 flex items-center gap-2 cursor-pointer">
-                        <span>متابعة للحفظ • Continue to Save</span>
+                        <span data-i18n="merge.continue_to_save">Continue to Save</span>
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     </button>
                 </div>
@@ -1535,12 +1531,12 @@
                         <div class="flex items-center justify-between text-xs">
                             <span class="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
                                 <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                <span>معاينة المستندات بالتسلسل • Document Preview</span>
+                                <span data-i18n="merge.preview_title">Document Preview</span>
                             </span>
                             <span id="merge-order-summary" class="hidden">Doc 1 → Doc 2</span>
-                            <button id="btn-merge-swap-order" type="button" class="flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/80 px-2.5 py-1 rounded-xl shadow-2xs transition-all cursor-pointer flex-shrink-0" title="Swap order • تبديل الترتيب">
+                            <button id="btn-merge-swap-order" type="button" class="flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-white dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/80 px-2.5 py-1 rounded-xl shadow-2xs transition-all cursor-pointer flex-shrink-0" title="Swap order" data-i18n-title="merge.swap">
                                 <span class="text-sm">⇄</span>
-                                <span>تبديل • Swap</span>
+                                <span data-i18n="merge.swap">Swap</span>
                             </button>
                         </div>
 
@@ -1556,22 +1552,22 @@
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
                             <label for="merge-target-title" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                                اسم المستند المدمج • Document Name <span class="text-rose-500">*</span>
+                                <span data-i18n="merge.doc_name">Document Name</span> <span class="text-rose-500">*</span>
                             </label>
-                            <input id="merge-target-title" type="text" placeholder="اسم المستند..." class="w-full px-3 py-1.5 text-xs border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-medium" />
+                            <input id="merge-target-title" type="text" placeholder="Document name..." data-i18n-placeholder="merge.doc_name_placeholder" class="w-full px-3 py-1.5 text-xs border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-medium" />
                         </div>
                         <div>
                             <label for="merge-target-category" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                                حفظ في مجلد • Target Category Folder <span class="text-rose-500">*</span>
+                                <span data-i18n="merge.target_folder">Target Category Folder</span> <span class="text-rose-500">*</span>
                             </label>
                             <select id="merge-target-category" class="w-full px-3 py-1.5 text-xs border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-medium"></select>
                             <div id="merge-custom-cat-container" class="mt-1 hidden">
-                                <input id="merge-custom-cat-input" type="text" placeholder="اسم المجلد الجديد..." class="w-full px-3 py-1.5 text-xs border border-emerald-200 dark:border-emerald-700 rounded-xl bg-emerald-50/40 dark:bg-emerald-950/30 text-slate-800 dark:text-slate-100 font-medium" />
+                                <input id="merge-custom-cat-input" type="text" placeholder="New folder name..." data-i18n-placeholder="merge.new_folder_placeholder" class="w-full px-3 py-1.5 text-xs border border-emerald-200 dark:border-emerald-700 rounded-xl bg-emerald-50/40 dark:bg-emerald-950/30 text-slate-800 dark:text-slate-100 font-medium" />
                             </div>
                         </div>
                         <div>
                             <label for="merge-target-tenant" class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                                المستأجر • Target Tenant
+                                <span data-i18n="merge.target_tenant">Target Tenant</span>
                             </label>
                             <select id="merge-target-tenant" class="w-full px-3 py-1.5 text-xs border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-medium"></select>
                         </div>
@@ -1584,19 +1580,19 @@
                     <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
                         <label class="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer select-none">
                             <input type="checkbox" id="merge-delete-sources" checked class="w-4 h-4 text-emerald-600 rounded border-slate-300 dark:border-slate-600 focus:ring-emerald-500 cursor-pointer" />
-                            <span>حذف المستندات الأصلية بعد الدمج • Delete original documents</span>
+                            <span data-i18n="merge.delete_original">Delete original documents after merging</span>
                         </label>
 
                         <div class="flex items-center gap-2 ml-auto">
-                            <button id="btn-merge-save-back" type="button" class="hidden px-3.5 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer">
-                                ← Back • رجوع
+                            <button id="btn-merge-save-back" type="button" class="hidden px-3.5 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer" data-i18n="merge.back">
+                                ← Back
                             </button>
-                            <button id="btn-merge-docs-cancel" type="button" class="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer">
-                                Cancel • إلغاء
+                            <button id="btn-merge-docs-cancel" type="button" class="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer" data-i18n="common.cancel">
+                                Cancel
                             </button>
                             <button id="btn-merge-docs-confirm" type="button" class="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-md shadow-emerald-500/25 transition-all flex items-center gap-2 cursor-pointer">
                                 <span id="merge-docs-spinner" class="hidden animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full"></span>
-                                <span id="merge-docs-btn-text">⚡ دمج المستندات • Merge Documents</span>
+                                <span id="merge-docs-btn-text" data-i18n="merge.confirm_btn">⚡ Merge Documents</span>
                             </button>
                         </div>
                     </div>
@@ -1614,35 +1610,35 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-slate-900 tracking-tight" id="delete-house-title">حذف المنزل / Delete House</h3>
-                        <p class="text-xs text-rose-600 font-medium">This action cannot be undone.</p>
+                        <h3 class="text-base font-bold text-slate-900 tracking-tight" id="delete-house-title" data-i18n="delete_house.title">Delete House</h3>
+                        <p class="text-xs text-rose-600 font-medium" data-i18n="delete_house.irreversible">This action cannot be undone.</p>
                     </div>
                 </div>
-                <button id="delete-house-modal-close" type="button" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" aria-label="Close">
+                <button id="delete-house-modal-close" type="button" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" aria-label="Close" data-i18n-aria="common.close">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
             <div class="p-6 space-y-3.5">
-                <p class="text-xs text-slate-600 leading-relaxed">
-                    هل أنت متأكد من رغبتك في حذف المنزل <strong id="delete-house-target-name" class="text-slate-900 font-bold"></strong> نهائياً؟ سيتم محو كافة المستأجرين والوثائق والملفات من القرص.
+                <p class="text-xs text-slate-600 leading-relaxed" id="delete-house-msg">
+                    Are you sure you want to permanently delete house <strong id="delete-house-target-name" class="text-slate-900 font-bold"></strong>? All associated tenants, documents, and files will be removed from disk.
                 </p>
                 <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 flex items-start gap-2">
                     <span class="text-sm flex-shrink-0 mt-0.5">⚠️</span>
-                    <span>سيتم حذف جميع سجلات قاعدة البيانات والملفات في مجلدات <code>vault</code> و <code>batches</code> بشكل دائم.</span>
+                    <span data-i18n="delete_house.warning">Both database entries and physical files in the vault and batch folders will be permanently deleted.</span>
                 </div>
                 <div class="space-y-1.5 pt-1">
-                    <label for="delete-house-confirm-input" class="text-xs font-semibold text-slate-700 block">
-                        لتأكيد الحذف، اكتب <span id="delete-house-phrase-hint" class="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-rose-700 font-bold select-all"></span> في الحقل أدناه:
+                    <label for="delete-house-confirm-input" class="text-xs font-semibold text-slate-700 block" id="delete-house-confirm-label">
+                        To confirm deletion, type <span id="delete-house-phrase-hint" class="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-rose-700 font-bold select-all"></span> in the field below:
                     </label>
-                    <input id="delete-house-confirm-input" type="text" autocomplete="off" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:outline-none bg-slate-50 focus:bg-white font-mono" placeholder="Type confirmation phrase..." />
+                    <input id="delete-house-confirm-input" type="text" autocomplete="off" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:outline-none bg-slate-50 focus:bg-white font-mono" placeholder="Type confirmation phrase..." data-i18n-placeholder="delete_house.confirm_placeholder" />
                 </div>
                 <div id="delete-house-status" class="text-xs font-medium text-rose-600 hidden"></div>
             </div>
             <div class="px-6 py-3.5 border-t border-slate-100 bg-slate-50/70 flex justify-end gap-3">
-                <button id="delete-house-cancel" type="button" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors shadow-2xs cursor-pointer">Cancel</button>
+                <button id="delete-house-cancel" type="button" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors shadow-2xs cursor-pointer" data-i18n="common.cancel">Cancel</button>
                 <button id="delete-house-confirm-btn" type="button" disabled class="px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all shadow-sm shadow-rose-500/25 flex items-center gap-2 cursor-pointer">
                     <span id="delete-house-spinner" class="hidden animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full"></span>
-                    <span id="delete-house-btn-text">🗑️ حذف نهائي / Delete Permanently</span>
+                    <span id="delete-house-btn-text" data-i18n="delete_house.btn_confirm">🗑️ Delete Permanently</span>
                 </button>
             </div>
         </div>
@@ -1657,40 +1653,40 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-slate-900 tracking-tight" id="add-house-modal-title">+ إضافة منزل جديد / Add House</h3>
-                        <p id="add-house-subtitle" class="text-xs text-slate-500">Register house and scaffold storage directories.</p>
+                        <h3 class="text-base font-bold text-slate-900 tracking-tight" id="add-house-modal-title" data-i18n="add_house.title">Add New House</h3>
+                        <p id="add-house-subtitle" class="text-xs text-slate-500" data-i18n="add_house.subtitle">Register house and scaffold storage directories.</p>
                     </div>
                 </div>
-                <button id="add-house-close" type="button" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
+                <button id="add-house-close" type="button" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" data-i18n-aria="common.close">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
             <form id="add-house-form" class="p-6 space-y-4">
                 <div>
-                    <label for="add-house-area-select" class="block text-xs font-bold text-slate-700 mb-1.5">المنطقة / Area</label>
+                    <label for="add-house-area-select" class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="add_house.area">Area</label>
                     <select id="add-house-area-select" required class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 focus:bg-white font-medium">
                         <!-- Dynamically populated with areas -->
                     </select>
                 </div>
                 <div>
-                    <label for="add-house-id-input" class="block text-xs font-bold text-slate-700 mb-1.5">رقم أو اسم المنزل / House Number or Name <span class="text-rose-500">*</span></label>
-                    <input id="add-house-id-input" type="text" required placeholder="مثال: 515 أو Villa 12" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 focus:bg-white font-medium" />
+                    <label for="add-house-id-input" class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="add_house.house_id">House Number or Name <span class="text-rose-500">*</span></label>
+                    <input id="add-house-id-input" type="text" required placeholder="e.g. 515 or Villa 12" data-i18n-placeholder="add_house.house_id_placeholder" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 focus:bg-white font-medium" />
                 </div>
                 <div>
-                    <label for="add-house-tenant-name-input" class="block text-xs font-bold text-slate-700 mb-1.5">اسم الساكن الأولي / Initial Tenant Name (اختياري)</label>
-                    <input id="add-house-tenant-name-input" type="text" placeholder="مثال: عبد الله خالد الشمري" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 focus:bg-white font-medium" />
+                    <label for="add-house-tenant-name-input" class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="add_house.initial_tenant">Initial Tenant Name (Optional)</label>
+                    <input id="add-house-tenant-name-input" type="text" placeholder="e.g. Abdullah Khalid Al-Shammari" data-i18n-placeholder="add_house.initial_tenant_placeholder" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 focus:bg-white font-medium" />
                 </div>
                 <div>
-                    <label for="add-house-tenant-date-input" class="block text-xs font-bold text-slate-700 mb-1.5">تاريخ بدء العقد / Start Date (اختياري)</label>
+                    <label for="add-house-tenant-date-input" class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="add_house.start_date">Start Date (Optional)</label>
                     <input id="add-house-tenant-date-input" type="date" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 focus:bg-white font-medium" />
                 </div>
                 <div id="add-house-status" class="p-2.5 rounded-lg text-xs font-medium hidden"></div>
             </form>
             <div class="px-6 py-3.5 border-t border-slate-100 bg-slate-50/70 flex justify-end gap-3">
-                <button id="btn-add-house-cancel" type="button" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors shadow-2xs cursor-pointer">إلغاء / Cancel</button>
+                <button id="btn-add-house-cancel" type="button" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors shadow-2xs cursor-pointer" data-i18n="common.cancel">Cancel</button>
                 <button id="btn-add-house-submit" type="button" class="px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-sm shadow-blue-500/25 flex items-center gap-2 cursor-pointer">
                     <span id="add-house-spinner" class="hidden animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full"></span>
-                    <span id="add-house-submit-text">إضافة المنزل / Create House</span>
+                    <span id="add-house-submit-text" data-i18n="add_house.submit_btn">Create House</span>
                 </button>
             </div>
         </div>
@@ -1798,10 +1794,10 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-slate-900 tracking-tight" id="export-archive-modal-title">تصدير الأرشيف • Export Archive</h3>
+                        <h3 class="text-base font-bold text-slate-900 tracking-tight" id="export-archive-modal-title" data-i18n="export.title">Export Archive</h3>
                     </div>
                 </div>
-                <button id="export-archive-modal-close" type="button" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" aria-label="Close">
+                <button id="export-archive-modal-close" type="button" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" data-i18n-aria="common.close" aria-label="Close">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
@@ -1811,7 +1807,7 @@
                 <!-- Question 1: Export Format -->
                 <div>
                     <label class="block text-xs font-bold text-slate-800 mb-2">
-                        <span>صيغة التصدير • Format</span>
+                        <span data-i18n="export.format">Export Format</span>
                     </label>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="export-format-options">
                         <!-- Option A: ZIP (Selected by default) -->
@@ -1824,7 +1820,7 @@
                             </div>
                             <div>
                                 <div class="font-bold text-sm text-slate-900 leading-snug">ZIP</div>
-                                <div class="text-xs font-medium text-slate-500 mt-0.5">مجلدات • Folders</div>
+                                <div class="text-xs font-medium text-slate-500 mt-0.5" data-i18n="export.format_zip_desc">Folders</div>
                             </div>
                         </div>
 
@@ -1838,7 +1834,7 @@
                             </div>
                             <div>
                                 <div class="font-bold text-sm text-slate-900 leading-snug">PDF</div>
-                                <div class="text-xs font-medium text-slate-500 mt-0.5">تسلسل زمني • Timeline</div>
+                                <div class="text-xs font-medium text-slate-500 mt-0.5" data-i18n="export.format_pdf_desc">Timeline</div>
                             </div>
                         </div>
                     </div>
@@ -1847,11 +1843,11 @@
                 <!-- Question 2: Tenant Scope -->
                 <div>
                     <label for="export-archive-tenant-select" class="block text-xs font-bold text-slate-800 mb-2">
-                        <span>المستأجر • Tenant</span>
+                        <span data-i18n="export.tenant">Tenant</span>
                     </label>
                     <div class="relative">
                         <select id="export-archive-tenant-select" class="w-full px-3.5 py-2.5 text-xs font-medium border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 focus:bg-white transition-all appearance-none cursor-pointer">
-                            <option value="">كامل السجل • All Records</option>
+                            <option value="" data-i18n="export.all_records">All Records</option>
                         </select>
                         <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center px-3 text-slate-400">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -1862,10 +1858,10 @@
 
             <!-- Modal Footer -->
             <div class="px-6 py-3.5 border-t border-slate-100 bg-slate-50/70 flex justify-end items-center gap-2">
-                <button id="btn-cancel-export-archive" type="button" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors shadow-2xs cursor-pointer">Cancel</button>
+                <button id="btn-cancel-export-archive" type="button" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors shadow-2xs cursor-pointer"><span data-i18n="common.cancel">Cancel</span></button>
                 <button id="btn-confirm-export-archive" type="button" class="px-4 py-2 text-xs font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-all flex items-center gap-2 shadow-sm shadow-blue-500/25 cursor-pointer">
                     <span id="export-archive-spinner" class="hidden animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full"></span>
-                    <span id="export-archive-btn-text">⬇️ Download</span>
+                    <span id="export-archive-btn-text" data-i18n="export.download_btn">⬇️ Download</span>
                 </button>
             </div>
         </div>
@@ -1880,31 +1876,31 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-slate-900 dark:text-white tracking-tight" id="vacated-tenant-title">تضارب تاريخ المستأجر المنتهي</h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Tenancy Date Conflict Warning</p>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white tracking-tight" id="vacated-tenant-title" data-i18n="vacated.title">Tenancy Date Conflict Warning</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400" data-i18n="vacated.subtitle">Tenancy Date Conflict Warning</p>
                     </div>
                 </div>
-                <button id="btn-vacated-close" type="button" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                <button id="btn-vacated-close" type="button" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer" data-i18n-aria="common.close" aria-label="Close">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
             <div class="p-6 space-y-4">
                 <p id="vacated-tenant-msg" class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-                    هذا الشخص غادر المنزل في تاريخ <span id="vacated-tenant-end-date" class="font-bold text-rose-600 dark:text-rose-400"></span> وأنت تحاول إضافة وثيقة بتاريخ <span id="vacated-tenant-doc-date" class="font-bold text-blue-600 dark:text-blue-400"></span>. هل تريد تمديد فترة إقامته؟
+                    <span data-i18n="vacated.msg_prefix">This tenant vacated the house on</span> <span id="vacated-tenant-end-date" class="font-bold text-rose-600 dark:text-rose-400"></span> <span data-i18n="vacated.msg_mid">and you are adding a document dated</span> <span id="vacated-tenant-doc-date" class="font-bold text-blue-600 dark:text-blue-400"></span>. <span data-i18n="vacated.msg_suffix">Would you like to extend their tenancy period?</span>
                 </p>
                 <div class="p-3 bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-800/40 rounded-xl text-[11px] text-amber-800 dark:text-amber-300 space-y-1">
-                    <p class="font-semibold">خيارات المعالجة:</p>
+                    <p class="font-semibold" data-i18n="vacated.options_title">Resolution Options:</p>
                     <ul class="list-disc list-inside space-y-0.5 text-amber-700 dark:text-amber-400">
-                        <li><strong>تمديد التاريخ:</strong> تحديث تاريخ إخلاء المستأجر إلى تاريخ الوثيقة.</li>
-                        <li><strong>المتابعة دون تمديد:</strong> حفظ الوثيقة مع إبقاء المستأجر كمنتهي الإقامة.</li>
-                        <li><strong>إلغاء:</strong> تعديل تاريخ الوثيقة أو اختيار مستأجر آخر.</li>
+                        <li data-i18n="vacated.option_extend">Extend Date: Update resident vacated date to document date.</li>
+                        <li data-i18n="vacated.option_proceed">Proceed Without Extending: Save document keeping resident marked as vacated.</li>
+                        <li data-i18n="vacated.option_cancel">Cancel: Change document date or select a different tenant.</li>
                     </ul>
                 </div>
             </div>
             <div class="px-6 py-3.5 border-t border-slate-100 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/70 flex flex-col sm:flex-row-reverse gap-2">
-                <button id="btn-vacated-extend" type="button" class="px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-sm shadow-blue-500/25 cursor-pointer">تمديد تاريخ المستأجر ورفع الوثيقة</button>
-                <button id="btn-vacated-proceed-anyway" type="button" class="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors shadow-2xs cursor-pointer">رفع دون تمديد</button>
-                <button id="btn-vacated-cancel" type="button" class="px-4 py-2 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer sm:mr-auto">إلغاء</button>
+                <button id="btn-vacated-extend" type="button" class="px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-sm shadow-blue-500/25 cursor-pointer" data-i18n="vacated.btn_extend">Extend Tenancy Date &amp; Upload</button>
+                <button id="btn-vacated-proceed-anyway" type="button" class="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors shadow-2xs cursor-pointer" data-i18n="vacated.btn_proceed">Upload Without Extending</button>
+                <button id="btn-vacated-cancel" type="button" class="px-4 py-2 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer sm:mr-auto" data-i18n="vacated.btn_cancel">Cancel</button>
             </div>
         </div>
     </div>
@@ -1920,26 +1916,26 @@
                     </div>
                     <div class="min-w-0 flex-1">
                         <div class="flex items-center gap-2">
-                            <h3 id="page-editor-title" class="font-bold text-sm sm:text-base truncate text-white">Document</h3>
+                            <h3 id="page-editor-title" class="font-bold text-sm sm:text-base truncate text-white" data-i18n="editor.title">Document</h3>
                             <span id="page-editor-count-badge" class="text-xs px-2.5 py-0.5 rounded-full font-medium bg-slate-800 text-amber-300 border border-slate-700 flex-shrink-0">...</span>
                         </div>
-                        <p id="page-editor-subtitle" class="text-xs text-slate-400 truncate">Category • Tenant</p>
+                        <p id="page-editor-subtitle" class="text-xs text-slate-400 truncate">Category</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
                     <!-- Zoom Controls (Page Card Sizing) -->
                     <div class="flex items-center bg-slate-800/90 border border-slate-700/80 rounded-xl p-0.5 text-xs text-slate-300 shadow-inner">
-                        <button id="btn-editor-zoom-out" type="button" class="p-1.5 hover:text-white hover:bg-slate-700/70 rounded-lg transition-all cursor-pointer disabled:opacity-30 disabled:pointer-events-none" title="Zoom out pages (Ctrl - or Ctrl+Scroll) • تصغير الصفحات">
+                        <button id="btn-editor-zoom-out" type="button" class="p-1.5 hover:text-white hover:bg-slate-700/70 rounded-lg transition-all cursor-pointer disabled:opacity-30 disabled:pointer-events-none" data-i18n-title="editor.zoom_out" title="Zoom out pages">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4"/></svg>
                         </button>
-                        <button id="btn-editor-zoom-reset" type="button" class="px-2 py-1 font-mono text-[11px] font-semibold hover:text-white hover:bg-slate-700/70 rounded-lg transition-all cursor-pointer select-none" title="Reset page size (Ctrl 0) • استعادة الحجم الافتراضي">
+                        <button id="btn-editor-zoom-reset" type="button" class="px-2 py-1 font-mono text-[11px] font-semibold hover:text-white hover:bg-slate-700/70 rounded-lg transition-all cursor-pointer select-none" data-i18n-title="editor.zoom_reset" title="Reset page size">
                             <span id="editor-zoom-level-label">100%</span>
                         </button>
-                        <button id="btn-editor-zoom-in" type="button" class="p-1.5 hover:text-white hover:bg-slate-700/70 rounded-lg transition-all cursor-pointer disabled:opacity-30 disabled:pointer-events-none" title="Zoom in pages (Ctrl + or Ctrl+Scroll) • تكبير الصفحات">
+                        <button id="btn-editor-zoom-in" type="button" class="p-1.5 hover:text-white hover:bg-slate-700/70 rounded-lg transition-all cursor-pointer disabled:opacity-30 disabled:pointer-events-none" data-i18n-title="editor.zoom_in" title="Zoom in pages">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
                         </button>
                     </div>
-                    <button id="page-editor-close-btn" type="button" class="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer" title="Close editor • إغلاق">
+                    <button id="page-editor-close-btn" type="button" class="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer" data-i18n-title="editor.close" title="Close editor">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
@@ -1952,7 +1948,7 @@
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                     </svg>
-                    <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Rendering pages... • جاري معالجة الصفحات...</span>
+                    <span class="text-sm font-medium text-slate-700 dark:text-slate-300" data-i18n="editor.loading">Rendering pages...</span>
                 </div>
 
                 <div id="page-editor-grid" class="editor-grid-dynamic grid gap-3 sm:gap-4 pb-20">
@@ -1964,10 +1960,10 @@
             <div class="px-4 sm:px-6 py-3 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2.5 sm:gap-4 flex-shrink-0 shadow-lg">
                 <div class="flex items-center gap-2">
                     <button id="btn-editor-select-all" type="button" class="px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors cursor-pointer">
-                        Select All • تحديد الكل
+                        <span data-i18n="editor.select_all">Select All</span>
                     </button>
                     <button id="btn-editor-deselect-all" type="button" class="px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 rounded-xl transition-colors cursor-pointer">
-                        Deselect • إلغاء
+                        <span data-i18n="editor.deselect">Deselect</span>
                     </button>
                     <span id="page-editor-selected-count" class="text-xs font-bold text-blue-600 dark:text-blue-400 ml-1"></span>
                 </div>
@@ -1975,19 +1971,19 @@
                 <div class="flex items-center gap-2 sm:gap-3">
                     <button id="btn-editor-delete-selected" type="button" disabled class="px-3.5 py-2 text-xs font-bold text-rose-600 hover:text-white bg-rose-50 hover:bg-rose-600 dark:bg-rose-950/40 dark:hover:bg-rose-600 border border-rose-200 dark:border-rose-900/60 rounded-xl disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs">
                         <svg class="w-4 h-4 text-rose-500 hover:text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                        <span class="btn-text">Delete Selected</span>
+                        <span class="btn-text" data-i18n="editor.delete_selected">Delete Selected</span>
                     </button>
-                    <button id="btn-editor-rotate-selected" type="button" disabled class="px-3.5 py-2 text-xs font-bold text-amber-700 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 border border-amber-200 dark:border-amber-800 rounded-xl disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs" title="Rotate selected pages 90° clockwise • تدوير الصفحات المحددة 90 درجة">
+                    <button id="btn-editor-rotate-selected" type="button" disabled class="px-3.5 py-2 text-xs font-bold text-amber-700 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 border border-amber-200 dark:border-amber-800 rounded-xl disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs" data-i18n-title="editor.rotate_tooltip" title="Rotate selected pages 90° clockwise">
                         <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                        <span class="btn-text">Rotate 90° (تدوير)</span>
+                        <span class="btn-text" data-i18n="editor.rotate_selected">Rotate 90°</span>
                     </button>
                     <button id="btn-editor-copy-selected" type="button" disabled class="px-3.5 py-2 text-xs font-bold text-blue-700 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/60 border border-blue-200 dark:border-blue-800 rounded-xl disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs">
                         <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                        <span class="btn-text">Copy Pages... (نسخ)</span>
+                        <span class="btn-text" data-i18n="editor.copy_selected">Copy Pages...</span>
                     </button>
                     <button id="btn-editor-extract-selected" type="button" disabled class="px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-1.5 cursor-pointer shadow-sm shadow-blue-500/25">
                         <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/></svg>
-                        <span class="btn-text">Separate &amp; Move... (فصل ونقل)</span>
+                        <span class="btn-text" data-i18n="editor.extract_selected">Separate &amp; Move...</span>
                     </button>
                 </div>
             </div>
@@ -2003,8 +1999,8 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/></svg>
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-slate-900 dark:text-white tracking-tight" id="extract-submodal-title">Separate &amp; Move Pages</h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400" id="extract-submodal-desc">فصل أو نسخ الصفحات إلى وثيقة جديدة</p>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white tracking-tight" id="extract-submodal-title" data-i18n="editor.extract_title">Separate &amp; Move Pages</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400" id="extract-submodal-desc" data-i18n="editor.extract_desc">Extract or copy selected pages into a new document</p>
                     </div>
                 </div>
                 <span id="extract-pages-count-badge" class="text-xs font-mono font-semibold px-2.5 py-1 bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 rounded-lg"></span>
@@ -2014,25 +2010,25 @@
                 <!-- Operation Mode: Move vs Copy -->
                 <div>
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                        Operation Mode / نوع العملية <span class="text-rose-500">*</span>
+                        <span data-i18n="editor.op_mode">Operation Mode</span> <span class="text-rose-500">*</span>
                     </label>
                     <div class="grid grid-cols-2 gap-2.5">
                         <label id="extract-mode-move-label" class="flex items-center gap-2.5 p-2.5 rounded-xl border-2 border-blue-500 bg-blue-50/60 dark:bg-blue-950/40 cursor-pointer transition-all">
                             <input type="radio" name="extract-operation-mode" id="extract-mode-move" value="move" checked class="w-4 h-4 text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-slate-600">
                             <div class="text-start">
                                 <div class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1">
-                                    <span>🚚 Move (نقل وفصل)</span>
+                                    <span data-i18n="editor.op_move">🚚 Move (Separate)</span>
                                 </div>
-                                <div class="text-[10px] text-slate-500 dark:text-slate-400">يحذف الصفحة من الأصل</div>
+                                <div class="text-[10px] text-slate-500 dark:text-slate-400" data-i18n="editor.op_move_sub">Deletes pages from original document</div>
                             </div>
                         </label>
                         <label id="extract-mode-copy-label" class="flex items-center gap-2.5 p-2.5 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 cursor-pointer transition-all">
                             <input type="radio" name="extract-operation-mode" id="extract-mode-copy" value="copy" class="w-4 h-4 text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-slate-600">
                             <div class="text-start">
                                 <div class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1">
-                                    <span>📋 Copy (نسخ فقط)</span>
+                                    <span data-i18n="editor.op_copy">📋 Copy Only</span>
                                 </div>
-                                <div class="text-[10px] text-slate-500 dark:text-slate-400">يبقي الأصل دون تغيير</div>
+                                <div class="text-[10px] text-slate-500 dark:text-slate-400" data-i18n="editor.op_copy_sub">Keeps original document intact</div>
                             </div>
                         </label>
                     </div>
@@ -2041,20 +2037,20 @@
                 <!-- Target Category -->
                 <div>
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                        Target Category / المجلد الجديد <span class="text-rose-500">*</span>
+                        <span data-i18n="editor.target_category">Target Category</span> <span class="text-rose-500">*</span>
                     </label>
                     <select id="extract-target-category" class="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 dark:bg-slate-700 font-medium text-slate-800 dark:text-slate-100">
                         <!-- Populated dynamically with standard folders + custom -->
                     </select>
                     <div id="extract-custom-cat-container" class="mt-2 hidden">
-                        <input id="extract-custom-cat-input" type="text" placeholder="Enter custom category name..." class="w-full px-3 py-2 text-xs border border-blue-200 dark:border-blue-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-blue-50/40 dark:bg-blue-950/40 text-slate-800 dark:text-slate-100" />
+                        <input id="extract-custom-cat-input" type="text" data-i18n-placeholder="editor.new_folder_placeholder" placeholder="Enter custom category name..." class="w-full px-3 py-2 text-xs border border-blue-200 dark:border-blue-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-blue-50/40 dark:bg-blue-950/40 text-slate-800 dark:text-slate-100" />
                     </div>
                 </div>
 
                 <!-- Target Tenant -->
                 <div>
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                        Tenant / المستأجر
+                        <span data-i18n="editor.target_tenant">Tenant</span>
                     </label>
                     <select id="extract-target-tenant" class="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 dark:bg-slate-700 font-medium text-slate-800 dark:text-slate-100">
                         <!-- Populated dynamically -->
@@ -2064,15 +2060,15 @@
                 <!-- Target Title -->
                 <div>
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                        Document Title / عنوان الوثيقة
+                        <span data-i18n="editor.doc_title">Document Title</span>
                     </label>
-                    <input id="extract-target-title" type="text" class="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 dark:bg-slate-700 font-medium text-slate-800 dark:text-slate-100" placeholder="مثال: محضر تسليم مفتاح" />
+                    <input id="extract-target-title" type="text" class="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 dark:bg-slate-700 font-medium text-slate-800 dark:text-slate-100" data-i18n-placeholder="editor.doc_title_placeholder" placeholder="e.g. Certified Lease Agreement" />
                 </div>
 
                 <!-- Target Date -->
                 <div>
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                        Date / التاريخ
+                        <span data-i18n="editor.doc_date">Date</span>
                     </label>
                     <input id="extract-target-date" type="date" class="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 dark:bg-slate-700 font-medium text-slate-800 dark:text-slate-100" />
                 </div>
@@ -2080,19 +2076,19 @@
                 <!-- Target Notes -->
                 <div>
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                        Notes / ملاحظات (اختياري)
+                        <span data-i18n="editor.notes">Notes (Optional)</span>
                     </label>
-                    <input id="extract-target-notes" type="text" class="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 dark:bg-slate-700 font-medium text-slate-800 dark:text-slate-100" placeholder="ملاحظات (اختياري)..." />
+                    <input id="extract-target-notes" type="text" class="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 dark:bg-slate-700 font-medium text-slate-800 dark:text-slate-100" data-i18n-placeholder="editor.notes_placeholder" placeholder="Notes (Optional)..." />
                 </div>
             </div>
 
             <!-- Submodal Footer -->
             <div class="px-6 py-3.5 border-t border-slate-100 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/70 flex justify-end items-center gap-2">
                 <button id="btn-extract-cancel" type="button" class="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors shadow-2xs cursor-pointer">
-                    Cancel • إلغاء
+                    <span data-i18n="common.cancel">Cancel</span>
                 </button>
                 <button id="btn-extract-confirm" type="button" class="px-4 py-2 text-xs font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-all flex items-center gap-2 shadow-sm shadow-blue-500/25 cursor-pointer">
-                    <span id="btn-extract-confirm-text">Confirm &amp; Move (تأكيد الفصل والنقل)</span>
+                    <span id="btn-extract-confirm-text" data-i18n="editor.confirm_move">Confirm &amp; Move</span>
                 </button>
             </div>
         </div>

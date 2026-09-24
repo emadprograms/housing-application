@@ -3,40 +3,40 @@ gsd_state_version: 1.0
 milestone: v18.0
 milestone_name: Clean Language Separation & Localization (Arabic / English)
 status: in_progress
-current_phase: 123
-last_updated: "2026-09-24T05:10:00.000Z"
+current_phase: 124
+last_updated: "2026-09-24T05:55:00.000Z"
 last_activity: 2026-09-24
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 5
-  completed_plans: 3
-  percent: 60
+  completed_plans: 4
+  percent: 80
 ---
 
 # Milestone State
 
 **Current Milestone:** v18.0 Clean Language Separation & Localization (Arabic / English)
-**Current Phase:** 123: Modals, Actions, Ingestion Station & System Messages Localization
+**Current Phase:** 124: Localization Testing, Automated Suite & Multi-Stack Verification
 **Status:** In progress (executing milestone phases)
 
 ## Current Position
 
-Phase: Phase 123 (Modals, Actions, Ingestion Station & System Messages Localization)
-Plan: Ready for planning & execution
+Phase: Phase 124 (Localization Testing, Automated Suite & Multi-Stack Verification)
+Plan: Ready for execution
 Status: In progress
-Last activity: 2026-09-24 — Phase 122 completed; advancing to Phase 123
+Last activity: 2026-09-24 — Phase 123 completed; advancing to Phase 124
 
 ## Context
 
-Milestone v18.0 eliminates bilingual intermixing across the application. Phase 120 established the core i18n engine (`i18n.js`), header language toggle button (`#lang-toggle-btn`), document directionality (`dir="rtl"` vs `dir="ltr"`), and persistent language state. Phase 121 cleaned up the top navbar, user profile badge/dropdown, login screen, shortcuts helper modal, and command palette search. Phase 122 localized the house profile, tenancy register, tenure durations, compliance audit banner, and category folders.
+Milestone v18.0 eliminates bilingual intermixing across the application. Phase 120 established the core i18n engine (`i18n.js`), header language toggle button (`#lang-toggle-btn`), document directionality (`dir="rtl"` vs `dir="ltr"`), and persistent language state. Phase 121 cleaned up the top navbar, user profile badge/dropdown, login screen, shortcuts helper modal, and command palette search. Phase 122 localized the house profile, tenancy register, tenure durations, compliance audit banner, and category folders. Phase 123 localized all dialog modals, viewer actions, page editor, merge subsystem, and toast notifications.
 
 ## Target Phases
 
 - [x] Phase 120: Language Toggle & Directionality Engine
 - [x] Phase 121: Top Navbar, Login, Shortcuts & Search Clean-Up
 - [x] Phase 122: House Profile, Tenancy Register & Category Folders English Localization
-- [ ] Phase 123: Modals, Actions, Ingestion Station & System Messages Localization
+- [x] Phase 123: Modals, Actions, Ingestion Station & System Messages Localization
 - [ ] Phase 124: Localization Testing, Automated Suite & Multi-Stack Verification
 
 ## Quick Tasks Completed
