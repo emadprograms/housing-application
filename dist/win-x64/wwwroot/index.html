@@ -191,21 +191,33 @@
                 </div>
 
                 <!-- Top Navbar Action Triggers -->
-                <div class="flex items-center gap-3.5 flex-shrink-0">
+                <div id="top-navbar-actions" class="flex items-center gap-2 sm:gap-2.5 lg:gap-3.5 min-w-0">
                     <!-- Tenure Duration Legend (Visible in Area Overview Mode) -->
-                    <div id="grid-tenure-legend" class="hidden items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-2xs flex-shrink-0">
-                        <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> &lt; 5y</span>
-                        <span class="text-slate-300 dark:text-slate-600">|</span>
-                        <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-500"></span> 5–10y</span>
-                        <span class="text-slate-300 dark:text-slate-600">|</span>
-                        <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-rose-500"></span> &gt; 10y</span>
-                        <span class="text-slate-300 dark:text-slate-600">|</span>
-                        <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-500"></span> Vacant</span>
+                    <div id="grid-tenure-legend" class="hidden items-center gap-1.5 sm:gap-2 text-xs font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 px-2.5 sm:px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-2xs flex-shrink-0 select-none cursor-default" title="Tenure Duration: &lt; 5y (Green), 5–10y (Amber), &gt; 10y (Red), Vacant (Gray)">
+                        <span class="legend-item inline-flex items-center gap-1" title="&lt; 5 years (Green)">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0"></span>
+                            <span class="legend-text"><span class="legend-text-full">&lt; 5y</span><span class="legend-text-short hidden">&lt;5y</span></span>
+                        </span>
+                        <span class="legend-divider text-slate-300 dark:text-slate-600 select-none">|</span>
+                        <span class="legend-item inline-flex items-center gap-1" title="5–10 years (Amber)">
+                            <span class="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0"></span>
+                            <span class="legend-text"><span class="legend-text-full">5–10y</span><span class="legend-text-short hidden">5–10y</span></span>
+                        </span>
+                        <span class="legend-divider text-slate-300 dark:text-slate-600 select-none">|</span>
+                        <span class="legend-item inline-flex items-center gap-1" title="&gt; 10 years (Red)">
+                            <span class="w-2 h-2 rounded-full bg-rose-500 flex-shrink-0"></span>
+                            <span class="legend-text"><span class="legend-text-full">&gt; 10y</span><span class="legend-text-short hidden">&gt;10y</span></span>
+                        </span>
+                        <span class="legend-divider text-slate-300 dark:text-slate-600 select-none">|</span>
+                        <span class="legend-item inline-flex items-center gap-1" title="Vacant (Gray)">
+                            <span class="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-500 flex-shrink-0"></span>
+                            <span class="legend-text"><span class="legend-text-full">Vacant</span><span class="legend-text-short hidden">Vac</span></span>
+                        </span>
                     </div>
 
                     <!-- Area Grid View Options & Settings (Visible in Area Overview Mode) -->
-                    <div id="grid-view-options-wrapper" class="relative hidden items-center">
-                        <button id="btn-grid-view-options" type="button" class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 text-slate-700 dark:text-slate-200 transition-all text-xs font-semibold shadow-2xs cursor-pointer select-none" title="View Options" data-i18n-title="nav.view_options" aria-label="View Options" aria-expanded="false" aria-haspopup="true">
+                    <div id="grid-view-options-wrapper" class="relative hidden items-center flex-shrink-0">
+                        <button id="btn-grid-view-options" type="button" class="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 text-slate-700 dark:text-slate-200 transition-all text-xs font-semibold shadow-2xs cursor-pointer select-none" title="View Options" data-i18n-title="nav.view_options" aria-label="View Options" aria-expanded="false" aria-haspopup="true">
                             <svg class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
                             </svg>
@@ -252,12 +264,12 @@
                     </div>
 
                     <!-- Command Palette Trigger Button -->
-                    <button id="btn-search-trigger" type="button" class="flex items-center gap-3 px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 text-slate-400 hover:text-slate-600 dark:text-slate-300 transition-all text-xs flex-shrink-0 shadow-2xs group cursor-pointer w-60 sm:w-64 justify-between" title="Search houses, tenants, documents (⌘K)" data-i18n-title="nav.search_placeholder">
-                        <div class="flex items-center gap-2 truncate">
+                    <button id="btn-search-trigger" type="button" class="flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 text-slate-400 hover:text-slate-600 dark:text-slate-300 transition-all text-xs flex-shrink shadow-2xs group cursor-pointer w-48 sm:w-56 md:w-60 lg:w-64 min-w-[110px] justify-between" title="Search houses, tenants, documents (⌘K)" data-i18n-title="nav.search_placeholder">
+                        <div class="flex items-center gap-1.5 sm:gap-2 truncate min-w-0">
                             <svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                             <span class="truncate font-medium text-slate-500 group-hover:text-slate-700 dark:text-slate-300" data-i18n="nav.search_placeholder">Search houses, tenants...</span>
                         </div>
-                        <kbd class="text-[10px] font-mono text-slate-400 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-1.5 py-0.5 shadow-2xs font-semibold group-hover:border-slate-300">⌘K</kbd>
+                        <kbd class="text-[10px] font-mono text-slate-400 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded px-1.5 py-0.5 shadow-2xs font-semibold group-hover:border-slate-300 flex-shrink-0">⌘K</kbd>
                     </button>
 
                     <!-- Keyboard Shortcuts Helper Trigger Button -->
@@ -266,7 +278,7 @@
                     </button>
 
                     <!-- Language Switcher Toggle Button (Arabic / English) -->
-                    <button id="lang-toggle-btn" type="button" class="group px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 text-slate-700 dark:text-slate-200 transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer flex-shrink-0" title="Switch Language" data-i18n-title="nav.lang_toggle_title" aria-label="Toggle Language">
+                    <button id="lang-toggle-btn" type="button" class="group px-2 sm:px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 hover:border-slate-300 text-slate-700 dark:text-slate-200 transition-all flex items-center gap-1 sm:gap-1.5 shadow-2xs cursor-pointer flex-shrink-0" title="Switch Language" data-i18n-title="nav.lang_toggle_title" aria-label="Toggle Language">
                         <svg class="w-4 h-4 text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" /></svg>
                         <span class="lang-label font-bold text-xs font-mono tracking-tight" data-i18n="nav.lang_indicator">EN</span>
                     </button>
@@ -277,27 +289,27 @@
                     </button>
 
                     <!-- Subtle Vertical Divider -->
-                    <div class="h-5 w-px bg-slate-200/90 dark:bg-slate-700 mx-0.5 select-none" aria-hidden="true"></div>
+                    <div class="header-divider h-5 w-px bg-slate-200/90 dark:bg-slate-700 mx-0.5 select-none flex-shrink-0" aria-hidden="true"></div>
 
                     <!-- Circular Rotating Plus Button (Upload Document) -->
-                    <button id="btn-ingest-trigger" type="button" class="group relative w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white bg-blue-600 hover:bg-blue-500 active:bg-blue-700 shadow-sm hover:shadow-lg hover:shadow-blue-500/35 transform transition-all duration-200 ease-out hover:scale-110 active:scale-95 cursor-pointer flex-shrink-0" title="Upload Document (⌘I)" data-i18n-title="nav.upload_doc" aria-label="Upload Document">
-                        <svg class="w-5 h-5 text-white transition-transform duration-200 ease-out group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                    <button id="btn-ingest-trigger" type="button" class="group relative w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center text-white bg-blue-600 hover:bg-blue-500 active:bg-blue-700 shadow-sm hover:shadow-lg hover:shadow-blue-500/35 transform transition-all duration-200 ease-out hover:scale-110 active:scale-95 cursor-pointer flex-shrink-0" title="Upload Document (⌘I)" data-i18n-title="nav.upload_doc" aria-label="Upload Document">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white transition-transform duration-200 ease-out group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
                     </button>
 
                     <!-- Subtle Vertical Divider -->
-                    <div class="h-5 w-px bg-slate-200/90 dark:bg-slate-700 mx-0.5 select-none" aria-hidden="true"></div>
+                    <div class="header-divider h-5 w-px bg-slate-200/90 dark:bg-slate-700 mx-0.5 select-none flex-shrink-0" aria-hidden="true"></div>
 
                     <!-- User Profile & Session Controls -->
-                    <div id="user-profile-wrapper" class="relative flex items-center">
-                        <button id="user-profile-btn" type="button" class="flex items-center gap-2 pl-2 pr-2.5 py-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/70 transition-all text-xs shadow-2xs cursor-pointer select-none group" aria-haspopup="true" aria-expanded="false" title="User Profile & Permissions" data-i18n-title="nav.user_profile">
-                            <div id="user-avatar-badge" class="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-[11px] flex items-center justify-center shadow-xs">
+                    <div id="user-profile-wrapper" class="relative flex items-center flex-shrink-0">
+                        <button id="user-profile-btn" type="button" class="flex items-center gap-1.5 sm:gap-2 pl-2 pr-2.5 py-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/70 transition-all text-xs shadow-2xs cursor-pointer select-none group" aria-haspopup="true" aria-expanded="false" title="User Profile & Permissions" data-i18n-title="nav.user_profile">
+                            <div id="user-avatar-badge" class="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-[11px] flex items-center justify-center shadow-xs flex-shrink-0">
                                 ?
                             </div>
-                            <div class="flex flex-col text-left rtl:text-right hidden sm:flex">
+                            <div id="user-profile-details" class="flex flex-col text-left rtl:text-right hidden sm:flex">
                                 <span id="user-display-name" class="font-bold text-slate-800 dark:text-slate-200 text-xs leading-none truncate max-w-[90px]">User</span>
                                 <span id="user-role-badge" class="text-[9px] font-semibold text-emerald-600 dark:text-emerald-400 leading-tight">Admin</span>
                             </div>
-                            <svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-transform duration-150" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            <svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-transform duration-150 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                         <!-- Dropdown Menu -->
                         <div id="user-profile-dropdown" class="hidden absolute right-0 top-full mt-2 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-50 p-3 space-y-3 backdrop-blur-lg">
