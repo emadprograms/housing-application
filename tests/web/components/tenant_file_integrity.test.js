@@ -157,6 +157,7 @@ describe('Tenant File Integrity & Compliance Check (Idea B + Idea C)', () => {
     afterEach(() => {
         document.body.innerHTML = '';
         store = {};
+        delete window.i18n;
         vi.restoreAllMocks();
     });
 
@@ -537,6 +538,130 @@ describe('Tenant File Integrity & Compliance Check (Idea B + Idea C)', () => {
             expect(badge30).not.toBeNull();
             expect(badge30.textContent).toContain('شاغر');
             expect(card30.querySelector('.missing-docs-strip')).toBeNull();
+        });
+
+        it('renders missing documents strip and integrity badges in English when English language is active', () => {
+            window.i18n = {
+                getLanguage: () => 'en'
+            };
+
+            areaGrid.renderAreaGrid(testAreaNode);
+            const container = document.getElementById('area-grid-container');
+
+            // Complete card (10): has emerald badge 5/5 with English title
+            const card10 = container.querySelector('[data-house-id="10"]');
+            const badge10 = card10.querySelector('.integrity-badge');
+            expect(badge10).not.toBeNull();
+            expect(badge10.textContent).toContain('5/5');
+            expect(badge10.getAttribute('title')).toBe('File complete: 5/5 mandatory documents present');
+            expect(card10.querySelector('.missing-docs-strip')).toBeNull();
+
+            // Incomplete card (20): has amber badge with English title and English missing docs strip
+            const card20 = container.querySelector('[data-house-id="20"]');
+            const badge20 = card20.querySelector('.integrity-badge');
+            expect(badge20).not.toBeNull();
+            expect(badge20.textContent).toContain('2/5');
+            expect(badge20.getAttribute('title')).toBe('Missing documents: Key Handover, Contracts, Rent Deduction');
+
+            const missingStrip = card20.querySelector('.missing-docs-strip');
+            expect(missingStrip).not.toBeNull();
+            expect(missingStrip.textContent).toContain('⚠️ Missing:');
+            expect(missingStrip.textContent).toContain('Key Handover, Contracts, Rent Deduction');
+            expect(missingStrip.getAttribute('title')).toBe('Missing documents: Key Handover, Contracts, Rent Deduction');
+            // Ensure no Arabic text remains in the strip
+            expect(missingStrip.textContent).not.toContain('ناقص');
+            expect(missingStrip.textContent).not.toContain('محضر تسليم مفتاح');
+
+            // Vacant card (30): has neutral badge with "Vacant" and English title
+            const card30 = container.querySelector('[data-house-id="30"]');
+            const badge30 = card30.querySelector('.integrity-badge');
+            expect(badge30).not.toBeNull();
+            expect(badge30.textContent.trim()).toBe('Vacant');
+            expect(badge30.getAttribute('title')).toBe('Vacant house');
+            expect(card30.querySelector('.missing-docs-strip')).toBeNull();
+        });
+
+        it('renders missing documents strip and integrity badges in Arabic when Arabic language is active', () => {
+            window.i18n = {
+                getLanguage: () => 'ar'
+            };
+
+            areaGrid.renderAreaGrid(testAreaNode);
+            const container = document.getElementById('area-grid-container');
+
+            // Complete card (10): has emerald badge 5/5 with Arabic title
+            const card10 = container.querySelector('[data-house-id="10"]');
+            const badge10 = card10.querySelector('.integrity-badge');
+            expect(badge10).not.toBeNull();
+            expect(badge10.textContent).toContain('5/5');
+            expect(badge10.getAttribute('title')).toBe('الملف مكتمل: 5/5 وثائق إلزامية متوفرة');
+
+            // Incomplete card (20): has amber badge with Arabic title and Arabic missing docs strip
+            const card20 = container.querySelector('[data-house-id="20"]');
+            const badge20 = card20.querySelector('.integrity-badge');
+            expect(badge20).not.toBeNull();
+            expect(badge20.textContent).toContain('2/5');
+            expect(badge20.getAttribute('title')).toBe('وثائق ناقصة: محضر تسليم مفتاح، عقود، استقطاع إيجار');
+
+            const missingStrip = card20.querySelector('.missing-docs-strip');
+            expect(missingStrip).not.toBeNull();
+            expect(missingStrip.textContent).toContain('⚠️ ناقص:');
+            expect(missingStrip.textContent).toContain('محضر تسليم مفتاح، عقود، استقطاع إيجار');
+            expect(missingStrip.getAttribute('title')).toBe('وثائق ناقصة: محضر تسليم مفتاح، عقود، استقطاع إيجار');
+            expect(missingStrip.textContent).not.toContain('Missing:');
+
+            // Vacant card (30): has neutral badge with "شاغر" and Arabic title
+            const card30 = container.querySelector('[data-house-id="30"]');
+            const badge30 = card30.querySelector('.integrity-badge');
+            expect(badge30).not.toBeNull();
+            expect(badge30.textContent.trim()).toBe('شاغر');
+            expect(badge30.getAttribute('title')).toBe('منزل شاغر');
+        });
+
+        it('re-renders cards dynamically between English and Arabic when languageChanged event is dispatched', () => {
+            let currentTestLang = 'ar';
+            window.i18n = {
+                getLanguage: () => currentTestLang
+            };
+
+            // Initial render in Arabic
+            areaGrid.renderAreaGrid(testAreaNode);
+            const container = document.getElementById('area-grid-container');
+
+            let card20 = container.querySelector('[data-house-id="20"]');
+            let strip20 = card20.querySelector('.missing-docs-strip');
+            let card30 = container.querySelector('[data-house-id="30"]');
+            let badge30 = card30.querySelector('.integrity-badge');
+
+            expect(strip20.textContent).toContain('⚠️ ناقص:');
+            expect(strip20.textContent).toContain('محضر تسليم مفتاح');
+            expect(badge30.textContent.trim()).toBe('شاغر');
+
+            // Switch to English and dispatch languageChanged
+            currentTestLang = 'en';
+            window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang: 'en', dir: 'ltr' } }));
+
+            card20 = container.querySelector('[data-house-id="20"]');
+            strip20 = card20.querySelector('.missing-docs-strip');
+            card30 = container.querySelector('[data-house-id="30"]');
+            badge30 = card30.querySelector('.integrity-badge');
+
+            expect(strip20.textContent).toContain('⚠️ Missing:');
+            expect(strip20.textContent).toContain('Key Handover, Contracts, Rent Deduction');
+            expect(badge30.textContent.trim()).toBe('Vacant');
+
+            // Switch back to Arabic and dispatch languageChanged
+            currentTestLang = 'ar';
+            window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang: 'ar', dir: 'rtl' } }));
+
+            card20 = container.querySelector('[data-house-id="20"]');
+            strip20 = card20.querySelector('.missing-docs-strip');
+            card30 = container.querySelector('[data-house-id="30"]');
+            badge30 = card30.querySelector('.integrity-badge');
+
+            expect(strip20.textContent).toContain('⚠️ ناقص:');
+            expect(strip20.textContent).toContain('محضر تسليم مفتاح، عقود، استقطاع إيجار');
+            expect(badge30.textContent.trim()).toBe('شاغر');
         });
 
         it('sorts grid when compliance sort options are selected from header dropdown', () => {

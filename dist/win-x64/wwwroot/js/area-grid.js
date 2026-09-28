@@ -997,23 +997,36 @@
             let integrityBadgeHtml = '';
             let missingWarningHtml = '';
 
+            const isLiveI18n = (typeof window !== 'undefined' && window.i18n && typeof window.i18n.getLanguage === 'function');
+            const isEn = Boolean(isLiveI18n && window.i18n.getLanguage() === 'en');
+
             if (integrity.isVacant) {
+                const vacantBadgeText = isEn ? 'Vacant' : 'شاغر';
+                const vacantBadgeTitle = isEn ? 'Vacant house' : 'منزل شاغر';
                 integrityBadgeHtml = `
-                    <span class="integrity-badge text-[10px] font-semibold px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 select-none" title="منزل شاغر">
-                        شاغر
+                    <span class="integrity-badge text-[10px] font-semibold px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 select-none" title="${vacantBadgeTitle}">
+                        ${vacantBadgeText}
                     </span>
                 `;
             } else if (integrity.isComplete) {
+                const completeBadgeTitle = isEn
+                    ? 'File complete: 5/5 mandatory documents present'
+                    : 'الملف مكتمل: 5/5 وثائق إلزامية متوفرة';
                 integrityBadgeHtml = `
-                    <span class="integrity-badge inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md border border-emerald-300 dark:border-emerald-800/80 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 shadow-2xs" title="الملف مكتمل: 5/5 وثائق إلزامية متوفرة">
+                    <span class="integrity-badge inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md border border-emerald-300 dark:border-emerald-800/80 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 shadow-2xs" title="${completeBadgeTitle}">
                         <svg class="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                         <span>5/5</span>
                     </span>
                 `;
             } else {
-                const missingListStr = integrity.missingCategories.map(c => c.label).join('، ');
+                const missingCategoriesList = integrity.missingCategories.map(c => isEn ? (c.labelEn || c.label) : c.label);
+                const missingDelimiter = isEn ? ', ' : '، ';
+                const missingListStr = missingCategoriesList.join(missingDelimiter);
+                const warningPrefix = isEn ? '⚠️ Missing:' : '⚠️ ناقص:';
+                const warningTitle = isEn ? `Missing documents: ${missingListStr}` : `وثائق ناقصة: ${missingListStr}`;
+
                 integrityBadgeHtml = `
-                    <span class="integrity-badge inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md border border-amber-300 dark:border-amber-800/80 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 shadow-2xs" title="وثائق ناقصة: ${missingListStr}">
+                    <span class="integrity-badge inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md border border-amber-300 dark:border-amber-800/80 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 shadow-2xs" title="${warningTitle}">
                         <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
                         <span>${integrity.presentCount}/5</span>
                     </span>
@@ -1021,9 +1034,9 @@
 
                 missingWarningHtml = `
                     <div class="card-warning-divider mb-2">
-                        <div class="missing-docs-strip flex items-center justify-between text-[10.5px] px-2 py-1 rounded bg-amber-50/90 dark:bg-amber-950/50 border border-amber-200/80 dark:border-amber-900/60 text-amber-800 dark:text-amber-300" title="وثائق ناقصة: ${missingListStr}">
+                        <div class="missing-docs-strip flex items-center justify-between text-[10.5px] px-2 py-1 rounded bg-amber-50/90 dark:bg-amber-950/50 border border-amber-200/80 dark:border-amber-900/60 text-amber-800 dark:text-amber-300" title="${warningTitle}">
                             <div class="flex items-center gap-1.5 min-w-0">
-                                <span class="text-amber-600 dark:text-amber-400 font-bold flex-shrink-0">⚠️ ناقص:</span>
+                                <span class="text-amber-600 dark:text-amber-400 font-bold flex-shrink-0">${warningPrefix}</span>
                                 <span class="truncate font-medium text-[10px]">${missingListStr}</span>
                             </div>
                             <span class="font-bold text-[9.5px] bg-amber-200/80 dark:bg-amber-900/80 text-amber-900 dark:text-amber-200 px-1 rounded flex-shrink-0 mr-1">${integrity.missingCount}</span>
@@ -1452,6 +1465,24 @@
         } else {
             initAll();
         }
+    }
+
+    if (typeof window !== 'undefined') {
+        if (window._areaGridLangHandler) {
+            window.removeEventListener('languageChanged', window._areaGridLangHandler);
+        }
+        window._areaGridLangHandler = function() {
+            let targetNode = currentAreaNode;
+            if (!targetNode && typeof window !== 'undefined' && window.currentArea && window.globalTreeData && Array.isArray(window.globalTreeData)) {
+                targetNode = window.globalTreeData.find(a => a.name === window.currentArea || a.id === window.currentArea);
+            }
+            const areaGridPanel = document.getElementById('area-grid-panel');
+            const isPanelActive = !areaGridPanel || !areaGridPanel.classList.contains('hidden');
+            if (targetNode && isPanelActive) {
+                renderAreaGrid(targetNode);
+            }
+        };
+        window.addEventListener('languageChanged', window._areaGridLangHandler);
     }
 
     window.selectAreaGrid = selectAreaGrid;
