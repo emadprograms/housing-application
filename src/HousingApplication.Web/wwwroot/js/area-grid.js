@@ -1282,15 +1282,24 @@
             const targetArea = preselectedArea || (typeof currentArea !== 'undefined' ? currentArea : window.currentArea);
 
             if (tree.length > 0) {
+                let matchedTarget = false;
                 tree.forEach(a => {
                     const opt = document.createElement('option');
                     opt.value = a.name || a.id;
                     opt.textContent = a.name || a.id;
                     if (targetArea && (a.name === targetArea || a.id === targetArea)) {
                         opt.selected = true;
+                        matchedTarget = true;
                     }
                     areaSelect.appendChild(opt);
                 });
+                if (preselectedArea && !matchedTarget) {
+                    const opt = document.createElement('option');
+                    opt.value = preselectedArea;
+                    opt.textContent = preselectedArea;
+                    opt.selected = true;
+                    areaSelect.appendChild(opt);
+                }
             } else if (targetArea) {
                 const opt = document.createElement('option');
                 opt.value = targetArea;
@@ -1422,6 +1431,15 @@
             openBtn.onclick = () => {
                 const targetArea = (typeof currentArea !== 'undefined' ? currentArea : window.currentArea);
                 openAddHouseModal(targetArea);
+            };
+        }
+
+        const newAreaBtn = document.getElementById('btn-add-house-new-area');
+        if (newAreaBtn) {
+            newAreaBtn.onclick = () => {
+                if (typeof window !== 'undefined' && typeof window.openAddAreaModal === 'function') {
+                    window.openAddAreaModal({ returnToAddHouse: true });
+                }
             };
         }
 

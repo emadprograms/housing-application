@@ -976,6 +976,61 @@ public class ApiEndpointTests : IClassFixture<ApiTestFixture>, IAsyncLifetime
     }
 
     [Fact]
+    public async Task CreateArea_ReturnsCreatedArea_ScaffoldsDirectory_AndValidatesInput()
+    {
+        var areaName = $"Safra E {Guid.NewGuid():N}";
+        var request = new CreateAreaRequestDto
+        {
+            AreaId = areaName,
+            Code = "SE"
+        };
+
+        var response = await _client.PostAsJsonAsync("/api/areas", request);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var result = await response.Content.ReadFromJsonAsync<CreateAreaResponseDto>();
+        Assert.NotNull(result);
+        Assert.Equal("success", result.Status);
+        Assert.Equal(areaName, result.AreaId);
+        Assert.Equal("SE", result.Code);
+
+        // Verify physical directory scaffolded on disk
+        var areaDir = Path.Combine(_fixture.AreasRoot, areaName);
+        Assert.True(Directory.Exists(areaDir));
+
+        // Verify area appears in /api/tree
+        var treeRes = await _client.GetAsync("/api/tree");
+        Assert.Equal(HttpStatusCode.OK, treeRes.StatusCode);
+        var tree = await treeRes.Content.ReadFromJsonAsync<List<TreeAreaDto>>();
+        Assert.NotNull(tree);
+        Assert.Contains(tree, a => a.Name == areaName && a.Type == "area");
+
+        // Verify area with null/omitted code succeeds
+        var noCodeAreaName = $"Isa Town {Guid.NewGuid():N}";
+        var noCodeResponse = await _client.PostAsJsonAsync("/api/areas", new CreateAreaRequestDto { AreaId = noCodeAreaName });
+        Assert.Equal(HttpStatusCode.OK, noCodeResponse.StatusCode);
+        var noCodeResult = await noCodeResponse.Content.ReadFromJsonAsync<CreateAreaResponseDto>();
+        Assert.NotNull(noCodeResult);
+        Assert.Equal(noCodeAreaName, noCodeResult.AreaId);
+        Assert.Null(noCodeResult.Code);
+
+        // Verify duplicate (including case-insensitive) returns 409 Conflict
+        var dupResponse = await _client.PostAsJsonAsync("/api/areas", new CreateAreaRequestDto
+        {
+            AreaId = areaName.ToLowerInvariant()
+        });
+        Assert.Equal(HttpStatusCode.Conflict, dupResponse.StatusCode);
+
+        // Verify empty area name returns 400 BadRequest
+        var emptyResponse = await _client.PostAsJsonAsync("/api/areas", new CreateAreaRequestDto { AreaId = "   " });
+        Assert.Equal(HttpStatusCode.BadRequest, emptyResponse.StatusCode);
+
+        // Verify path traversal / invalid chars return 400 BadRequest
+        var invalidResponse = await _client.PostAsJsonAsync("/api/areas", new CreateAreaRequestDto { AreaId = "../escape" });
+        Assert.Equal(HttpStatusCode.BadRequest, invalidResponse.StatusCode);
+    }
+
+    [Fact]
     public async Task CreateHouse_ReturnsCreatedHouseAndDirectories()
     {
         var request = new CreateHouseRequestDto

@@ -767,6 +767,33 @@ public record BatchCopyResponseDto
     public List<string> NewVaultIds { get; init; } = new();
 }
 
+public record CreateAreaRequestDto
+{
+    [JsonPropertyName("area_id")]
+    public string? AreaId { get; init; }
+
+    [JsonPropertyName("name")]
+    public string? Name { get; init; }
+
+    [JsonPropertyName("code")]
+    public string? Code { get; init; }
+}
+
+public record CreateAreaResponseDto
+{
+    [JsonPropertyName("status")]
+    public string Status { get; init; } = "success";
+
+    [JsonPropertyName("area_id")]
+    public string AreaId { get; init; } = string.Empty;
+
+    [JsonPropertyName("code")]
+    public string? Code { get; init; }
+
+    [JsonPropertyName("message")]
+    public string? Message { get; init; }
+}
+
 public record CreateHouseRequestDto
 {
     [JsonPropertyName("house_id")]

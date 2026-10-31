@@ -97,6 +97,9 @@
         if (typeof window.initSidebarCollapse === 'function') {
             window.initSidebarCollapse();
         }
+        if (typeof window.initAddAreaModal === 'function') {
+            window.initAddAreaModal();
+        }
         if (typeof window.initIngestStation === 'function') {
             window.initIngestStation();
         }

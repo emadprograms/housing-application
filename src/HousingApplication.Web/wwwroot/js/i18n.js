@@ -70,6 +70,10 @@
             'sidebar.title': 'التنقل الرئيسي',
             'sidebar.db_inspector': 'فاحص قاعدة البيانات',
             'sidebar.areas': 'الأحياء السكنية',
+            'sidebar.database': 'قاعدة البيانات',
+            'sidebar.add_area': 'منطقة جديدة',
+            'sidebar.no_areas': 'لا توجد مناطق مسجلة.',
+            'sidebar.loading': 'جاري التحميل...',
 
             // Navigation & Tabs
             'tabs.tenants': 'سجل المستأجرين',
@@ -259,6 +263,20 @@
             'delete_house.phrase_instruction': 'لتأكيد الحذف، اكتب العبارة في الحقل أدناه:',
             'delete_house.confirm_placeholder': 'اكتب عبارة التأكيد...',
             'delete_house.btn_confirm': '🗑️ حذف نهائي',
+
+            // Add Area Modal
+            'add_area.title': 'إضافة منطقة جديدة',
+            'add_area.subtitle': 'تسجيل منطقة سكنية جديدة وتهيئة مجلد التخزين الخاص بها.',
+            'add_area.name': 'اسم المنطقة',
+            'add_area.name_placeholder': 'مثال: صفوى ج أو Safra E',
+            'add_area.code': 'رمز المنطقة المختصر (اختياري)',
+            'add_area.code_placeholder': 'مثال: SE',
+            'add_area.submit_btn': 'إضافة المنطقة',
+            'add_area.new_area_inline': 'منطقة جديدة',
+            'add_area.err_name_required': 'يرجى إدخال اسم المنطقة.',
+            'add_area.err_invalid_chars': 'اسم المنطقة يحتوي على رموز غير مسموح بها.',
+            'add_area.err_failed': 'فشل إضافة المنطقة',
+            'add_area.toast_created': 'تمت إضافة المنطقة بنجاح',
 
             // Add House Modal
             'add_house.title': 'إضافة منزل جديد',
@@ -554,6 +572,10 @@
             'sidebar.title': 'Navigation',
             'sidebar.db_inspector': 'Database Inspector',
             'sidebar.areas': 'Residential Areas',
+            'sidebar.database': 'Database',
+            'sidebar.add_area': 'Add Area',
+            'sidebar.no_areas': 'No areas found.',
+            'sidebar.loading': 'Loading...',
 
             // Navigation & Tabs
             'tabs.tenants': 'Tenants',
@@ -742,6 +764,20 @@
             'delete_house.phrase_instruction': 'To confirm deletion, type the phrase in the field below:',
             'delete_house.confirm_placeholder': 'Type confirmation phrase...',
             'delete_house.btn_confirm': '🗑️ Delete Permanently',
+
+            // Add Area Modal
+            'add_area.title': 'Add New Area',
+            'add_area.subtitle': 'Register a residential area and scaffold its storage folder.',
+            'add_area.name': 'Area Name',
+            'add_area.name_placeholder': 'e.g. Safra E or Al-Malqa',
+            'add_area.code': 'Area Code (Optional)',
+            'add_area.code_placeholder': 'e.g. SE',
+            'add_area.submit_btn': 'Create Area',
+            'add_area.new_area_inline': 'New Area',
+            'add_area.err_name_required': 'Area name is required.',
+            'add_area.err_invalid_chars': 'Area name contains invalid characters.',
+            'add_area.err_failed': 'Failed to create area',
+            'add_area.toast_created': 'Area added successfully',
 
             // Add House Modal
             'add_house.title': 'Add New House',

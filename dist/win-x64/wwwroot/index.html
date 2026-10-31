@@ -35,7 +35,7 @@
             } catch (e) {}
         })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=260912-03">
+    <link rel="stylesheet" href="css/styles.css?v=261031-01">
 </head>
 <body class="bg-slate-100 dark:bg-slate-950 font-sans text-slate-800 dark:text-slate-100 antialiased">
     <!-- Animated Open Login Home Page (Opaque with Lively Motion, Rendered at Top of Body) -->
@@ -155,7 +155,13 @@
 
             <!-- Sidebar Navigation Content -->
             <div class="p-3 flex-1 overflow-y-auto">
-                <h2 id="sidebar-section-title" class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5 px-1.5" data-i18n="sidebar.areas">Areas</h2>
+                <div class="flex items-center justify-between gap-2 mb-2.5 px-1.5">
+                    <h2 id="sidebar-section-title" class="text-[11px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="sidebar.areas">Areas</h2>
+                    <button id="open-add-area-modal-btn" type="button" class="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold text-blue-400 hover:text-white bg-slate-800/80 hover:bg-blue-600 border border-slate-700/80 hover:border-blue-500 rounded-md transition-all cursor-pointer" title="Add New Area" data-i18n-title="add_area.title" aria-label="Add New Area" data-i18n-aria="add_area.title">
+                        <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                        <span data-i18n="sidebar.add_area">Add Area</span>
+                    </button>
+                </div>
                 <div id="house-list" class="space-y-1">
                     <p class="text-slate-500 text-xs px-2 py-1">Loading...</p>
                 </div>
@@ -530,6 +536,12 @@
                         </div>
                         <h3 class="text-base font-bold text-slate-900 tracking-tight">No area selected</h3>
                         <p class="mt-1.5 text-xs text-slate-500 leading-relaxed">Choose an area from the sidebar to view house records, timeline history, and categorized documents.</p>
+                        <div class="mt-4">
+                            <button id="welcome-add-area-btn" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-sm shadow-blue-500/25 cursor-pointer">
+                                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                                <span data-i18n="add_area.title">Add New Area</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </main>
@@ -1656,6 +1668,46 @@
         </div>
     </div>
 
+    <!-- Add Area Modal -->
+    <div id="add-area-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center hidden p-4" tabindex="-1" role="dialog" aria-labelledby="add-area-modal-title" aria-modal="true">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-md w-full flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/70">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center shadow-2xs">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900 tracking-tight" id="add-area-modal-title" data-i18n="add_area.title">Add New Area</h3>
+                        <p id="add-area-subtitle" class="text-xs text-slate-500" data-i18n="add_area.subtitle">Register a residential area and scaffold its storage folder.</p>
+                    </div>
+                </div>
+                <button id="add-area-close" type="button" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" aria-label="Close" data-i18n-aria="common.close">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <form id="add-area-form" class="p-6 space-y-4">
+                <div>
+                    <label for="add-area-name-input" class="block text-xs font-bold text-slate-700 mb-1.5">
+                        <span data-i18n="add_area.name">Area Name</span> <span class="text-rose-500">*</span>
+                    </label>
+                    <input id="add-area-name-input" type="text" required placeholder="e.g. Safra E or Al-Malqa" data-i18n-placeholder="add_area.name_placeholder" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 focus:bg-white font-medium" />
+                </div>
+                <div>
+                    <label for="add-area-code-input" class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="add_area.code">Area Code (Optional)</label>
+                    <input id="add-area-code-input" type="text" placeholder="e.g. SE" data-i18n-placeholder="add_area.code_placeholder" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 focus:bg-white font-medium" />
+                </div>
+                <div id="add-area-status" class="p-2.5 rounded-lg text-xs font-medium hidden"></div>
+            </form>
+            <div class="px-6 py-3.5 border-t border-slate-100 bg-slate-50/70 flex justify-end gap-3">
+                <button id="btn-add-area-cancel" type="button" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors shadow-2xs cursor-pointer" data-i18n="common.cancel">Cancel</button>
+                <button id="btn-add-area-submit" type="button" class="px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-sm shadow-blue-500/25 flex items-center gap-2 cursor-pointer">
+                    <span id="add-area-spinner" class="hidden animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full"></span>
+                    <span id="add-area-submit-text" data-i18n="add_area.submit_btn">Create Area</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Add House Modal -->
     <div id="add-house-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center hidden p-4" tabindex="-1">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-md w-full flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
@@ -1675,7 +1727,13 @@
             </div>
             <form id="add-house-form" class="p-6 space-y-4">
                 <div>
-                    <label for="add-house-area-select" class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="add_house.area">Area</label>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label for="add-house-area-select" class="block text-xs font-bold text-slate-700" data-i18n="add_house.area">Area</label>
+                        <button id="btn-add-house-new-area" type="button" class="text-[11px] font-semibold text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1 cursor-pointer">
+                            <span>+</span>
+                            <span data-i18n="add_area.new_area_inline">New Area</span>
+                        </button>
+                    </div>
                     <select id="add-house-area-select" required class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 focus:bg-white font-medium">
                         <!-- Dynamically populated with areas -->
                     </select>
@@ -2122,16 +2180,16 @@
     <script src="js/doc-viewer.js?v=260918-04"></script>
     <script src="js/doc-page-editor.js?v=260915-01"></script>
     <script src="js/db-inspector.js?v=260911-29"></script>
-    <script src="js/area-grid.js?v=260912-01"></script>
+    <script src="js/area-grid.js?v=261031-01"></script>
     <script src="js/house-profile.js?v=260911-29"></script>
     <script src="js/timeline-view.js?v=260911-34"></script>
     <script src="js/categories-view.js?v=260912-02"></script>
-    <script src="js/sidebar.js?v=260911-29"></script>
-    <script src="js/router.js?v=260911-29"></script>
+    <script src="js/sidebar.js?v=261031-01"></script>
+    <script src="js/router.js?v=261031-01"></script>
     <script src="js/ingest-station.js?v=260911-29"></script>
     <script src="js/keyboard-shortcuts.js?v=260911-29"></script>
     <script src="js/theme-manager.js?v=260912-03"></script>
-    <script src="js/i18n.js?v=260924-01"></script>
-    <script src="js/app.js?v=260912-03"></script>
+    <script src="js/i18n.js?v=261031-01"></script>
+    <script src="js/app.js?v=261031-01"></script>
 </body>
 </html>

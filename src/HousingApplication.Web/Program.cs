@@ -351,8 +351,46 @@ app.MapGet("/api/tree", async (
 });
 
 // ---------------------------------------------------------------------------
-// Houses API
+// Areas & Houses API
 // ---------------------------------------------------------------------------
+app.MapPost("/api/areas", async (
+    CreateAreaRequestDto? request,
+    IFileOrganizerRepository repo,
+    IConfiguration config) =>
+{
+    if (request == null)
+    {
+        return Results.BadRequest(new { error = "Request body is required.", detail = "Request body is required." });
+    }
+
+    var targetAreaId = !string.IsNullOrWhiteSpace(request.AreaId)
+        ? request.AreaId.Trim()
+        : (request.Name?.Trim() ?? string.Empty);
+
+    if (string.IsNullOrWhiteSpace(targetAreaId))
+    {
+        return Results.BadRequest(new { error = "Area name is required and cannot be empty.", detail = "Area name is required and cannot be empty." });
+    }
+
+    var areasRoot = ResolveAreasRoot(config);
+    try
+    {
+        var result = await repo.CreateAreaAsync(
+            targetAreaId,
+            request.Code,
+            areasRoot);
+        return Results.Ok(result);
+    }
+    catch (InvalidOperationException ex)
+    {
+        return Results.Conflict(new { error = ex.Message, detail = ex.Message });
+    }
+    catch (ArgumentException ex)
+    {
+        return Results.BadRequest(new { error = ex.Message, detail = ex.Message });
+    }
+});
+
 app.MapGet("/api/houses", async (string? area_id, string? areaId, IFileOrganizerRepository repo) =>
 {
     var targetArea = area_id ?? areaId;

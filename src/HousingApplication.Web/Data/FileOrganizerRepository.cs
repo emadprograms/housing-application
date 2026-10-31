@@ -1571,6 +1571,65 @@ public class FileOrganizerRepository : IFileOrganizerRepository
         };
     }
 
+    private static readonly char[] InvalidAreaNameChars = { '/', '\\', ':', '*', '?', '"', '<', '>', '|', '\0' };
+
+    public async Task<CreateAreaResponseDto> CreateAreaAsync(
+        string areaId,
+        string? code = null,
+        string? areasRoot = null)
+    {
+        var cleanAreaId = areaId?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(cleanAreaId))
+        {
+            throw new ArgumentException("Area name is required and cannot be empty.");
+        }
+
+        if (cleanAreaId is "." or ".." ||
+            cleanAreaId.EndsWith('.') ||
+            cleanAreaId.IndexOfAny(InvalidAreaNameChars) >= 0 ||
+            cleanAreaId.Any(char.IsControl))
+        {
+            throw new ArgumentException("Area name contains invalid characters.");
+        }
+
+        var cleanCode = string.IsNullOrWhiteSpace(code) ? null : code.Trim();
+
+        await using var conn = await _connectionFactory.CreateConnectionAsync();
+
+        var existingArea = await conn.QueryFirstOrDefaultAsync<Area>(
+            "SELECT id AS Id, code AS Code FROM areas WHERE LOWER(id) = LOWER(@Id);",
+            new { Id = cleanAreaId });
+
+        if (existingArea != null)
+        {
+            throw new InvalidOperationException($"Area '{existingArea.Id}' already exists.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(areasRoot))
+        {
+            var fullRoot = Path.GetFullPath(areasRoot);
+            var rootWithSep = fullRoot.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            var areaDir = Path.GetFullPath(Path.Combine(fullRoot, cleanAreaId));
+            if (!areaDir.StartsWith(rootWithSep, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException("Area name contains invalid path segments.");
+            }
+            Directory.CreateDirectory(areaDir);
+        }
+
+        await conn.ExecuteAsync(
+            "INSERT INTO areas (id, code) VALUES (@Id, @Code);",
+            new { Id = cleanAreaId, Code = cleanCode });
+
+        return new CreateAreaResponseDto
+        {
+            Status = "success",
+            AreaId = cleanAreaId,
+            Code = cleanCode,
+            Message = $"Area '{cleanAreaId}' registered successfully."
+        };
+    }
+
     public async Task<CreateHouseResponseDto> CreateHouseAsync(
         string areaId,
         string houseId,
