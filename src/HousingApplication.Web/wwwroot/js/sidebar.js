@@ -218,6 +218,106 @@
         }
     }
 
+    /**
+     * Fallback when running against a precompiled/un-restarted server binary that
+     * predates `POST /api/areas` (where ASP.NET Core's SPA fallback responds with 405).
+     * Uses the existing `POST /api/areas/{areaId}/houses` + `DELETE /api/areas/{areaId}/houses/{tempId}`
+     * endpoints to persist the area row in SQLite and scaffold its directory on disk.
+     */
+    async function createAreaViaLegacyFallback(areaName, areaCode, isLiveI18n) {
+        let existingTree = getTreeState();
+        if (!existingTree.length) {
+            try {
+                const treeRes = await fetch(typeof API_TREE !== 'undefined' ? API_TREE : '/api/tree');
+                if (treeRes && treeRes.ok) {
+                    const fetched = await treeRes.json();
+                    if (Array.isArray(fetched)) existingTree = fetched;
+                }
+            } catch (_) {}
+        }
+
+        const lowerTarget = areaName.toLowerCase();
+        const duplicate = existingTree.find(a => {
+            const candidate = String(a.name || a.id || '').trim().toLowerCase();
+            return candidate === lowerTarget;
+        });
+        if (duplicate) {
+            const dupName = duplicate.name || duplicate.id || areaName;
+            const dupTemplate = isLiveI18n
+                ? window.i18n.t('add_area.err_exists', `Area '${dupName}' already exists.`)
+                : `Area '${dupName}' already exists.`;
+            throw new Error(dupTemplate.replace('{name}', dupName));
+        }
+
+        const currentRole = (typeof window !== 'undefined' &&
+            window.authManager &&
+            window.authManager.currentUser &&
+            window.authManager.currentUser.role)
+            ? String(window.authManager.currentUser.role).toLowerCase()
+            : '';
+
+        if (currentRole === 'contributor') {
+            if (returnToAddHouse) {
+                return {
+                    status: 'success',
+                    area_id: areaName,
+                    code: areaCode || null,
+                    deferred_until_house: true,
+                };
+            }
+            const restartMsg = isLiveI18n
+                ? window.i18n.t(
+                    'add_area.err_server_update_contributor',
+                    'Please restart or update the server binary to create an empty area with a Contributor account, or add its first house via Add House.'
+                )
+                : 'Please restart or update the server binary to create an empty area with a Contributor account, or add its first house via Add House.';
+            throw new Error(restartMsg);
+        }
+
+        const tempHouseId = `__area_init_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+        const encodedArea = encodeURIComponent(areaName);
+        const encodedHouse = encodeURIComponent(tempHouseId);
+
+        const createRes = await fetch(`/api/areas/${encodedArea}/houses`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                house_id: tempHouseId,
+                area_id: areaName,
+                initial_tenant_name: null,
+                start_date: null,
+            }),
+        });
+
+        if (!createRes.ok) {
+            let errText = `Error ${createRes.status}`;
+            try {
+                const errData = await createRes.json();
+                errText = errData.detail || errData.error || errData.message || errText;
+            } catch (_) {}
+            throw new Error(errText);
+        }
+
+        const deleteRes = await fetch(`/api/areas/${encodedArea}/houses/${encodedHouse}`, {
+            method: 'DELETE',
+        });
+
+        if (!deleteRes.ok) {
+            let errText = `Error ${deleteRes.status}`;
+            try {
+                const errData = await deleteRes.json();
+                errText = errData.detail || errData.error || errData.message || errText;
+            } catch (_) {}
+            throw new Error(errText);
+        }
+
+        return {
+            status: 'success',
+            area_id: areaName,
+            code: null,
+        };
+    }
+
     async function handleAddAreaSubmit(e) {
         if (e && typeof e.preventDefault === 'function') e.preventDefault();
 
@@ -270,16 +370,20 @@
                 body: JSON.stringify(payload),
             });
 
-            if (!res.ok) {
+            let data;
+            if (res.status === 405) {
+                data = await createAreaViaLegacyFallback(areaName, areaCode, isLiveI18n);
+            } else if (!res.ok) {
                 let errText = `Error ${res.status}`;
                 try {
                     const errData = await res.json();
                     errText = errData.detail || errData.error || errData.message || errText;
                 } catch (_) {}
                 throw new Error(errText);
+            } else {
+                data = await res.json();
             }
 
-            const data = await res.json();
             const createdAreaName = (data && data.area_id) ? data.area_id : areaName;
             const reopenAddHouse = returnToAddHouse;
 
@@ -315,6 +419,9 @@
                     type: 'area',
                     children: [],
                 };
+                if (data && data.deferred_until_house) {
+                    setTreeState([...tree, areaNode]);
+                }
             }
 
             if (typeof window.selectAreaGrid === 'function') {

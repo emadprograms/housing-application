@@ -320,4 +320,86 @@ describe('+ Add Area Feature (Sidebar, Welcome Panel, Add House Inline & Modal)'
     expect(cssContent).toContain('html.dark #btn-add-area-cancel');
     expect(cssContent).toContain('html.dark #add-area-close');
   });
+
+  it('automatically falls back to house scaffold + cleanup when running against a legacy binary returning 405', async () => {
+    window.openAddAreaModal();
+    document.getElementById('add-area-name-input').value = 'Hamad Town';
+
+    const calls = [];
+    let createdTempHouse = null;
+    const updatedTree = [
+      ...global.globalTreeData,
+      { id: 'Hamad Town', name: 'Hamad Town', type: 'area', children: [] }
+    ];
+
+    global.fetch = vi.fn().mockImplementation(async (url, opts = {}) => {
+      calls.push({ url, method: opts.method || 'GET' });
+      if (url === '/api/areas' && opts.method === 'POST') {
+        return { ok: false, status: 405, json: async () => { throw new Error('empty'); } };
+      }
+      if (url === '/api/areas/Hamad%20Town/houses' && opts.method === 'POST') {
+        const body = JSON.parse(opts.body);
+        createdTempHouse = body.house_id;
+        return { ok: true, status: 200, json: async () => ({ status: 'success', area_id: 'Hamad Town', house_id: createdTempHouse }) };
+      }
+      if (createdTempHouse && url === `/api/areas/Hamad%20Town/houses/${encodeURIComponent(createdTempHouse)}` && opts.method === 'DELETE') {
+        return { ok: true, status: 200, json: async () => ({ status: 'success' }) };
+      }
+      if (url === '/api/tree') {
+        return { ok: true, status: 200, json: async () => updatedTree };
+      }
+      return { ok: false, status: 404 };
+    });
+
+    await window.handleAddAreaSubmit();
+
+    expect(createdTempHouse).toMatch(/^__area_init_/);
+    expect(calls.map(c => c.method)).toEqual(['POST', 'POST', 'DELETE', 'GET']);
+    expect(document.getElementById('add-area-modal').classList.contains('hidden')).toBe(true);
+    expect(window.currentArea).toBe('Hamad Town');
+  });
+
+  it('rejects case-insensitive duplicate area names locally during 405 legacy fallback', async () => {
+    window.i18n.setLanguage('en');
+    window.openAddAreaModal();
+    document.getElementById('add-area-name-input').value = 'safra c';
+
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 405,
+      json: async () => { throw new Error('empty'); }
+    });
+
+    await window.handleAddAreaSubmit();
+
+    const statusEl = document.getElementById('add-area-status');
+    expect(statusEl.classList.contains('hidden')).toBe(false);
+    expect(statusEl.textContent).toContain('Safra C');
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('supports Contributor inline Add House -> New Area flow on 405 legacy binary without calling DELETE', async () => {
+    window.authManager = { currentUser: { username: 'Nawaf', role: 'Contributor' } };
+    window.openAddHouseModal('Safra C');
+    document.getElementById('btn-add-house-new-area').click();
+    document.getElementById('add-area-name-input').value = 'Riffa Views';
+
+    global.fetch = vi.fn().mockImplementation(async (url, opts = {}) => {
+      if (url === '/api/areas' && opts.method === 'POST') {
+        return { ok: false, status: 405, json: async () => { throw new Error('empty'); } };
+      }
+      if (url === '/api/tree') {
+        return { ok: true, status: 200, json: async () => global.globalTreeData };
+      }
+      return { ok: false, status: 404 };
+    });
+
+    await window.handleAddAreaSubmit();
+
+    expect(document.getElementById('add-area-modal').classList.contains('hidden')).toBe(true);
+    expect(document.getElementById('add-house-modal').classList.contains('hidden')).toBe(false);
+    expect(document.getElementById('add-house-area-select').value).toBe('Riffa Views');
+
+    delete window.authManager;
+  });
 });

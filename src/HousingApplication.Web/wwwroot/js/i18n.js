@@ -275,6 +275,8 @@
             'add_area.new_area_inline': 'منطقة جديدة',
             'add_area.err_name_required': 'يرجى إدخال اسم المنطقة.',
             'add_area.err_invalid_chars': 'اسم المنطقة يحتوي على رموز غير مسموح بها.',
+            'add_area.err_exists': 'المنطقة \'{name}\' موجودة بالفعل.',
+            'add_area.err_server_update_contributor': 'يلزم تحديث أو إعادة تشغيل الخادم لإضافة منطقة فارغة بحساب مساهم، أو أضف أول منزل داخلها عبر نافذة إضافة منزل.',
             'add_area.err_failed': 'فشل إضافة المنطقة',
             'add_area.toast_created': 'تمت إضافة المنطقة بنجاح',
 
@@ -776,6 +778,8 @@
             'add_area.new_area_inline': 'New Area',
             'add_area.err_name_required': 'Area name is required.',
             'add_area.err_invalid_chars': 'Area name contains invalid characters.',
+            'add_area.err_exists': 'Area \'{name}\' already exists.',
+            'add_area.err_server_update_contributor': 'Please restart or update the server binary to create an empty area with a Contributor account, or add its first house via Add House.',
             'add_area.err_failed': 'Failed to create area',
             'add_area.toast_created': 'Area added successfully',
 
