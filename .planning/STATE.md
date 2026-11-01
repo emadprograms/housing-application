@@ -122,6 +122,7 @@ Milestone v18.1 resolves remaining small issues, hardcoded strings, and localiza
 - `261101-cvl`: Pull Remote Changes, Clean Up Root Directory, and Organize Repository (QCK-62). Pulled `17b9be7` (`areas_v11` sibling paths, recompiled `win-x64` binary, `.agents` gitignore), removed duplicate root icons (`app.ico`, `favicon.ico`, `logo.png`) and `scratch_test.html`, organized launchers & build scripts under `scripts/`, Windows 24/7 service scripts under `scripts/service/`, legacy Python utilities & configs under `scripts/legacy/`, and outdated Python v5.3 docs under `docs/legacy/` while adding current ASP.NET Core `README.md`, `docs/ARCHITECTURE.md`, `docs/DEPLOYMENT.md`, and `repo_structure.test.js`. Verified by 757 passing Vitest tests across 54 files.
 - `261101-ean`: Web App Storage & Database Path Settings (QCK-63). Added thread-safe `StoragePathSettingsService` and hot-swappable `SqliteDbConnectionFactory.UpdateDatabasePath` (with SQLite pool release and `MemoryConfigurationProvider` test isolation), Admin-only `/api/settings/{paths,paths/validate,browse}` endpoints, atomic `config.paths.json` persistence, and bilingual Admin Storage & Database Paths modal (`storage-settings.js`) with inline server directory/`.db` browser and live tree reload. Verified by 766 passing Vitest tests across 55 files and 100% `wwwroot` parity.
 - `261101-keu`: Super User Role & In-App User and Permission Management (QCK-64). Upgraded RBAC to 3 tiers (`SuperUser` [strictly 1, initially `Emad`], `Admin`, `Contributor`/Regular User) enforced by SQLite partial unique index `idx_users_single_superuser`, `CookieAuthenticationEvents.OnValidatePrincipal` live session validation/revocation, `has_custom_password` strict PBKDF2 verification, `SuperUser`-only `/api/users` CRUD + transactional `/api/users/{id}/transfer-superuser`, and bilingual User & Role Management modal (`user-management.js`). Verified by 774 passing Vitest tests across 56 files, expanded xUnit `AuthAndRbacTests.cs`, and 100% `wwwroot` parity.
+- `261101-m2y`: Expose SuperUser Permission Controls in Top Navbar & Interactive Permission Checkboxes (QCK-65). Added direct `#btn-navbar-user-management` amber button in `#top-navbar-actions` (alongside `#btn-open-user-management` in `#user-profile-dropdown`), added explicit interactive per-user permission checkboxes (`.perm-toggle-delete`, `.perm-toggle-settings`) and capability badges inside `#user-management-modal`, bumped script cache-busting query params to `?v=261101-05`, and added snake_case (`is_super_user`) + legacy-binary (`housing_rbac_directory_v1`) resilience. Verified by 775 passing Vitest tests across 56 files and 100% `wwwroot` parity on top of `182c479`.
 
 ### Quick Tasks Completed
 
@@ -132,6 +133,7 @@ Milestone v18.1 resolves remaining small issues, hardcoded strings, and localiza
 | 261101-cvl | Organize Repository Structure and Clean Up Root Directory | 2026-11-01 | dd428d5 | [261101-cvl-organize-repository-structure-and-clean-](./quick/261101-cvl-organize-repository-structure-and-clean-/) |
 | 261101-ean | Add Web App Settings to Configure Areas Folder and Organizer DB Paths | 2026-11-01 | 621f7ea | [261101-ean-add-web-app-settings-to-configure-areas-](./quick/261101-ean-add-web-app-settings-to-configure-areas-/) |
 | 261101-keu | Add Super User Role and In-App User & Permission Management | 2026-11-01 | 84e388b | [261101-keu-add-super-user-role-and-in-app-user-and-](./quick/261101-keu-add-super-user-role-and-in-app-user-and-/) |
+| 261101-m2y | Expose SuperUser Permission Controls in Top Navbar & Interactive Permission Checkboxes | 2026-11-01 | 12ffbea | [261101-m2y-expose-superuser-permission-controls-in-](./quick/261101-m2y-expose-superuser-permission-controls-in-/) |
 
 ## Deferred Items
 
@@ -161,7 +163,7 @@ Items acknowledged and deferred at milestone close on 2026-09-13:
 Phase: Milestone v17.0 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-11-01 — Quick task 261101-keu completed (3-tier SuperUser/Admin/Regular User RBAC and in-app User & Role Management)
+Last activity: 2026-11-01 — Quick task 261101-m2y completed (Top-navbar SuperUser button & interactive per-user permission checkboxes)
 
 ## Operator Next Steps
 
@@ -169,6 +171,6 @@ Last activity: 2026-11-01 — Quick task 261101-keu completed (3-tier SuperUser/
 
 ## Session
 
-**Last session:** 2026-11-01T10:31:23.714Z
-**Stopped at:** Completed quick task 261101-ean: in-app Admin Storage & Database Path Settings
+**Last session:** 2026-11-01T16:08:00.000Z
+**Stopped at:** Completed quick task 261101-m2y: discoverable SuperUser permission controls
 **Resume file:** None
