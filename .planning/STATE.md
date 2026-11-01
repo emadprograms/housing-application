@@ -118,6 +118,7 @@ Milestone v18.1 resolves remaining small issues, hardcoded strings, and localiza
 - `260923-cqe`: Document-Driven End Date for Past Tenants & Zero Manual Date Entry (QCK-59). Made past residents' end date 100% document-driven (derived from MAX(primary_date)) across FileOrganizerRepository, updated tenant-manager.js to render tenant-end-input as readonly, eliminated manual user entry in House Settings modal, and added automated backend/frontend test coverage.
 - `261101-6bf`: Delete Area and Discoverable Delete House UI (QCK-60). Added transactional `DeleteAreaAsync` cascade (`pages` -> `documents` -> `batches` -> `tenants` -> `houses` -> `areas` + safe directory removal) and Admin-only `DELETE /api/areas/{areaId}` endpoint, `#delete-area-modal` with typed phrase confirmation and house-count warning, sidebar `.area-delete-btn` & Area Overview `#btn-delete-area-header`, and discoverable Delete House triggers on Area Grid cards (`.house-card-delete-btn`) and House panel header (`#btn-delete-house-quick`). Verified by 752 passing Vitest tests across 53 files and 100% `wwwroot` parity.
 - `261101-8gl`: Document-Driven Start Date for Houses & Tenants and Remove Add-House Start Date Option (QCK-61). Removed `#add-house-tenant-date-input` from `#add-house-modal` and enforced `start_date: null` on house creation (`area-grid.js`, `Program.cs`, `CreateHouseAsync`). Added `SyncTenantStartDateAsync` across all document write/update/move/delete/merge/page-split methods in `FileOrganizerRepository.cs` (clearing `start_date` to `NULL` when zero dated documents remain), added `FirstDocDate` (`first_doc_date`) to `TenantDto` + `minDocDate` priority in `BulkUpdateTenantsAsync`, added `resolveFirstDocDate` in `tenant-manager.js`, and eliminated hardcoded `'2020-01-01'` fallback in `house-profile.js` static mode. Verified by 754 passing Vitest tests across 53 files and 100% `wwwroot` parity.
+- `261101-cvl`: Pull Remote Changes, Clean Up Root Directory, and Organize Repository (QCK-62). Pulled `17b9be7` (`areas_v11` sibling paths, recompiled `win-x64` binary, `.agents` gitignore), removed duplicate root icons (`app.ico`, `favicon.ico`, `logo.png`) and `scratch_test.html`, organized launchers & build scripts under `scripts/`, Windows 24/7 service scripts under `scripts/service/`, legacy Python utilities & configs under `scripts/legacy/`, and outdated Python v5.3 docs under `docs/legacy/` while adding current ASP.NET Core `README.md`, `docs/ARCHITECTURE.md`, `docs/DEPLOYMENT.md`, and `repo_structure.test.js`. Verified by 757 passing Vitest tests across 54 files.
 
 ### Quick Tasks Completed
 
@@ -125,6 +126,7 @@ Milestone v18.1 resolves remaining small issues, hardcoded strings, and localiza
 |---|-------------|------|--------|-----------|
 | 261101-6bf | Delete Area and Delete House UI | 2026-11-01 | e9d72e5 | [261101-6bf-delete-area-and-delete-house-ui](./quick/261101-6bf-delete-area-and-delete-house-ui/) |
 | 261101-8gl | Document-Driven Start Date for Houses & Tenants and Remove Add-House Start Date Option | 2026-11-01 | e1480ed | [261101-8gl-document-driven-start-date-for-houses-an](./quick/261101-8gl-document-driven-start-date-for-houses-an/) |
+| 261101-cvl | Organize Repository Structure and Clean Up Root Directory | 2026-11-01 | dd428d5 | [261101-cvl-organize-repository-structure-and-clean-](./quick/261101-cvl-organize-repository-structure-and-clean-/) |
 
 ## Deferred Items
 
@@ -154,7 +156,7 @@ Items acknowledged and deferred at milestone close on 2026-09-13:
 Phase: Milestone v17.0 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-11-01 — Quick task 261101-8gl completed (document-driven start date for houses & tenants and removed Add-House start date option)
+Last activity: 2026-11-01 — Quick task 261101-cvl completed (pulled 17b9be7, decluttered root directory, and organized scripts/docs)
 
 ## Operator Next Steps
 
