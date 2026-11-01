@@ -1,11 +1,14 @@
 # Windows Startup Script for Housing Application (.NET Web Server)
 $ErrorActionPreference = "Stop"
 
+# Repository root (parent of scripts/)
+$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+
 # Detect database and vault directories
 $DbPath = ""
 $AreasRoot = ""
 
-$ConfigFilePath = "$PSScriptRoot\config.paths.json"
+$ConfigFilePath = Join-Path $RepoRoot "config.paths.json"
 if (Test-Path $ConfigFilePath) {
     try {
         $cfg = Get-Content $ConfigFilePath -Raw | ConvertFrom-Json
@@ -20,22 +23,22 @@ if (Test-Path $ConfigFilePath) {
 
 if (-not $DbPath -or -not $AreasRoot) {
     # Check areas_v11 in parent folder or common locations
-    if (Test-Path "$PSScriptRoot\..\areas_v11\organizer.db") {
-        $DbPath = (Resolve-Path "$PSScriptRoot\..\areas_v11\organizer.db").Path
-        $AreasRoot = (Resolve-Path "$PSScriptRoot\..\areas_v11").Path
-    } elseif (Test-Path "$PSScriptRoot\areas_v11\organizer.db") {
-        $DbPath = (Resolve-Path "$PSScriptRoot\areas_v11\organizer.db").Path
-        $AreasRoot = (Resolve-Path "$PSScriptRoot\areas_v11").Path
+    if (Test-Path "$RepoRoot\..\areas_v11\organizer.db") {
+        $DbPath = (Resolve-Path "$RepoRoot\..\areas_v11\organizer.db").Path
+        $AreasRoot = (Resolve-Path "$RepoRoot\..\areas_v11").Path
+    } elseif (Test-Path "$RepoRoot\areas_v11\organizer.db") {
+        $DbPath = (Resolve-Path "$RepoRoot\areas_v11\organizer.db").Path
+        $AreasRoot = (Resolve-Path "$RepoRoot\areas_v11").Path
     } elseif (Test-Path "D:\areas_v11\organizer.db") {
         $DbPath = "D:\areas_v11\organizer.db"
         $AreasRoot = "D:\areas_v11"
-    } elseif (Test-Path "$PSScriptRoot\organizer.db") {
-        $DbPath = (Resolve-Path "$PSScriptRoot\organizer.db").Path
-        $AreasRoot = (Resolve-Path "$PSScriptRoot\areas" -ErrorAction SilentlyContinue).Path
-        if (-not $AreasRoot) { $AreasRoot = "$PSScriptRoot\areas" }
+    } elseif (Test-Path "$RepoRoot\organizer.db") {
+        $DbPath = (Resolve-Path "$RepoRoot\organizer.db").Path
+        $AreasRoot = (Resolve-Path "$RepoRoot\areas" -ErrorAction SilentlyContinue).Path
+        if (-not $AreasRoot) { $AreasRoot = "$RepoRoot\areas" }
     } else {
-        $DbPath = "$PSScriptRoot\organizer.db"
-        $AreasRoot = "$PSScriptRoot\areas"
+        $DbPath = "$RepoRoot\organizer.db"
+        $AreasRoot = "$RepoRoot\areas"
     }
 }
 
@@ -72,15 +75,15 @@ if (-not (Get-Command dotnet -ErrorAction SilentlyContinue) -and (Test-Path "$en
 
 # Project directory candidates
 $projectCandidates = @(
-    "$PSScriptRoot\src\HousingApplication.Web",
-    "$PSScriptRoot\housing-application\src\HousingApplication.Web"
+    "$RepoRoot\src\HousingApplication.Web",
+    "$RepoRoot\housing-application\src\HousingApplication.Web"
 )
 $projectDir = $projectCandidates | Where-Object { Test-Path "$_\HousingApplication.Web.csproj" } | Select-Object -First 1
 
 # Standalone executable candidates
 $exeCandidates = @(
-    "$PSScriptRoot\dist\win-x64\FileOrganizer.Web.exe",
-    "$PSScriptRoot\housing-application\dist\win-x64\FileOrganizer.Web.exe"
+    "$RepoRoot\dist\win-x64\FileOrganizer.Web.exe",
+    "$RepoRoot\housing-application\dist\win-x64\FileOrganizer.Web.exe"
 )
 $exePath = $exeCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
 

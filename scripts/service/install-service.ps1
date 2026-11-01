@@ -9,6 +9,8 @@ if (-not $isAdmin) {
     exit
 }
 
+# Repository root (parent of scripts/service/)
+$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $TaskName = "HousingApplicationService"
 $Port = 5000
 
@@ -18,11 +20,15 @@ Write-Host "==========================================================" -Foregro
 Write-Host "Please specify where your document archives and database are located." -ForegroundColor White
 Write-Host "(You can copy & paste the paths or drag-and-drop folders into this window)`n" -ForegroundColor DarkGray
 
-# 1. Ask for areas_v11 folder
+# 1. Ask for areas_v11 folder (check relative sibling/repo folders first, then D:\ / C:\)
 $defaultAreas = "D:\areas_v11"
-if (-not (Test-Path $defaultAreas)) {
+if (Test-Path "$RepoRoot\..\areas_v11") {
+    $defaultAreas = (Resolve-Path "$RepoRoot\..\areas_v11").Path
+} elseif (Test-Path "$RepoRoot\areas_v11") {
+    $defaultAreas = (Resolve-Path "$RepoRoot\areas_v11").Path
+} elseif (-not (Test-Path $defaultAreas)) {
     if (Test-Path "C:\areas_v11") { $defaultAreas = "C:\areas_v11" }
-    elseif (Test-Path "$PSScriptRoot\areas") { $defaultAreas = "$PSScriptRoot\areas" }
+    elseif (Test-Path "$RepoRoot\areas") { $defaultAreas = "$RepoRoot\areas" }
 }
 
 $AreasRoot = ""
@@ -95,16 +101,16 @@ if ($proceed -match '^[Nn]') {
     exit 0
 }
 
-# Save paths into config.paths.json for persistent reference
+# Save paths into config.paths.json at the repository root for persistent reference
 $configData = @{
     areas_root_path = $AreasRoot
     organizer_db_path = $DbPath
 }
-$configData | ConvertTo-Json -Depth 2 | Set-Content -Path (Join-Path $PSScriptRoot "config.paths.json") -Encoding UTF8
+$configData | ConvertTo-Json -Depth 2 | Set-Content -Path (Join-Path $RepoRoot "config.paths.json") -Encoding UTF8
 Write-Host "`nSaved path settings to config.paths.json." -ForegroundColor DarkGray
 
-$ExePath = "$PSScriptRoot\dist\win-x64\FileOrganizer.Web.exe"
-$WorkingDir = "$PSScriptRoot\dist\win-x64"
+$ExePath = Join-Path $RepoRoot "dist\win-x64\FileOrganizer.Web.exe"
+$WorkingDir = Join-Path $RepoRoot "dist\win-x64"
 
 if (-not (Test-Path $ExePath)) {
     Write-Error "Executable not found at '$ExePath'!"

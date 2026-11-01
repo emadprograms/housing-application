@@ -9,6 +9,8 @@ if (-not $isAdmin) {
     exit
 }
 
+# Repository root (parent of scripts/service/)
+$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $TaskName = "HousingApplicationService"
 $Port = 5000
 
@@ -27,7 +29,7 @@ Start-Sleep -Seconds 1
 Write-Host "      -> Service stopped! All files are now completely unlocked." -ForegroundColor Green
 
 # 2. Check binary status
-$exePath = Join-Path $PSScriptRoot "dist\win-x64\FileOrganizer.Web.exe"
+$exePath = Join-Path $RepoRoot "dist\win-x64\FileOrganizer.Web.exe"
 if (Test-Path $exePath) {
     $exeItem = Get-Item $exePath
     Write-Host "      Executable:    $($exeItem.FullName)" -ForegroundColor DarkGray
@@ -42,7 +44,7 @@ Write-Host "----------------------------------------------------------`n" -Foreg
 $answer = Read-Host "Press [Enter] to start the service (or type 'Q' to quit and leave it stopped)"
 if ($answer -match '^[Qq]') {
     Write-Host "`nService remains stopped. You can mirror/copy files now." -ForegroundColor Yellow
-    Write-Host "Run restart-service.bat again whenever you are ready to start.`n" -ForegroundColor DarkGray
+    Write-Host "Run scripts\service\restart-service.bat again whenever you are ready to start.`n" -ForegroundColor DarkGray
     exit 0
 }
 
@@ -54,7 +56,7 @@ if ($task) {
     Write-Host "      -> Service successfully started and running!" -ForegroundColor Green
 } else {
     Write-Host "      ⚠️ Notice: Task '$TaskName' is not registered." -ForegroundColor Yellow
-    Write-Host "      Please run install-service.bat first to set up the service." -ForegroundColor DarkGray
+    Write-Host "      Please run scripts\service\install-service.bat first to set up the service." -ForegroundColor DarkGray
 }
 
 $LocalIp = (Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
