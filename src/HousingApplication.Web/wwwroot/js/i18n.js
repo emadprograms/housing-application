@@ -601,7 +601,13 @@
             'user_mgmt.user_deleted_toast': 'تم حذف حساب المستخدم بنجاح.',
             'user_mgmt.super_transferred_toast': 'تم نقل صلاحية المشرف العام بنجاح.',
             'user_mgmt.superuser_only_error': 'إدارة المستخدمين وتعديل الصلاحيات متاحة للمشرف العام فقط.',
-            'user_mgmt.outdated_binary_error': 'الخادم الحالي يعمل بنسخة قديمة من الملف التنفيذي. يرجى تشغيل scripts\\build-windows.bat مرة واحدة لتفعيل إدارة المستخدمين.'
+            'user_mgmt.outdated_binary_error': 'الخادم الحالي يعمل بنسخة قديمة من الملف التنفيذي. يرجى تشغيل scripts\\build-windows.bat مرة واحدة لتفعيل إدارة المستخدمين.',
+            'user_mgmt.perm_section_label': 'الصلاحيات الممنوحة لهذا الحساب:',
+            'user_mgmt.perm_read_upload': 'تصفح الأرشيف والبحث ورفع الوثائق',
+            'user_mgmt.perm_delete_records': 'حذف الوثائق والمنازل والمناطق',
+            'user_mgmt.perm_storage_settings': 'تعديل مسارات التخزين وقاعدة البيانات',
+            'user_mgmt.perm_manage_users_locked': 'إدارة المستخدمين والصلاحيات (حصري للمشرف العام)',
+            'user_mgmt.local_fallback_notice': 'يتم حفظ تعديلات المستخدمين والصلاحيات محلياً حالياً لأن الملف التنفيذي للخادم قديم. لتفعيل الحفظ الدائم في قاعدة البيانات، شغّل scripts\\build-windows.bat مرة واحدة.'
         },
         en: {
             // General & Common
@@ -1190,7 +1196,13 @@
             'user_mgmt.user_deleted_toast': 'User account removed successfully.',
             'user_mgmt.super_transferred_toast': 'Super User ownership transferred successfully.',
             'user_mgmt.superuser_only_error': 'Only the Super User can manage users and permissions.',
-            'user_mgmt.outdated_binary_error': 'The running server binary predates user management. Run scripts\\build-windows.bat once to enable it.'
+            'user_mgmt.outdated_binary_error': 'The running server binary predates user management. Run scripts\\build-windows.bat once to enable it.',
+            'user_mgmt.perm_section_label': 'Permissions granted to this account:',
+            'user_mgmt.perm_read_upload': 'Browse, Search & Upload Documents',
+            'user_mgmt.perm_delete_records': 'Delete Documents, Houses & Areas',
+            'user_mgmt.perm_storage_settings': 'Configure Storage & Database Paths',
+            'user_mgmt.perm_manage_users_locked': 'Manage Users & Permissions (Super User exclusive)',
+            'user_mgmt.local_fallback_notice': 'User and permission changes are currently saved locally because the running server binary predates /api/users. Run scripts\\build-windows.bat once for permanent SQLite persistence.'
         }
     };
 

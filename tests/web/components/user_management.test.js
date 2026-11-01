@@ -414,13 +414,86 @@ describe('3-Tier RBAC (SuperUser, Admin, Regular User) & In-App User Management'
         expect(superRowEn.textContent).toContain('Sole Super User');
     });
 
-    it('displays actionable build instructions when running against an outdated precompiled binary (405/404)', async () => {
-        fetchMock.mockImplementationOnce(async () => ({
-            ok: false,
-            status: 405,
-            json: async () => ({})
-        }));
+    it('displays actionable build instructions AND renders full interactive user list when running against an outdated precompiled binary (405/404)', async () => {
+        fetchMock.mockImplementation(async (url) => {
+            const cleanUrl = String(url);
+            if (cleanUrl.endsWith('/api/health')) {
+                return {
+                    ok: true,
+                    status: 200,
+                    json: async () => ({ status: 'ok', version: '2026.09.20' }) // No user_management_support flag!
+                };
+            }
+            if (cleanUrl.endsWith('/api/auth/me')) {
+                return {
+                    ok: true,
+                    status: 200,
+                    // Legacy binary returns role: 'Admin' without isSuperUser field
+                    json: async () => ({
+                        authenticated: true,
+                        user: { id: 1, username: 'Emad', displayName: 'Emad', role: 'Admin', canDelete: true }
+                    })
+                };
+            }
+            if (cleanUrl.endsWith('/api/auth/users')) {
+                return {
+                    ok: true,
+                    status: 200,
+                    json: async () => [
+                        { id: 1, username: 'Emad', displayName: 'Emad', role: 'Admin', canDelete: true },
+                        { id: 2, username: 'Bubshait', displayName: 'Bubshait', role: 'Admin', canDelete: true },
+                        { id: 5, username: 'Nawaf', displayName: 'Nawaf', role: 'Contributor', canDelete: false }
+                    ]
+                };
+            }
+            if (cleanUrl.includes('/api/users')) {
+                return {
+                    ok: false,
+                    status: 404,
+                    json: async () => ({})
+                };
+            }
+            return { ok: true, status: 200, json: async () => ({}) };
+        });
 
+        // Re-check session against legacy binary
+        window.authManager._backendCapsPromise = null;
+        await window.authManager.checkSession();
+
+        // Emad MUST be recognized as SuperUser immediately even on the legacy binary!
+        expect(window.authManager.isSuperUser()).toBe(true);
+        expect(window.authManager.canManageUsers()).toBe(true);
+
+        const navBtn = document.getElementById('btn-navbar-user-management');
+        const menuBtn = document.getElementById('btn-open-user-management');
+        expect(navBtn.classList.contains('hidden')).toBe(false);
+        expect(menuBtn.classList.contains('hidden')).toBe(false);
+
+        // Clicking the top-navbar Users & Permissions button opens the modal and renders all users + permission checkboxes
+        navBtn.click();
+        await vi.waitFor(() => {
+            expect(document.querySelectorAll('#user-mgmt-list [data-user-id]').length).toBeGreaterThanOrEqual(3);
+        });
+
+        const feedback = document.getElementById('user-mgmt-feedback');
+        expect(feedback.classList.contains('hidden')).toBe(false);
+        expect(feedback.textContent).toContain('build-windows.bat');
+
+        // Toggling Nawaf's Delete permission checkbox promotes Nawaf to Admin in local fallback directory
+        const nawafDeleteCheckbox = document.querySelector('#user-mgmt-list [data-user-id="5"] .perm-toggle-delete');
+        expect(nawafDeleteCheckbox).not.toBeNull();
+        expect(nawafDeleteCheckbox.checked).toBe(false);
+
+        nawafDeleteCheckbox.checked = true;
+        nawafDeleteCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
+
+        await vi.waitFor(() => {
+            const updatedSelect = document.querySelector('#user-mgmt-list [data-user-id="5"] .user-role-select');
+            expect(updatedSelect.value).toBe('Admin');
+        });
+    });
+
+    it('lets SuperUser toggle per-user Delete and Storage Settings permission checkboxes directly', async () => {
         window.authManager.applyUpdatedCurrentUser({
             id: 1,
             username: 'Emad',
@@ -431,8 +504,28 @@ describe('3-Tier RBAC (SuperUser, Admin, Regular User) & In-App User Management'
 
         await window.openUserManagementModal();
 
-        const feedback = document.getElementById('user-mgmt-feedback');
-        expect(feedback.classList.contains('hidden')).toBe(false);
-        expect(feedback.textContent).toContain('build-windows.bat');
+        // Nawaf (id=5) starts as Contributor -> both checkboxes unchecked
+        const nawafDeleteToggle = document.querySelector('#user-mgmt-list [data-user-id="5"] .perm-toggle-delete');
+        const nawafSettingsToggle = document.querySelector('#user-mgmt-list [data-user-id="5"] .perm-toggle-settings');
+        expect(nawafDeleteToggle.checked).toBe(false);
+        expect(nawafSettingsToggle.checked).toBe(false);
+
+        // Toggle Delete permission ON -> promotes Nawaf to Admin and checks both operational checkboxes
+        nawafDeleteToggle.checked = true;
+        nawafDeleteToggle.dispatchEvent(new Event('change', { bubbles: true }));
+
+        await vi.waitFor(() => {
+            expect(mockUsersDb.find(u => u.id === 5).role).toBe('Admin');
+            expect(document.querySelector('#user-mgmt-list [data-user-id="5"] .perm-toggle-settings').checked).toBe(true);
+        });
+
+        // Toggle Storage Settings permission OFF -> demotes Nawaf back to Regular User (Contributor)
+        const nawafSettingsAfter = document.querySelector('#user-mgmt-list [data-user-id="5"] .perm-toggle-settings');
+        nawafSettingsAfter.checked = false;
+        nawafSettingsAfter.dispatchEvent(new Event('change', { bubbles: true }));
+
+        await vi.waitFor(() => {
+            expect(mockUsersDb.find(u => u.id === 5).role).toBe('Contributor');
+        });
     });
 });

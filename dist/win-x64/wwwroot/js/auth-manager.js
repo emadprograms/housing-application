@@ -22,6 +22,9 @@
             this.isLoading = false;
             this._listeners = [];
             this.isInitialized = false;
+            this.backendSupportsUserMgmt = false;
+            this.isLegacyServerBinary = false;
+            this._backendCapsPromise = null;
 
             // Pre-seed fallback users list for offline/fast-init support
             this.fallbackUsers = [
@@ -44,6 +47,92 @@
             if (lower === 'admin') return 'Admin';
             if (!lower && canDeleteHint) return 'Admin';
             return 'Contributor';
+        }
+
+        async detectBackendCapabilities(force = false) {
+            if (this._backendCapsPromise && !force) {
+                return this._backendCapsPromise;
+            }
+            this._backendCapsPromise = (async () => {
+                try {
+                    const res = await fetch('/api/health');
+                    if (res && res.ok) {
+                        const data = await res.json().catch(() => ({}));
+                        if (data && data.status === 'ok') {
+                            this.backendSupportsUserMgmt = Boolean(data.user_management_support);
+                            this.isLegacyServerBinary = !this.backendSupportsUserMgmt;
+                        }
+                    }
+                } catch (e) {
+                    // Offline or mock environment without /api/health
+                }
+                return {
+                    backendSupportsUserMgmt: this.backendSupportsUserMgmt,
+                    isLegacyServerBinary: this.isLegacyServerBinary
+                };
+            })();
+            return this._backendCapsPromise;
+        }
+
+        getLocalRbacDirectory() {
+            const defaultDir = {
+                users: this.fallbackUsers.map(u => ({ ...u })),
+                deletedUsernames: []
+            };
+            try {
+                const raw = localStorage.getItem('housing_rbac_directory_v1');
+                if (!raw) return defaultDir;
+                const parsed = JSON.parse(raw);
+                if (!parsed || !Array.isArray(parsed.users) || parsed.users.length === 0) {
+                    return defaultDir;
+                }
+                // Guarantee strictly 1 SuperUser in local directory
+                const supers = parsed.users.filter(u => String(u.role || '').toLowerCase() === 'superuser');
+                if (supers.length === 0) {
+                    const emad = parsed.users.find(u => String(u.username || '').toLowerCase() === 'emad') || parsed.users[0];
+                    if (emad) emad.role = 'SuperUser';
+                } else if (supers.length > 1) {
+                    supers.slice(1).forEach(u => { u.role = 'Admin'; });
+                }
+                return {
+                    users: parsed.users,
+                    deletedUsernames: Array.isArray(parsed.deletedUsernames) ? parsed.deletedUsernames : []
+                };
+            } catch (e) {
+                return defaultDir;
+            }
+        }
+
+        saveLocalRbacDirectory(dir) {
+            try {
+                localStorage.setItem('housing_rbac_directory_v1', JSON.stringify({
+                    users: Array.isArray(dir && dir.users) ? dir.users : [],
+                    deletedUsernames: Array.isArray(dir && dir.deletedUsernames) ? dir.deletedUsernames : []
+                }));
+            } catch (e) {}
+        }
+
+        applyLocalDirectoryToUser(rawUser) {
+            if (!rawUser || !rawUser.username) return null;
+            const unameLower = String(rawUser.username).trim().toLowerCase();
+            const dir = this.getLocalRbacDirectory();
+            if (dir.deletedUsernames.some(d => String(d).toLowerCase() === unameLower)) {
+                return null;
+            }
+            const match = dir.users.find(u => String(u.username || '').toLowerCase() === unameLower);
+            if (match) {
+                return {
+                    ...rawUser,
+                    id: rawUser.id || match.id,
+                    username: match.username || rawUser.username,
+                    displayName: match.displayName || rawUser.displayName || rawUser.username,
+                    role: this.normalizeRole(match.role)
+                };
+            }
+            return {
+                ...rawUser,
+                role: this.normalizeRole(rawUser.role, Boolean(rawUser.canDelete || rawUser.can_delete))
+            };
         }
 
         async init() {
@@ -326,20 +415,45 @@
         }
 
         async checkSession() {
+            const snapshotBeforeCheck = this.currentUser;
+
             try {
                 const res = await fetch('/api/auth/me');
                 if (res.ok) {
                     const data = await res.json();
                     if (data && data.authenticated && data.user) {
-                        const role = this.normalizeRole(data.user.role, Boolean(data.user.canDelete || data.user.can_delete));
+                        const hasServerSuperFlag =
+                            typeof data.user.isSuperUser === 'boolean' ||
+                            typeof data.user.is_super_user === 'boolean' ||
+                            typeof data.user.canManageUsers === 'boolean' ||
+                            typeof data.user.can_manage_users === 'boolean';
+
+                        if (!hasServerSuperFlag) {
+                            await this.detectBackendCapabilities();
+                        }
+
+                        const resolvedUser = (!hasServerSuperFlag && this.isLegacyServerBinary)
+                            ? this.applyLocalDirectoryToUser(data.user)
+                            : data.user;
+
+                        if (!resolvedUser) {
+                            this.currentUser = null;
+                            try { localStorage.removeItem('housing_auth_user'); } catch (e) {}
+                            this.updateNavbarProfile();
+                            this.openLoginModal();
+                            this.notifyStateChanged();
+                            return;
+                        }
+
+                        const role = this.normalizeRole(resolvedUser.role, Boolean(resolvedUser.canDelete || resolvedUser.can_delete));
                         const isPrivileged = role === 'SuperUser' || role === 'Admin';
                         this.currentUser = {
-                            ...data.user,
-                            displayName: data.user.displayName || data.user.display_name || data.user.username,
+                            ...resolvedUser,
+                            displayName: resolvedUser.displayName || resolvedUser.display_name || resolvedUser.username,
                             role: role,
                             isSuperUser: role === 'SuperUser',
                             canManageUsers: role === 'SuperUser',
-                            canDelete: isPrivileged || Boolean(data.user.canDelete || data.user.can_delete)
+                            canDelete: isPrivileged || Boolean(resolvedUser.canDelete || resolvedUser.can_delete)
                         };
                         this.updateNavbarProfile();
                         this.closeLoginModal();
@@ -351,17 +465,36 @@
                 console.warn('[AuthManager] Failed to check session:', err);
             }
 
-            // If backend session check failed or returned 404/405, check local fallback
+            // If caller/login explicitly populated currentUser while checkSession was in flight, preserve it
+            if (this.currentUser !== snapshotBeforeCheck && this.currentUser !== null) {
+                this.updateNavbarProfile();
+                this.notifyStateChanged();
+                return;
+            }
+
+            // If backend session check failed or returned 404/405 (or local-only account on legacy binary), check local fallback
             try {
                 const saved = localStorage.getItem('housing_auth_user');
                 if (saved) {
                     const parsed = JSON.parse(saved);
                     if (parsed && parsed.username && parsed.role) {
-                        this.currentUser = parsed;
-                        this.updateNavbarProfile();
-                        this.closeLoginModal();
-                        this.notifyStateChanged();
-                        return;
+                        await this.detectBackendCapabilities();
+                        const resolved = this.isLegacyServerBinary ? this.applyLocalDirectoryToUser(parsed) : parsed;
+                        if (resolved) {
+                            const role = this.normalizeRole(resolved.role, Boolean(resolved.canDelete));
+                            const isPrivileged = role === 'SuperUser' || role === 'Admin';
+                            this.currentUser = {
+                                ...resolved,
+                                role,
+                                isSuperUser: role === 'SuperUser',
+                                canManageUsers: role === 'SuperUser',
+                                canDelete: isPrivileged
+                            };
+                            this.updateNavbarProfile();
+                            this.closeLoginModal();
+                            this.notifyStateChanged();
+                            return;
+                        }
                     }
                 }
             } catch (e) {}
@@ -380,6 +513,48 @@
             const cleanPass = (password || '').trim();
 
             try {
+                await this.detectBackendCapabilities();
+
+                // When running against an older precompiled binary without /api/users, enforce local directory deletions & custom passwords
+                if (this.isLegacyServerBinary) {
+                    const dir = this.getLocalRbacDirectory();
+                    const unameLower = cleanUser.toLowerCase();
+                    if (dir.deletedUsernames.some(d => String(d).toLowerCase() === unameLower)) {
+                        this.currentUser = null;
+                        const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+                        this.showLoginError(isEn ? 'Invalid username or password' : 'اسم المستخدم أو كلمة المرور غير صحيحة');
+                        return false;
+                    }
+
+                    const localEntry = dir.users.find(u => String(u.username || '').toLowerCase() === unameLower);
+                    if (localEntry && localEntry.hasCustomPassword) {
+                        if (cleanPass !== localEntry.customPassword) {
+                            this.currentUser = null;
+                            const isEn = window.i18n && window.i18n.getLanguage() === 'en';
+                            this.showLoginError(isEn ? 'Invalid username or password' : 'اسم المستخدم أو كلمة المرور غير صحيحة');
+                            return false;
+                        }
+                        if (localEntry.isLocalCreated) {
+                            const role = this.normalizeRole(localEntry.role);
+                            const isPrivileged = role === 'SuperUser' || role === 'Admin';
+                            this.currentUser = {
+                                id: localEntry.id,
+                                username: localEntry.username,
+                                displayName: localEntry.displayName || localEntry.username,
+                                role,
+                                isSuperUser: role === 'SuperUser',
+                                canManageUsers: role === 'SuperUser',
+                                canDelete: isPrivileged
+                            };
+                            try { localStorage.setItem('housing_auth_user', JSON.stringify(this.currentUser)); } catch (e) {}
+                            this.updateNavbarProfile();
+                            this.closeLoginModal();
+                            this.notifyStateChanged();
+                            return true;
+                        }
+                    }
+                }
+
                 let res = null;
                 let data = {};
                 try {
@@ -395,7 +570,15 @@
 
                 // Path 1: Backend natively processed login and returned 200 OK
                 if (res && res.ok && (data.success === true || data.status === 'success')) {
-                    const user = data.user || {};
+                    const rawUser = data.user || {};
+                    const hasServerSuperFlag =
+                        typeof rawUser.isSuperUser === 'boolean' ||
+                        typeof rawUser.is_super_user === 'boolean' ||
+                        typeof rawUser.canManageUsers === 'boolean' ||
+                        typeof rawUser.can_manage_users === 'boolean';
+                    const user = (!hasServerSuperFlag && this.isLegacyServerBinary)
+                        ? (this.applyLocalDirectoryToUser(rawUser) || rawUser)
+                        : rawUser;
                     const role = this.normalizeRole(user.role, Boolean(user.canDelete || user.can_delete));
                     const isPrivileged = role === 'SuperUser' || role === 'Admin';
                     this.currentUser = {
@@ -425,6 +608,30 @@
                         window.showToast(welcome, 'success');
                     }
                     return true;
+                }
+
+                // Path 1b: Seeded user whose password was reset locally on legacy binary
+                if (res && res.status === 401 && this.isLegacyServerBinary) {
+                    const dir = this.getLocalRbacDirectory();
+                    const localEntry = dir.users.find(u => String(u.username || '').toLowerCase() === cleanUser.toLowerCase());
+                    if (localEntry && localEntry.hasCustomPassword && cleanPass === localEntry.customPassword) {
+                        const role = this.normalizeRole(localEntry.role);
+                        const isPrivileged = role === 'SuperUser' || role === 'Admin';
+                        this.currentUser = {
+                            id: localEntry.id,
+                            username: localEntry.username,
+                            displayName: localEntry.displayName || localEntry.username,
+                            role,
+                            isSuperUser: role === 'SuperUser',
+                            canManageUsers: role === 'SuperUser',
+                            canDelete: isPrivileged
+                        };
+                        try { localStorage.setItem('housing_auth_user', JSON.stringify(this.currentUser)); } catch (e) {}
+                        this.updateNavbarProfile();
+                        this.closeLoginModal();
+                        this.notifyStateChanged();
+                        return true;
+                    }
                 }
 
                 // Path 2: Backend explicitly rejected credentials (401 Unauthorized)
@@ -614,6 +821,13 @@
                     roleBadge.textContent = window.i18n ? window.i18n.t('auth.login_cta') : 'تسجيل الدخول';
                     roleBadge.className = 'text-[9px] font-semibold text-slate-500 leading-tight';
                 }
+                const userMgmtBtnOut = document.getElementById('btn-open-user-management');
+                if (userMgmtBtnOut) userMgmtBtnOut.classList.add('hidden');
+                const navUserMgmtBtnOut = document.getElementById('btn-navbar-user-management');
+                if (navUserMgmtBtnOut) {
+                    navUserMgmtBtnOut.classList.add('hidden');
+                    navUserMgmtBtnOut.classList.remove('flex');
+                }
                 return;
             }
 
@@ -679,6 +893,11 @@
             const userMgmtBtn = document.getElementById('btn-open-user-management');
             if (userMgmtBtn) {
                 userMgmtBtn.classList.toggle('hidden', !isSuperUser);
+            }
+            const navUserMgmtBtn = document.getElementById('btn-navbar-user-management');
+            if (navUserMgmtBtn) {
+                navUserMgmtBtn.classList.toggle('hidden', !isSuperUser);
+                navUserMgmtBtn.classList.toggle('flex', isSuperUser);
             }
             const storageMenuBtn = document.getElementById('btn-open-storage-settings');
             if (storageMenuBtn) {
