@@ -457,7 +457,7 @@ app.MapPost("/api/areas/{areaId}/houses", async (
             cleanAreaId,
             request.HouseId,
             request.InitialTenantName,
-            request.StartDate,
+            startDate: null,
             areasRoot
         );
         return Results.Ok(result);

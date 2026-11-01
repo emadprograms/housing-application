@@ -1098,6 +1098,12 @@ public class ApiEndpointTests : IClassFixture<ApiTestFixture>, IAsyncLifetime
         Assert.Equal("516", result.HouseId);
         Assert.NotNull(result.TenantId);
 
+        // Verify start_date is null until the first document is entered (even if StartDate was supplied in payload)
+        var tenantsRes = await _client.GetFromJsonAsync<List<TenantDto>>("/api/areas/Safra%20C/houses/516/tenants");
+        Assert.NotNull(tenantsRes);
+        Assert.Single(tenantsRes!);
+        Assert.Null(tenantsRes[0].StartDate);
+
         // Verify physical directories scaffolded
         var batchesDir = Path.Combine(_fixture.AreasRoot, "Safra C", "516", "batches");
         var vaultDir = Path.Combine(_fixture.AreasRoot, "Safra C", "516", "vault");

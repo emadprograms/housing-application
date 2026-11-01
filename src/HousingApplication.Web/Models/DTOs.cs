@@ -391,6 +391,9 @@ public record TenantDto
     [JsonPropertyName("is_present")]
     public bool? IsPresent { get; init; }
 
+    [JsonPropertyName("first_doc_date")]
+    public string? FirstDocDate { get; init; }
+
     [JsonPropertyName("last_doc_date")]
     public string? LastDocDate { get; init; }
 

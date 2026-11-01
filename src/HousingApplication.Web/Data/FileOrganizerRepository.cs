@@ -21,6 +21,23 @@ public class FileOrganizerRepository : IFileOrganizerRepository
         _configuration = configuration;
     }
 
+    private static async Task SyncTenantStartDateAsync(IDbConnection conn, IDbTransaction tx, int tenantId)
+    {
+        if (tenantId <= 0) return;
+
+        var minDate = await conn.QueryFirstOrDefaultAsync<string?>(
+            "SELECT MIN(primary_date) FROM documents WHERE tenant_id = @TenantId AND is_timeline_visible = 1 AND primary_date IS NOT NULL AND primary_date != '';",
+            new { TenantId = tenantId }, tx);
+
+        string? normalizedMin = !string.IsNullOrWhiteSpace(minDate)
+            ? (minDate.Length >= 10 ? minDate[..10] : minDate)
+            : null;
+
+        await conn.ExecuteAsync(
+            "UPDATE tenants SET start_date = @MinDate WHERE id = @TenantId;",
+            new { MinDate = normalizedMin, TenantId = tenantId }, tx);
+    }
+
     public async Task EnsureSchemaAsync()
     {
         await using var conn = await _connectionFactory.CreateConnectionAsync();
@@ -811,6 +828,7 @@ public class FileOrganizerRepository : IFileOrganizerRepository
                        ELSE t.start_date 
                    END AS StartDate, 
                    t.end_date AS EndDate,
+                   d.min_date AS FirstDocDate,
                    d.max_date AS LastDocDate,
                    t.house_id AS HouseId, t.is_resident AS IsResident, t.notes AS Notes
             FROM tenants t
@@ -1318,6 +1336,11 @@ public class FileOrganizerRepository : IFileOrganizerRepository
             }, tx);
         }
 
+        if (request.TenantId > 0)
+        {
+            await SyncTenantStartDateAsync(conn, tx, request.TenantId);
+        }
+
         await tx.CommitAsync();
 
         return new IngestResponseDto
@@ -1422,34 +1445,18 @@ public class FileOrganizerRepository : IFileOrganizerRepository
                 new { PrimaryDate = primaryDate, VaultId = vaultId }, tx);
         }
 
-        // Keep tenant start_date synced to earliest document date
+        // Keep tenant start_date synced to earliest document date (or null when zero dated documents remain)
         if (primaryDate != null || tenantId.HasValue)
         {
             var targetTenantId = tenantId ?? existing.TenantId;
             if (targetTenantId > 0)
             {
-                var minDate = await conn.QueryFirstOrDefaultAsync<string>(
-                    "SELECT MIN(primary_date) FROM documents WHERE tenant_id = @TenantId AND is_timeline_visible = 1 AND primary_date IS NOT NULL AND primary_date != '';",
-                    new { TenantId = targetTenantId }, tx);
-                if (!string.IsNullOrWhiteSpace(minDate))
-                {
-                    await conn.ExecuteAsync(
-                        "UPDATE tenants SET start_date = @MinDate WHERE id = @TenantId;",
-                        new { MinDate = minDate, TenantId = targetTenantId }, tx);
-                }
+                await SyncTenantStartDateAsync(conn, tx, targetTenantId);
             }
 
             if (tenantId.HasValue && tenantId.Value != existing.TenantId && existing.TenantId > 0)
             {
-                var prevMinDate = await conn.QueryFirstOrDefaultAsync<string>(
-                    "SELECT MIN(primary_date) FROM documents WHERE tenant_id = @TenantId AND is_timeline_visible = 1 AND primary_date IS NOT NULL AND primary_date != '';",
-                    new { TenantId = existing.TenantId }, tx);
-                if (!string.IsNullOrWhiteSpace(prevMinDate))
-                {
-                    await conn.ExecuteAsync(
-                        "UPDATE tenants SET start_date = @MinDate WHERE id = @TenantId;",
-                        new { MinDate = prevMinDate, TenantId = existing.TenantId }, tx);
-                }
+                await SyncTenantStartDateAsync(conn, tx, existing.TenantId);
             }
         }
 
@@ -1760,18 +1767,18 @@ public class FileOrganizerRepository : IFileOrganizerRepository
         // Register house
         await conn.ExecuteAsync("INSERT INTO houses (id, area_id) VALUES (@Id, @AreaId);", new { Id = cleanHouseId, AreaId = cleanAreaId });
 
-        // Optional initial tenant
+        // Optional initial tenant (start_date is strictly derived when the first document is entered)
         int? tenantId = null;
         if (!string.IsNullOrWhiteSpace(initialTenantName))
         {
             var cleanTenantName = initialTenantName.Trim();
-            var sDate = !string.IsNullOrWhiteSpace(startDate) ? startDate.Trim() : null;
+            string? initialStartDate = null;
 
             tenantId = await conn.ExecuteScalarAsync<int>(@"
                 INSERT INTO tenants (house_id, name, start_date)
                 VALUES (@HouseId, @Name, @StartDate);
                 SELECT last_insert_rowid();",
-                new { HouseId = cleanHouseId, Name = cleanTenantName, StartDate = (object?)sDate ?? DBNull.Value });
+                new { HouseId = cleanHouseId, Name = cleanTenantName, StartDate = initialStartDate });
         }
 
         // Directory scaffolding
@@ -2049,15 +2056,7 @@ public class FileOrganizerRepository : IFileOrganizerRepository
 
         if (docTenantId > 0)
         {
-            var minDate = await conn.QueryFirstOrDefaultAsync<string>(
-                "SELECT MIN(primary_date) FROM documents WHERE tenant_id = @TenantId AND is_timeline_visible = 1 AND primary_date IS NOT NULL AND primary_date != '';",
-                new { TenantId = docTenantId }, tx);
-            if (!string.IsNullOrWhiteSpace(minDate))
-            {
-                await conn.ExecuteAsync(
-                    "UPDATE tenants SET start_date = @MinDate WHERE id = @TenantId;",
-                    new { MinDate = minDate, TenantId = docTenantId }, tx);
-            }
+            await SyncTenantStartDateAsync(conn, tx, docTenantId);
         }
 
         await tx.CommitAsync();
@@ -2125,15 +2124,7 @@ public class FileOrganizerRepository : IFileOrganizerRepository
 
         foreach (var tid in affectedTenantIds)
         {
-            var minDate = await conn.QueryFirstOrDefaultAsync<string>(
-                "SELECT MIN(primary_date) FROM documents WHERE tenant_id = @TenantId AND is_timeline_visible = 1 AND primary_date IS NOT NULL AND primary_date != '';",
-                new { TenantId = tid }, tx);
-            if (!string.IsNullOrWhiteSpace(minDate))
-            {
-                await conn.ExecuteAsync(
-                    "UPDATE tenants SET start_date = @MinDate WHERE id = @TenantId;",
-                    new { MinDate = minDate, TenantId = tid }, tx);
-            }
+            await SyncTenantStartDateAsync(conn, tx, tid);
         }
 
         await tx.CommitAsync();
@@ -2158,6 +2149,22 @@ public class FileOrganizerRepository : IFileOrganizerRepository
         await using var conn = await _connectionFactory.CreateConnectionAsync();
         await using var tx = await conn.BeginTransactionAsync();
 
+        var affectedTenantIds = new HashSet<int>();
+        if (targetTenantId.HasValue)
+        {
+            var prevTenantIds = await conn.QueryAsync<int>(
+                "SELECT DISTINCT tenant_id FROM documents WHERE vault_id IN @VaultIds;",
+                new { VaultIds = vaultIds }, tx);
+            foreach (var tid in prevTenantIds)
+            {
+                if (tid > 0) affectedTenantIds.Add(tid);
+            }
+            if (targetTenantId.Value > 0)
+            {
+                affectedTenantIds.Add(targetTenantId.Value);
+            }
+        }
+
         var movedIds = new List<string>();
         foreach (var vaultId in vaultIds)
         {
@@ -2181,6 +2188,11 @@ public class FileOrganizerRepository : IFileOrganizerRepository
             {
                 movedIds.Add(vaultId);
             }
+        }
+
+        foreach (var tid in affectedTenantIds)
+        {
+            await SyncTenantStartDateAsync(conn, tx, tid);
         }
 
         await tx.CommitAsync();
@@ -2391,14 +2403,36 @@ public class FileOrganizerRepository : IFileOrganizerRepository
             for (int i = 0; i < tenants.Count; i++)
             {
                 var t = tenants[i];
-                var sDate = !string.IsNullOrWhiteSpace(t.StartDate) ? (t.StartDate.Length >= 10 ? t.StartDate[..10] : t.StartDate) : null;
+                var existingByName = !t.Id.HasValue 
+                    ? currentTenants.FirstOrDefault(ct => string.Equals(ct.Name.Trim(), t.Name.Trim(), StringComparison.OrdinalIgnoreCase))
+                    : null;
+                var resolvedTenantId = t.Id ?? existingByName?.Id;
+
+                // Start date of the tenant is always the date of their first document when documents exist
+                string? minDocDate = null;
+                if (resolvedTenantId.HasValue)
+                {
+                    minDocDate = await conn.ExecuteScalarAsync<string?>(@"
+                        SELECT MIN(primary_date) 
+                        FROM documents 
+                        WHERE tenant_id = @TenantId 
+                          AND is_timeline_visible = 1 
+                          AND primary_date IS NOT NULL 
+                          AND primary_date != '';",
+                        new { TenantId = resolvedTenantId.Value }, tx);
+                }
+
+                var sDate = !string.IsNullOrWhiteSpace(minDocDate)
+                    ? (minDocDate.Length >= 10 ? minDocDate[..10] : minDocDate)
+                    : (!string.IsNullOrWhiteSpace(t.StartDate) ? (t.StartDate.Length >= 10 ? t.StartDate[..10] : t.StartDate) : null);
+
                 var isPresent = (i == presentTenantIndex);
                 string? eDate = null;
                 if (t.IsResident == 1 && !isPresent)
                 {
                     // End date of the past tenant is always the date of their last document arrival
                     string? maxDocDate = null;
-                    if (t.Id.HasValue)
+                    if (resolvedTenantId.HasValue)
                     {
                         maxDocDate = await conn.ExecuteScalarAsync<string?>(@"
                             SELECT MAX(primary_date) 
@@ -2407,19 +2441,7 @@ public class FileOrganizerRepository : IFileOrganizerRepository
                               AND is_timeline_visible = 1 
                               AND primary_date IS NOT NULL 
                               AND primary_date != '';",
-                            new { TenantId = t.Id.Value }, tx);
-                    }
-                    if (string.IsNullOrWhiteSpace(maxDocDate))
-                    {
-                        maxDocDate = await conn.ExecuteScalarAsync<string?>(@"
-                            SELECT MAX(primary_date) 
-                            FROM documents 
-                            WHERE (house_id = @HouseId OR house_id = @CleanHouseId)
-                              AND (primary_tenant = @Name OR tenant = @Name)
-                              AND is_timeline_visible = 1 
-                              AND primary_date IS NOT NULL 
-                              AND primary_date != '';",
-                            new { HouseId = houseId, CleanHouseId = cleanHouseId, Name = t.Name.Trim() }, tx);
+                            new { TenantId = resolvedTenantId.Value }, tx);
                     }
 
                     if (!string.IsNullOrWhiteSpace(maxDocDate))
@@ -2432,27 +2454,23 @@ public class FileOrganizerRepository : IFileOrganizerRepository
                     }
                 }
 
-                var existingByName = !t.Id.HasValue 
-                    ? currentTenants.FirstOrDefault(ct => string.Equals(ct.Name.Trim(), t.Name.Trim(), StringComparison.OrdinalIgnoreCase))
-                    : null;
-
                 if (t.Id.HasValue && currentTenants.Any(ct => ct.Id == t.Id.Value))
                 {
                     await conn.ExecuteAsync(
                         "UPDATE tenants SET name = @Name, start_date = @StartDate, end_date = @EndDate, is_resident = @IsResident, notes = @Notes WHERE id = @Id;",
-                        new { Name = t.Name.Trim(), StartDate = (object?)sDate ?? DBNull.Value, EndDate = (object?)eDate ?? DBNull.Value, IsResident = t.IsResident, Notes = t.Notes, Id = t.Id.Value }, tx);
+                        new { Name = t.Name.Trim(), StartDate = sDate, EndDate = eDate, IsResident = t.IsResident, Notes = t.Notes, Id = t.Id.Value }, tx);
                 }
                 else if (existingByName != null)
                 {
                     await conn.ExecuteAsync(
                         "UPDATE tenants SET name = @Name, start_date = @StartDate, end_date = @EndDate, is_resident = @IsResident, notes = @Notes WHERE id = @Id;",
-                        new { Name = t.Name.Trim(), StartDate = (object?)sDate ?? DBNull.Value, EndDate = (object?)eDate ?? DBNull.Value, IsResident = t.IsResident, Notes = t.Notes, Id = existingByName.Id }, tx);
+                        new { Name = t.Name.Trim(), StartDate = sDate, EndDate = eDate, IsResident = t.IsResident, Notes = t.Notes, Id = existingByName.Id }, tx);
                 }
                 else
                 {
                     await conn.ExecuteAsync(
                         "INSERT INTO tenants (house_id, name, start_date, end_date, is_resident, notes) VALUES (@HouseId, @Name, @StartDate, @EndDate, @IsResident, @Notes);",
-                        new { HouseId = targetHouseId, Name = t.Name.Trim(), StartDate = (object?)sDate ?? DBNull.Value, EndDate = (object?)eDate ?? DBNull.Value, IsResident = t.IsResident, Notes = t.Notes }, tx);
+                        new { HouseId = targetHouseId, Name = t.Name.Trim(), StartDate = sDate, EndDate = eDate, IsResident = t.IsResident, Notes = t.Notes }, tx);
                 }
             }
 
@@ -2492,6 +2510,20 @@ public class FileOrganizerRepository : IFileOrganizerRepository
                     }
 
                     await conn.ExecuteAsync("DELETE FROM tenants WHERE id = @Id;", new { Id = rt.Id }, tx);
+                }
+
+                if (fallbackTenant != null)
+                {
+                    var fallbackMin = await conn.QueryFirstOrDefaultAsync<string?>(
+                        "SELECT MIN(primary_date) FROM documents WHERE tenant_id = @TenantId AND is_timeline_visible = 1 AND primary_date IS NOT NULL AND primary_date != '';",
+                        new { TenantId = fallbackTenant.Id }, tx);
+                    if (!string.IsNullOrWhiteSpace(fallbackMin))
+                    {
+                        var cleanFallbackMin = fallbackMin.Length >= 10 ? fallbackMin[..10] : fallbackMin;
+                        await conn.ExecuteAsync(
+                            "UPDATE tenants SET start_date = @MinDate WHERE id = @TenantId;",
+                            new { MinDate = cleanFallbackMin, TenantId = fallbackTenant.Id }, tx);
+                    }
                 }
             }
         }
@@ -2539,11 +2571,18 @@ WHERE (house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHous
 
                     if (targetTenant != null && targetTenant.Id != doc.TenantId)
                     {
+                        var prevTid = doc.TenantId;
                         await conn.ExecuteAsync("UPDATE documents SET tenant_id = @TenantId WHERE vault_id = @VaultId;",
                             new { TenantId = targetTenant.Id, VaultId = doc.VaultId }, tx);
                         await conn.ExecuteAsync("UPDATE pages SET tenant_id = @TenantId WHERE vault_id = @VaultId;",
                             new { TenantId = targetTenant.Id, VaultId = doc.VaultId }, tx);
                         reallocatedCount++;
+
+                        await SyncTenantStartDateAsync(conn, tx, targetTenant.Id);
+                        if (prevTid > 0)
+                        {
+                            await SyncTenantStartDateAsync(conn, tx, prevTid);
+                        }
                     }
                 }
             }
@@ -2991,6 +3030,15 @@ WHERE (house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHous
             // New document is recorded with is_manual = 1.
         }
 
+        if (targetTenantId > 0)
+        {
+            await SyncTenantStartDateAsync(conn, tx, targetTenantId);
+        }
+        if (sourceDeleted && src.TenantId > 0 && src.TenantId != targetTenantId)
+        {
+            await SyncTenantStartDateAsync(conn, tx, src.TenantId);
+        }
+
         await tx.CommitAsync();
 
         var tenantName = await conn.QueryFirstOrDefaultAsync<string>(
@@ -3157,6 +3205,11 @@ WHERE (house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHous
         // Maintain strict page parity in batches table
         await conn.ExecuteAsync("UPDATE batches SET page_count = MAX(0, page_count - @DeletedCount) WHERE id = @BatchId;",
             new { DeletedCount = pagesToDelete.Count, BatchId = src.BatchId }, tx);
+
+        if (documentDeleted && src.TenantId > 0)
+        {
+            await SyncTenantStartDateAsync(conn, tx, src.TenantId);
+        }
 
         await tx.CommitAsync();
 
@@ -3660,18 +3713,25 @@ WHERE (house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHous
             }
         }
 
-        // Update tenant start date if relevant
+        // Sync start_date for target tenant and any source tenants whose documents were merged/deleted
+        var affectedMergeTenantIds = new HashSet<int>();
         if (targetTenantId > 0)
         {
-            var minDate = await conn.QueryFirstOrDefaultAsync<string>(
-                "SELECT MIN(primary_date) FROM documents WHERE tenant_id = @TenantId AND is_timeline_visible = 1 AND primary_date IS NOT NULL AND primary_date != '';",
-                new { TenantId = targetTenantId }, tx);
-            if (!string.IsNullOrWhiteSpace(minDate))
+            affectedMergeTenantIds.Add(targetTenantId);
+        }
+        if (request.DeleteSources)
+        {
+            foreach (var doc in orderedDocs)
             {
-                await conn.ExecuteAsync(
-                    "UPDATE tenants SET start_date = @MinDate WHERE id = @TenantId;",
-                    new { MinDate = minDate, TenantId = targetTenantId }, tx);
+                if (doc.TenantId > 0)
+                {
+                    affectedMergeTenantIds.Add(doc.TenantId);
+                }
             }
+        }
+        foreach (var tid in affectedMergeTenantIds)
+        {
+            await SyncTenantStartDateAsync(conn, tx, tid);
         }
 
         await tx.CommitAsync();
