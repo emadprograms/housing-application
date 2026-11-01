@@ -1299,7 +1299,6 @@
         const areaSelect = document.getElementById('add-house-area-select');
         const idInput = document.getElementById('add-house-id-input');
         const tenantInput = document.getElementById('add-house-tenant-name-input');
-        const dateInput = document.getElementById('add-house-tenant-date-input');
         const statusEl = document.getElementById('add-house-status');
         const spinner = document.getElementById('add-house-spinner');
         const submitBtn = document.getElementById('btn-add-house-submit');
@@ -1314,13 +1313,6 @@
 
         if (idInput) idInput.value = '';
         if (tenantInput) tenantInput.value = '';
-        if (dateInput) {
-            try {
-                dateInput.value = new Date().toISOString().split('T')[0];
-            } catch (e) {
-                dateInput.value = '';
-            }
-        }
 
         // Populate area options
         if (areaSelect) {
@@ -1373,7 +1365,6 @@
         const areaSelect = document.getElementById('add-house-area-select');
         const idInput = document.getElementById('add-house-id-input');
         const tenantInput = document.getElementById('add-house-tenant-name-input');
-        const dateInput = document.getElementById('add-house-tenant-date-input');
         const statusEl = document.getElementById('add-house-status');
         const spinner = document.getElementById('add-house-spinner');
         const submitBtn = document.getElementById('btn-add-house-submit');
@@ -1381,7 +1372,6 @@
         const areaId = areaSelect ? areaSelect.value.trim() : '';
         const houseId = idInput ? idInput.value.trim() : '';
         const tenantName = tenantInput ? tenantInput.value.trim() : '';
-        const startDate = dateInput ? dateInput.value.trim() : '';
 
         const isLiveI18n = (typeof window !== 'undefined' && window.i18n);
         const isLiveEn = isLiveI18n && window.i18n.getLanguage() === 'en';
@@ -1411,7 +1401,7 @@
                 house_id: houseId,
                 area_id: areaId,
                 initial_tenant_name: tenantName || null,
-                start_date: startDate || null,
+                start_date: null,
             };
 
             const res = await fetch(`/api/areas/${encodeURIComponent(areaId)}/houses`, {
