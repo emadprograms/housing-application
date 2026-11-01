@@ -1864,6 +1864,143 @@ public class ApiEndpointTests : IClassFixture<ApiTestFixture>, IAsyncLifetime
         Assert.Equal(HttpStatusCode.OK, tdRes.StatusCode);
         Assert.Equal("application/octet-stream", tdRes.Content.Headers.ContentType?.MediaType);
     }
+
+    [Fact]
+    public async Task GetStoragePaths_AsAdmin_ReturnsActivePathsAndStats()
+    {
+        var response = await _client.GetAsync("/api/settings/paths");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var settings = await response.Content.ReadFromJsonAsync<StoragePathsResponseDto>();
+        Assert.NotNull(settings);
+        Assert.Equal(Path.GetFullPath(_fixture.AreasRoot), settings.AreasRootPath);
+        Assert.True(settings.AreasRootExists);
+        Assert.True(settings.OrganizerDbExists);
+        Assert.True(settings.Tables.ContainsKey("houses"));
+    }
+
+    [Fact]
+    public async Task StorageSettingsEndpoints_AsContributor_ReturnsForbidden()
+    {
+        using var getReq = new HttpRequestMessage(HttpMethod.Get, "/api/settings/paths");
+        getReq.Headers.Add("X-User-Role", "Contributor");
+        var getRes = await _client.SendAsync(getReq);
+        Assert.Equal(HttpStatusCode.Forbidden, getRes.StatusCode);
+
+        using var browseReq = new HttpRequestMessage(HttpMethod.Get, "/api/settings/browse");
+        browseReq.Headers.Add("X-User-Role", "Contributor");
+        var browseRes = await _client.SendAsync(browseReq);
+        Assert.Equal(HttpStatusCode.Forbidden, browseRes.StatusCode);
+
+        using var validateReq = new HttpRequestMessage(HttpMethod.Post, "/api/settings/paths/validate")
+        {
+            Content = JsonContent.Create(new UpdateStoragePathsRequestDto
+            {
+                AreasRootPath = _fixture.AreasRoot,
+                OrganizerDbPath = _fixture.DbPath
+            })
+        };
+        validateReq.Headers.Add("X-User-Role", "Contributor");
+        var validateRes = await _client.SendAsync(validateReq);
+        Assert.Equal(HttpStatusCode.Forbidden, validateRes.StatusCode);
+
+        using var putReq = new HttpRequestMessage(HttpMethod.Put, "/api/settings/paths")
+        {
+            Content = JsonContent.Create(new UpdateStoragePathsRequestDto
+            {
+                AreasRootPath = _fixture.AreasRoot,
+                OrganizerDbPath = _fixture.DbPath
+            })
+        };
+        putReq.Headers.Add("X-User-Role", "Contributor");
+        var putRes = await _client.SendAsync(putReq);
+        Assert.Equal(HttpStatusCode.Forbidden, putRes.StatusCode);
+    }
+
+    [Fact]
+    public async Task ValidateStoragePaths_MissingDirectory_RespectsCreateIfMissingFlag()
+    {
+        var missingRoot = Path.Combine(Path.GetTempPath(), $"missing_areas_{Guid.NewGuid():N}");
+        var missingDb = Path.Combine(missingRoot, "organizer.db");
+
+        var strictRes = await _client.PostAsJsonAsync("/api/settings/paths/validate", new UpdateStoragePathsRequestDto
+        {
+            AreasRootPath = missingRoot,
+            OrganizerDbPath = missingDb,
+            CreateIfMissing = false
+        });
+        Assert.Equal(HttpStatusCode.OK, strictRes.StatusCode);
+        var strictBody = await strictRes.Content.ReadFromJsonAsync<ValidateStoragePathsResponseDto>();
+        Assert.NotNull(strictBody);
+        Assert.False(strictBody.Valid);
+
+        var allowCreateRes = await _client.PostAsJsonAsync("/api/settings/paths/validate", new UpdateStoragePathsRequestDto
+        {
+            AreasRootPath = missingRoot,
+            OrganizerDbPath = missingDb,
+            CreateIfMissing = true
+        });
+        Assert.Equal(HttpStatusCode.OK, allowCreateRes.StatusCode);
+        var allowCreateBody = await allowCreateRes.Content.ReadFromJsonAsync<ValidateStoragePathsResponseDto>();
+        Assert.NotNull(allowCreateBody);
+        Assert.True(allowCreateBody.Valid);
+    }
+
+    [Fact]
+    public async Task UpdateStoragePaths_HotSwapsAreasAndDatabase_AndPersistsSettingsJson()
+    {
+        var newAreasRoot = Path.Combine(Path.GetTempPath(), $"hotswap_areas_{Guid.NewGuid():N}");
+        var newDbPath = Path.Combine(newAreasRoot, "organizer.db");
+        string? settingsFile = null;
+
+        try
+        {
+            using var isolatedFixture = new ApiTestFixture();
+            await isolatedFixture.SeedDataAsync();
+            using var isolatedClient = isolatedFixture.CreateClient();
+
+            var updateRes = await isolatedClient.PutAsJsonAsync("/api/settings/paths", new UpdateStoragePathsRequestDto
+            {
+                AreasRootPath = $"\"{newAreasRoot}\"",
+                OrganizerDbPath = "",
+                CreateIfMissing = true
+            });
+            Assert.Equal(HttpStatusCode.OK, updateRes.StatusCode);
+
+            var updated = await updateRes.Content.ReadFromJsonAsync<StoragePathsResponseDto>();
+            Assert.NotNull(updated);
+            settingsFile = updated.SettingsFilePath;
+
+            Assert.Equal(Path.GetFullPath(newAreasRoot), updated.AreasRootPath);
+            Assert.Equal(Path.GetFullPath(newDbPath), updated.OrganizerDbPath);
+            Assert.True(updated.AreasRootExists);
+            Assert.True(updated.OrganizerDbExists);
+            Assert.True(File.Exists(updated.SettingsFilePath));
+
+            // New archive starts empty (0 seeded houses from previous DB)
+            Assert.Equal(0, updated.Tables.GetValueOrDefault("houses", -1));
+
+            // Creating a new area writes directly to the hot-swapped areas folder and database
+            var createAreaRes = await isolatedClient.PostAsJsonAsync("/api/areas", new CreateAreaRequestDto
+            {
+                Name = "حي الأرشيف الجديد"
+            });
+            Assert.Equal(HttpStatusCode.Created, createAreaRes.StatusCode);
+            Assert.True(Directory.Exists(Path.Combine(newAreasRoot, "حي الأرشيف الجديد")));
+
+            var browseRes = await isolatedClient.GetAsync($"/api/settings/browse?path={Uri.EscapeDataString(newAreasRoot)}");
+            Assert.Equal(HttpStatusCode.OK, browseRes.StatusCode);
+            var browseBody = await browseRes.Content.ReadFromJsonAsync<BrowsePathsResponseDto>();
+            Assert.NotNull(browseBody);
+            Assert.Contains(browseBody.Entries, e => e.IsDirectory && e.Name == "حي الأرشيف الجديد");
+            Assert.Contains(browseBody.Entries, e => !e.IsDirectory && e.Name == "organizer.db");
+        }
+        finally
+        {
+            try { if (!string.IsNullOrEmpty(settingsFile) && File.Exists(settingsFile)) File.Delete(settingsFile); } catch { }
+            try { if (Directory.Exists(newAreasRoot)) Directory.Delete(newAreasRoot, recursive: true); } catch { }
+        }
+    }
 }
 
 
