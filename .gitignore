@@ -32,6 +32,25 @@ batch_log.txt
 dist/win-x64/wwwroot/**/*.gz
 dist/win-x64/wwwroot/**/*.br
 dist/win-x64/*.staticwebassets.endpoints.json
+dist/win-x64/*Test*
+dist/win-x64/testhost.*
+dist/win-x64/CodeCoverage/
+dist/win-x64/InstrumentationEngine/
+dist/win-x64/cs/
+dist/win-x64/de/
+dist/win-x64/es/
+dist/win-x64/fr/
+dist/win-x64/it/
+dist/win-x64/ja/
+dist/win-x64/ko/
+dist/win-x64/pl/
+dist/win-x64/pt-BR/
+dist/win-x64/ru/
+dist/win-x64/tr/
+dist/win-x64/zh-Hans/
+dist/win-x64/zh-Hant/
+dist/win-x64/xunit.*
+dist/win-x64/Mono.Cecil*
 *.egg-info/
 
 # Node
