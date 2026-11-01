@@ -3,10 +3,10 @@ gsd_state_version: "1.0"
 milestone: v18.1
 current_phase: "128: Automated Localization Suite & Full Regression Verification"
 status: completed
-last_updated: "2026-11-01T05:04:56.898Z"
+last_updated: "2026-11-01T06:13:45.998Z"
 last_activity: 2026-11-01
 last_activity_desc: Quick task 261101-6bf completed (Delete Area and Delete House UI)
-state_head: e9d72e5ed3e4cad06d7c7b536a51f91162403892
+state_head: e1480edd01194eef21b6488d97947c9f71e3b8a9
 milestone_name: UI & Localization Consistency Polish
 progress:
   total_phases: 4
@@ -117,12 +117,14 @@ Milestone v18.1 resolves remaining small issues, hardcoded strings, and localiza
 - `260921-d6n`: Convert Transparent Ministry Logo into Multi-Resolution Icon & Web Favicon (QCK-58). Generated multi-resolution Windows .ico (16, 32, 48, 64, 128, 256) and PNG favicons from logo.png with 100% alpha transparency. Deployed across src/ and dist/win-x64/ wwwroot, updated index.html with favicon/apple-touch-icon tags, and configured <ApplicationIcon> in HousingApplication.Web.csproj. Verified by 20 passing Vitest tests.
 - `260923-cqe`: Document-Driven End Date for Past Tenants & Zero Manual Date Entry (QCK-59). Made past residents' end date 100% document-driven (derived from MAX(primary_date)) across FileOrganizerRepository, updated tenant-manager.js to render tenant-end-input as readonly, eliminated manual user entry in House Settings modal, and added automated backend/frontend test coverage.
 - `261101-6bf`: Delete Area and Discoverable Delete House UI (QCK-60). Added transactional `DeleteAreaAsync` cascade (`pages` -> `documents` -> `batches` -> `tenants` -> `houses` -> `areas` + safe directory removal) and Admin-only `DELETE /api/areas/{areaId}` endpoint, `#delete-area-modal` with typed phrase confirmation and house-count warning, sidebar `.area-delete-btn` & Area Overview `#btn-delete-area-header`, and discoverable Delete House triggers on Area Grid cards (`.house-card-delete-btn`) and House panel header (`#btn-delete-house-quick`). Verified by 752 passing Vitest tests across 53 files and 100% `wwwroot` parity.
+- `261101-8gl`: Document-Driven Start Date for Houses & Tenants and Remove Add-House Start Date Option (QCK-61). Removed `#add-house-tenant-date-input` from `#add-house-modal` and enforced `start_date: null` on house creation (`area-grid.js`, `Program.cs`, `CreateHouseAsync`). Added `SyncTenantStartDateAsync` across all document write/update/move/delete/merge/page-split methods in `FileOrganizerRepository.cs` (clearing `start_date` to `NULL` when zero dated documents remain), added `FirstDocDate` (`first_doc_date`) to `TenantDto` + `minDocDate` priority in `BulkUpdateTenantsAsync`, added `resolveFirstDocDate` in `tenant-manager.js`, and eliminated hardcoded `'2020-01-01'` fallback in `house-profile.js` static mode. Verified by 754 passing Vitest tests across 53 files and 100% `wwwroot` parity.
 
 ### Quick Tasks Completed
 
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 261101-6bf | Delete Area and Delete House UI | 2026-11-01 | e9d72e5 | [261101-6bf-delete-area-and-delete-house-ui](./quick/261101-6bf-delete-area-and-delete-house-ui/) |
+| 261101-8gl | Document-Driven Start Date for Houses & Tenants and Remove Add-House Start Date Option | 2026-11-01 | e1480ed | [261101-8gl-document-driven-start-date-for-houses-an](./quick/261101-8gl-document-driven-start-date-for-houses-an/) |
 
 ## Deferred Items
 
@@ -152,7 +154,7 @@ Items acknowledged and deferred at milestone close on 2026-09-13:
 Phase: Milestone v17.0 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-09-23 — Quick task 260923-cqe completed (document-driven past tenant end date)
+Last activity: 2026-11-01 — Quick task 261101-8gl completed (document-driven start date for houses & tenants and removed Add-House start date option)
 
 ## Operator Next Steps
 
