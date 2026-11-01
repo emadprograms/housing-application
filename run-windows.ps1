@@ -19,15 +19,20 @@ if (Test-Path $ConfigFilePath) {
 }
 
 if (-not $DbPath -or -not $AreasRoot) {
-    if (Test-Path "D:\areas_v11\organizer.db") {
+    # Check areas_v11 in parent folder or common locations
+    if (Test-Path "$PSScriptRoot\..\areas_v11\organizer.db") {
+        $DbPath = (Resolve-Path "$PSScriptRoot\..\areas_v11\organizer.db").Path
+        $AreasRoot = (Resolve-Path "$PSScriptRoot\..\areas_v11").Path
+    } elseif (Test-Path "$PSScriptRoot\areas_v11\organizer.db") {
+        $DbPath = (Resolve-Path "$PSScriptRoot\areas_v11\organizer.db").Path
+        $AreasRoot = (Resolve-Path "$PSScriptRoot\areas_v11").Path
+    } elseif (Test-Path "D:\areas_v11\organizer.db") {
         $DbPath = "D:\areas_v11\organizer.db"
         $AreasRoot = "D:\areas_v11"
     } elseif (Test-Path "$PSScriptRoot\organizer.db") {
-        $DbPath = "$PSScriptRoot\organizer.db"
-        $AreasRoot = "$PSScriptRoot\areas"
-    } elseif (Test-Path "D:\areas_v11") {
-        $DbPath = "D:\areas_v11\organizer.db"
-        $AreasRoot = "D:\areas_v11"
+        $DbPath = (Resolve-Path "$PSScriptRoot\organizer.db").Path
+        $AreasRoot = (Resolve-Path "$PSScriptRoot\areas" -ErrorAction SilentlyContinue).Path
+        if (-not $AreasRoot) { $AreasRoot = "$PSScriptRoot\areas" }
     } else {
         $DbPath = "$PSScriptRoot\organizer.db"
         $AreasRoot = "$PSScriptRoot\areas"
@@ -65,16 +70,31 @@ if (-not (Get-Command dotnet -ErrorAction SilentlyContinue) -and (Test-Path "$en
     $env:PATH = "$env:USERPROFILE\.dotnet;" + $env:PATH
 }
 
-if (Get-Command dotnet -ErrorAction SilentlyContinue) {
-    Set-Location -Path "$PSScriptRoot\src\HousingApplication.Web"
+# Project directory candidates
+$projectCandidates = @(
+    "$PSScriptRoot\src\HousingApplication.Web",
+    "$PSScriptRoot\housing-application\src\HousingApplication.Web"
+)
+$projectDir = $projectCandidates | Where-Object { Test-Path "$_\HousingApplication.Web.csproj" } | Select-Object -First 1
+
+# Standalone executable candidates
+$exeCandidates = @(
+    "$PSScriptRoot\dist\win-x64\FileOrganizer.Web.exe",
+    "$PSScriptRoot\housing-application\dist\win-x64\FileOrganizer.Web.exe"
+)
+$exePath = $exeCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+
+if ($projectDir -and (Get-Command dotnet -ErrorAction SilentlyContinue)) {
+    Set-Location -Path $projectDir
     dotnet run `
         --urls "http://0.0.0.0:$Port" `
         --ORGANIZER_DB_PATH "$DbPath" `
         --AREAS_ROOT_PATH "$AreasRoot"
-} elseif (Test-Path "$PSScriptRoot\dist\win-x64\FileOrganizer.Web.exe") {
-    Write-Host "Running standalone executable from dist\win-x64 (no .NET installation required)..." -ForegroundColor Green
-    Set-Location -Path "$PSScriptRoot\dist\win-x64"
-    .\FileOrganizer.Web.exe `
+} elseif ($exePath) {
+    $exeDir = Split-Path -Parent $exePath
+    Write-Host "Running standalone executable from $exeDir (no .NET installation required)..." -ForegroundColor Green
+    Set-Location -Path $exeDir
+    & $exePath `
         --urls "http://0.0.0.0:$Port" `
         --ORGANIZER_DB_PATH "$DbPath" `
         --AREAS_ROOT_PATH "$AreasRoot"

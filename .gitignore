@@ -72,3 +72,9 @@ tests/reconciliation_sandbox/
 
 test1/
 *.traineddata
+
+dist/areas_v11/
+
+# Agent configurations and artifacts
+.agents/
+.agents
