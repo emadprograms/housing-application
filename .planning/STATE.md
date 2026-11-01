@@ -3,10 +3,11 @@ gsd_state_version: "1.0"
 milestone: v18.1
 current_phase: "128: Automated Localization Suite & Full Regression Verification"
 status: completed
-last_updated: "2026-11-01T06:13:45.998Z"
+stopped_at: "Completed quick task 261101-ean: in-app Admin Storage & Database Path Settings"
+last_updated: "2026-11-01T10:31:23.740Z"
 last_activity: 2026-11-01
 last_activity_desc: Quick task 261101-6bf completed (Delete Area and Delete House UI)
-state_head: e1480edd01194eef21b6488d97947c9f71e3b8a9
+state_head: 621f7ea65c3a191e08d4333cbd1db901074f17f9
 milestone_name: UI & Localization Consistency Polish
 progress:
   total_phases: 4
@@ -119,6 +120,7 @@ Milestone v18.1 resolves remaining small issues, hardcoded strings, and localiza
 - `261101-6bf`: Delete Area and Discoverable Delete House UI (QCK-60). Added transactional `DeleteAreaAsync` cascade (`pages` -> `documents` -> `batches` -> `tenants` -> `houses` -> `areas` + safe directory removal) and Admin-only `DELETE /api/areas/{areaId}` endpoint, `#delete-area-modal` with typed phrase confirmation and house-count warning, sidebar `.area-delete-btn` & Area Overview `#btn-delete-area-header`, and discoverable Delete House triggers on Area Grid cards (`.house-card-delete-btn`) and House panel header (`#btn-delete-house-quick`). Verified by 752 passing Vitest tests across 53 files and 100% `wwwroot` parity.
 - `261101-8gl`: Document-Driven Start Date for Houses & Tenants and Remove Add-House Start Date Option (QCK-61). Removed `#add-house-tenant-date-input` from `#add-house-modal` and enforced `start_date: null` on house creation (`area-grid.js`, `Program.cs`, `CreateHouseAsync`). Added `SyncTenantStartDateAsync` across all document write/update/move/delete/merge/page-split methods in `FileOrganizerRepository.cs` (clearing `start_date` to `NULL` when zero dated documents remain), added `FirstDocDate` (`first_doc_date`) to `TenantDto` + `minDocDate` priority in `BulkUpdateTenantsAsync`, added `resolveFirstDocDate` in `tenant-manager.js`, and eliminated hardcoded `'2020-01-01'` fallback in `house-profile.js` static mode. Verified by 754 passing Vitest tests across 53 files and 100% `wwwroot` parity.
 - `261101-cvl`: Pull Remote Changes, Clean Up Root Directory, and Organize Repository (QCK-62). Pulled `17b9be7` (`areas_v11` sibling paths, recompiled `win-x64` binary, `.agents` gitignore), removed duplicate root icons (`app.ico`, `favicon.ico`, `logo.png`) and `scratch_test.html`, organized launchers & build scripts under `scripts/`, Windows 24/7 service scripts under `scripts/service/`, legacy Python utilities & configs under `scripts/legacy/`, and outdated Python v5.3 docs under `docs/legacy/` while adding current ASP.NET Core `README.md`, `docs/ARCHITECTURE.md`, `docs/DEPLOYMENT.md`, and `repo_structure.test.js`. Verified by 757 passing Vitest tests across 54 files.
+- `261101-ean`: Web App Storage & Database Path Settings (QCK-63). Added thread-safe `StoragePathSettingsService` and hot-swappable `SqliteDbConnectionFactory.UpdateDatabasePath` (with SQLite pool release and `MemoryConfigurationProvider` test isolation), Admin-only `/api/settings/{paths,paths/validate,browse}` endpoints, atomic `config.paths.json` persistence, and bilingual Admin Storage & Database Paths modal (`storage-settings.js`) with inline server directory/`.db` browser and live tree reload. Verified by 766 passing Vitest tests across 55 files and 100% `wwwroot` parity.
 
 ### Quick Tasks Completed
 
@@ -127,6 +129,7 @@ Milestone v18.1 resolves remaining small issues, hardcoded strings, and localiza
 | 261101-6bf | Delete Area and Delete House UI | 2026-11-01 | e9d72e5 | [261101-6bf-delete-area-and-delete-house-ui](./quick/261101-6bf-delete-area-and-delete-house-ui/) |
 | 261101-8gl | Document-Driven Start Date for Houses & Tenants and Remove Add-House Start Date Option | 2026-11-01 | e1480ed | [261101-8gl-document-driven-start-date-for-houses-an](./quick/261101-8gl-document-driven-start-date-for-houses-an/) |
 | 261101-cvl | Organize Repository Structure and Clean Up Root Directory | 2026-11-01 | dd428d5 | [261101-cvl-organize-repository-structure-and-clean-](./quick/261101-cvl-organize-repository-structure-and-clean-/) |
+| 261101-ean | Add Web App Settings to Configure Areas Folder and Organizer DB Paths | 2026-11-01 | 621f7ea | [261101-ean-add-web-app-settings-to-configure-areas-](./quick/261101-ean-add-web-app-settings-to-configure-areas-/) |
 
 ## Deferred Items
 
@@ -161,3 +164,9 @@ Last activity: 2026-11-01 — Quick task 261101-cvl completed (pulled 17b9be7, d
 ## Operator Next Steps
 
 - Start the next milestone with /gsd-new-milestone
+
+## Session
+
+**Last session:** 2026-11-01T10:31:23.714Z
+**Stopped at:** Completed quick task 261101-ean: in-app Admin Storage & Database Path Settings
+**Resume file:** None
