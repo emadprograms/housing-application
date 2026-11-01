@@ -13,6 +13,7 @@
     let viewerTenantLabel = null;
     let currentViewingVaultId = null;
     let btnOpenDeleteHouse = null;
+    let btnDeleteHouseQuick = null;
     let deleteHouseModal = null;
     let deleteHouseModalClose = null;
     let deleteHouseCancel = null;
@@ -39,6 +40,7 @@
         viewerTenantLabel = document.getElementById('viewer-tenant-label');
 
         btnOpenDeleteHouse = document.getElementById('btn-open-delete-house');
+        btnDeleteHouseQuick = document.getElementById('btn-delete-house-quick');
         deleteHouseModal = document.getElementById('delete-house-modal');
         deleteHouseModalClose = document.getElementById('delete-house-modal-close');
         deleteHouseCancel = document.getElementById('delete-house-cancel');
@@ -55,11 +57,22 @@
         if (tenantModalSave) tenantModalSave.addEventListener('click', saveTenantsAndReallocate);
         if (btnAddTenantRow) btnAddTenantRow.addEventListener('click', () => addTenantRow());
 
-        if (btnOpenDeleteHouse) btnOpenDeleteHouse.addEventListener('click', openDeleteHouseModal);
+        if (btnOpenDeleteHouse) btnOpenDeleteHouse.addEventListener('click', () => openDeleteHouseModal());
+        if (btnDeleteHouseQuick) btnDeleteHouseQuick.addEventListener('click', () => openDeleteHouseModal());
         if (deleteHouseModalClose) deleteHouseModalClose.addEventListener('click', closeDeleteHouseModal);
         if (deleteHouseCancel) deleteHouseCancel.addEventListener('click', closeDeleteHouseModal);
-        if (deleteHouseConfirmInput) deleteHouseConfirmInput.addEventListener('input', handleConfirmInputChange);
+        if (deleteHouseConfirmInput) {
+            deleteHouseConfirmInput.addEventListener('input', handleConfirmInputChange);
+            deleteHouseConfirmInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && deleteHouseConfirmBtn && !deleteHouseConfirmBtn.disabled) {
+                    e.preventDefault();
+                    executeDeleteHouse();
+                }
+            });
+        }
         if (deleteHouseConfirmBtn) deleteHouseConfirmBtn.addEventListener('click', executeDeleteHouse);
+
+        syncDeleteHouseQuickBtn();
 
         if (viewerTenantSelect) {
             viewerTenantSelect.addEventListener('change', async (e) => {
@@ -468,7 +481,20 @@
         return;
     }
 
-    function openDeleteHouseModal() {
+    function syncDeleteHouseQuickBtn(canDeleteOverride) {
+        const staticReadOnly = (typeof isStaticMode !== 'undefined' && isStaticMode) || (typeof window !== 'undefined' && Boolean(window.isStaticMode));
+        const canDelete = (typeof canDeleteOverride === 'boolean')
+            ? canDeleteOverride
+            : ((typeof window !== 'undefined' && window.authManager) ? window.authManager.hasDeletePermission() : true);
+        const btn = document.getElementById('btn-delete-house-quick');
+        if (btn) {
+            const show = !staticReadOnly && canDelete;
+            btn.classList.toggle('hidden', !show);
+            btn.classList.toggle('flex', show);
+        }
+    }
+
+    function openDeleteHouseModal(areaOverride, houseOverride) {
         const canDelete = (typeof window !== 'undefined' && window.authManager) ? window.authManager.hasDeletePermission() : true;
         if (!canDelete) {
             const toast = (typeof showToast === 'function') ? showToast : (typeof window !== 'undefined' ? window.showToast : null);
@@ -476,8 +502,12 @@
             return;
         }
 
-        const area = (typeof currentArea !== 'undefined' && currentArea) ? currentArea : (window.currentArea || '');
-        const house = (typeof currentHouse !== 'undefined' && currentHouse) ? currentHouse : (window.currentHouse || '');
+        const area = (typeof areaOverride === 'string' && areaOverride.trim())
+            ? areaOverride.trim()
+            : ((typeof currentArea !== 'undefined' && currentArea) ? currentArea : (window.currentArea || ''));
+        const house = (typeof houseOverride === 'string' && houseOverride.trim())
+            ? houseOverride.trim()
+            : ((typeof currentHouse !== 'undefined' && currentHouse) ? currentHouse : (window.currentHouse || ''));
         if (!house) {
             alert('Please select a house first.');
             return;
@@ -568,6 +598,8 @@
 
             // Route / switch back to Area Grid view
             const areaGridPanel = document.getElementById('area-grid-panel');
+            const docListPanel = document.getElementById('document-list-panel');
+            const resizer2 = document.getElementById('resizer-2');
             const docViewerPanel = document.getElementById('document-viewer-panel');
             const documentEmptyState = document.getElementById('document-empty-state');
             const docList = document.getElementById('document-list');
@@ -580,6 +612,11 @@
                 areaGridPanel.classList.remove('hidden');
                 areaGridPanel.classList.add('flex');
             }
+            if (docListPanel) {
+                docListPanel.classList.add('hidden');
+                docListPanel.classList.remove('flex');
+            }
+            if (resizer2) resizer2.classList.add('hidden');
             if (docViewerPanel) docViewerPanel.classList.add('hidden');
             if (documentEmptyState) {
                 documentEmptyState.classList.add('hidden');
@@ -632,6 +669,7 @@
     window.closeTenantModal = closeTenantModal;
     window.openDeleteHouseModal = openDeleteHouseModal;
     window.closeDeleteHouseModal = closeDeleteHouseModal;
+    window.syncDeleteHouseQuickBtn = syncDeleteHouseQuickBtn;
     window.updateViewerTenantSelect = updateViewerTenantSelect;
 
     if (typeof window !== 'undefined') {
@@ -641,6 +679,7 @@
             const canDelete = e.detail ? e.detail.canDelete : true;
             if (dangerZone) dangerZone.classList.toggle('hidden', !canDelete);
             if (dangerDivider) dangerDivider.classList.toggle('hidden', !canDelete);
+            syncDeleteHouseQuickBtn(canDelete);
         });
     }
 

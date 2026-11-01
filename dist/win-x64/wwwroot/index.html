@@ -35,7 +35,7 @@
             } catch (e) {}
         })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=261031-01">
+    <link rel="stylesheet" href="css/styles.css?v=261101-02">
 </head>
 <body class="bg-slate-100 dark:bg-slate-950 font-sans text-slate-800 dark:text-slate-100 antialiased">
     <!-- Animated Open Login Home Page (Opaque with Lively Motion, Rendered at Top of Body) -->
@@ -194,6 +194,9 @@
                     
                     <div id="stats-badge" class="bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 text-xs font-semibold px-2.5 py-1 rounded-full border border-blue-200/60 dark:border-blue-800/60 hidden flex-shrink-0"></div>
                     <div id="grid-area-stats" class="bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 text-xs font-bold px-2.5 py-1 rounded-full border border-blue-200/60 dark:border-blue-800/60 hidden flex-shrink-0">0 Houses</div>
+                    <button id="btn-delete-area-header" type="button" data-i18n-title="delete_area.title" data-i18n-aria-label="delete_area.title" title="Delete Area" aria-label="Delete Area" class="hidden p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 border border-transparent hover:border-rose-200 dark:hover:border-rose-800/60 rounded-lg transition-all items-center justify-center flex-shrink-0 cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
                 </div>
 
                 <!-- Top Navbar Action Triggers -->
@@ -435,6 +438,9 @@
                         </div>
                         <button id="btn-export-house-archive" type="button" data-i18n-title="export.title" title="Export House Archive" class="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 border border-transparent hover:border-blue-200 dark:hover:border-blue-800/60 rounded-lg transition-all flex items-center justify-center flex-shrink-0 cursor-pointer shadow-2xs" aria-label="Export House Archive">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        </button>
+                        <button id="btn-delete-house-quick" type="button" data-i18n-title="delete_house.title" data-i18n-aria-label="delete_house.title" title="Delete House" aria-label="Delete House" class="hidden p-2 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 border border-transparent hover:border-rose-200 dark:hover:border-rose-800/60 rounded-lg transition-all items-center justify-center flex-shrink-0 cursor-pointer shadow-2xs">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                         </button>
                         <button id="btn-manage-tenants" type="button" data-i18n-title="house_profile.settings_tooltip" title="House Settings" class="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 rounded-lg transition-all flex items-center justify-center flex-shrink-0 cursor-pointer shadow-2xs" aria-label="House Settings">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1668,6 +1674,52 @@
         </div>
     </div>
 
+    <!-- Delete Area Confirmation Modal -->
+    <div id="delete-area-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center hidden p-4" tabindex="-1" role="dialog" aria-labelledby="delete-area-title" aria-modal="true">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-md w-full flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-rose-50/50">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-rose-100 border border-rose-200 text-rose-600 flex items-center justify-center shadow-2xs">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900 tracking-tight" id="delete-area-title" data-i18n="delete_area.title">Delete Area</h3>
+                        <p class="text-xs text-rose-600 font-medium" data-i18n="delete_area.irreversible">This action cannot be undone.</p>
+                    </div>
+                </div>
+                <button id="delete-area-modal-close" type="button" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" aria-label="Close" data-i18n-aria="common.close">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-6 space-y-3.5">
+                <p class="text-xs text-slate-600 leading-relaxed" id="delete-area-msg">
+                    Are you sure you want to permanently delete area <strong id="delete-area-target-name" class="text-slate-900 font-bold"></strong>? All houses, tenants, documents, and files inside it will be removed from disk.
+                </p>
+                <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 space-y-1.5">
+                    <div class="flex items-start gap-2">
+                        <span class="text-sm flex-shrink-0 mt-0.5">⚠️</span>
+                        <span data-i18n="delete_area.warning">All database records and physical files belonging to this area and its houses will be permanently deleted.</span>
+                    </div>
+                    <div id="delete-area-house-count-info" class="font-semibold text-amber-900 ps-6"></div>
+                </div>
+                <div class="space-y-1.5 pt-1">
+                    <label for="delete-area-confirm-input" class="text-xs font-semibold text-slate-700 block" id="delete-area-confirm-label">
+                        To confirm deletion, type <span id="delete-area-phrase-hint" class="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-rose-700 font-bold select-all"></span> in the field below:
+                    </label>
+                    <input id="delete-area-confirm-input" type="text" autocomplete="off" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:outline-none bg-slate-50 focus:bg-white font-mono" placeholder="Type confirmation phrase..." data-i18n-placeholder="delete_area.confirm_placeholder" />
+                </div>
+                <div id="delete-area-status" class="text-xs font-medium text-rose-600 hidden"></div>
+            </div>
+            <div class="px-6 py-3.5 border-t border-slate-100 bg-slate-50/70 flex justify-end gap-3">
+                <button id="delete-area-cancel" type="button" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors shadow-2xs cursor-pointer" data-i18n="common.cancel">Cancel</button>
+                <button id="delete-area-confirm-btn" type="button" disabled class="px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all shadow-sm shadow-rose-500/25 flex items-center gap-2 cursor-pointer">
+                    <span id="delete-area-spinner" class="hidden animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full"></span>
+                    <span id="delete-area-btn-text" data-i18n="delete_area.btn_confirm">🗑️ Delete Area Permanently</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Add Area Modal -->
     <div id="add-area-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center hidden p-4" tabindex="-1" role="dialog" aria-labelledby="add-area-modal-title" aria-modal="true">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-md w-full flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
@@ -2169,27 +2221,27 @@
     <script src="lib/tesseract/tesseract.min.js"></script>
 
     <!-- Modular Application Scripts -->
-    <script src="js/api.js?v=260911-29"></script>
+    <script src="js/api.js?v=261101-02"></script>
     <script src="js/auth-manager.js?v=260917-01"></script>
     <script src="js/login-motion.js?v=260920-01"></script>
     <script src="js/resizer.js?v=260911-29"></script>
     <script src="js/pdf-preview.js?v=260911-34"></script>
     <script src="js/command-palette.js?v=260911-34"></script>
-    <script src="js/tenant-manager.js?v=260911-34"></script>
+    <script src="js/tenant-manager.js?v=261101-02"></script>
     <script src="js/doc-manager.js?v=260918-01"></script>
     <script src="js/doc-viewer.js?v=260918-04"></script>
     <script src="js/doc-page-editor.js?v=260915-01"></script>
     <script src="js/db-inspector.js?v=260911-29"></script>
-    <script src="js/area-grid.js?v=261031-01"></script>
+    <script src="js/area-grid.js?v=261101-02"></script>
     <script src="js/house-profile.js?v=260911-29"></script>
     <script src="js/timeline-view.js?v=260911-34"></script>
     <script src="js/categories-view.js?v=260912-02"></script>
-    <script src="js/sidebar.js?v=261101-01"></script>
-    <script src="js/router.js?v=261101-01"></script>
+    <script src="js/sidebar.js?v=261101-02"></script>
+    <script src="js/router.js?v=261101-02"></script>
     <script src="js/ingest-station.js?v=260911-29"></script>
     <script src="js/keyboard-shortcuts.js?v=260911-29"></script>
     <script src="js/theme-manager.js?v=260912-03"></script>
-    <script src="js/i18n.js?v=261101-01"></script>
+    <script src="js/i18n.js?v=261101-02"></script>
     <script src="js/app.js?v=261101-01"></script>
 </body>
 </html>

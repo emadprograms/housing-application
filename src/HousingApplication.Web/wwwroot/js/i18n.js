@@ -264,6 +264,20 @@
             'delete_house.confirm_placeholder': 'اكتب عبارة التأكيد...',
             'delete_house.btn_confirm': '🗑️ حذف نهائي',
 
+            // Delete Area Modal
+            'delete_area.title': 'حذف المنطقة',
+            'delete_area.irreversible': 'لا يمكن التراجع عن هذا الإجراء.',
+            'delete_area.confirm_msg': 'هل أنت متأكد من رغبتك في حذف هذه المنطقة نهائياً؟ سيتم محو كافة المنازل والمستأجرين والوثائق والملفات التابعة لها من القرص.',
+            'delete_area.warning': 'سيتم حذف جميع سجلات قاعدة البيانات والملفات المرتبطة بهذه المنطقة ومنازلها بشكل دائم.',
+            'delete_area.house_count_warning': 'تحتوي هذه المنطقة على {count} من المنازل التي سيتم حذفها نهائياً.',
+            'delete_area.empty_area_note': 'هذه المنطقة لا تحتوي على أي منازل حالياً.',
+            'delete_area.phrase_instruction': 'لتأكيد الحذف، اكتب العبارة في الحقل أدناه:',
+            'delete_area.confirm_placeholder': 'اكتب عبارة التأكيد...',
+            'delete_area.btn_confirm': '🗑️ حذف المنطقة نهائياً',
+            'delete_area.err_failed': 'فشل حذف المنطقة',
+            'delete_area.toast_deleted': 'تم حذف المنطقة بنجاح',
+            'delete_area.toast_restricted': 'عذراً: ليس لديك صلاحية حذف المناطق (قراءة ورفع فقط).',
+
             // Add Area Modal
             'add_area.title': 'إضافة منطقة جديدة',
             'add_area.subtitle': 'تسجيل منطقة سكنية جديدة وتهيئة مجلد التخزين الخاص بها.',
@@ -766,6 +780,20 @@
             'delete_house.phrase_instruction': 'To confirm deletion, type the phrase in the field below:',
             'delete_house.confirm_placeholder': 'Type confirmation phrase...',
             'delete_house.btn_confirm': '🗑️ Delete Permanently',
+
+            // Delete Area Modal
+            'delete_area.title': 'Delete Area',
+            'delete_area.irreversible': 'This action cannot be undone.',
+            'delete_area.confirm_msg': 'Are you sure you want to permanently delete this area? All houses, tenants, documents, and files inside it will be removed from disk.',
+            'delete_area.warning': 'All database records and physical files belonging to this area and its houses will be permanently deleted.',
+            'delete_area.house_count_warning': 'This area contains {count} house(s) that will be permanently deleted.',
+            'delete_area.empty_area_note': 'This area currently contains 0 houses.',
+            'delete_area.phrase_instruction': 'To confirm deletion, type the phrase in the field below:',
+            'delete_area.confirm_placeholder': 'Type confirmation phrase...',
+            'delete_area.btn_confirm': '🗑️ Delete Area Permanently',
+            'delete_area.err_failed': 'Failed to delete area',
+            'delete_area.toast_deleted': 'Area deleted successfully',
+            'delete_area.toast_restricted': 'Area deletion is restricted for Contributor accounts.',
 
             // Add Area Modal
             'add_area.title': 'Add New Area',

@@ -2,6 +2,14 @@
 (function() {
     let activeLoadPromise = null;
     let returnToAddHouse = false;
+    let targetAreaToDelete = null;
+
+    function canCurrentUserDelete() {
+        if (typeof window !== 'undefined' && window.authManager && typeof window.authManager.hasDeletePermission === 'function') {
+            return window.authManager.hasDeletePermission();
+        }
+        return true;
+    }
 
     function safeEscapeHtml(str) {
         if (typeof escapeHtml === 'function') return escapeHtml(str);
@@ -124,19 +132,27 @@
             if (emptyAddBtn) {
                 emptyAddBtn.onclick = () => openAddAreaModal();
             }
+            const headerDelBtn = document.getElementById('btn-delete-area-header');
+            if (headerDelBtn) {
+                headerDelBtn.classList.add('hidden');
+                headerDelBtn.classList.remove('flex');
+            }
             return;
         }
 
         const activeArea = (typeof currentArea !== 'undefined' && currentArea)
             ? currentArea
             : (typeof window !== 'undefined' ? window.currentArea : null);
+        const canDelete = canCurrentUserDelete();
+        const deleteAreaLabel = hasI18n ? window.i18n.t('delete_area.title', 'Delete Area') : 'Delete Area';
 
         const ul = document.createElement('ul');
         ul.className = 'space-y-1';
         tree.forEach(areaNode => {
             const li = document.createElement('li');
+            li.className = 'group flex items-center gap-1';
             const btn = document.createElement('button');
-            btn.className = 'area-grid-btn w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:bg-slate-800 hover:text-white focus:outline-none flex items-center justify-between transition-colors border border-transparent';
+            btn.className = 'area-grid-btn flex-1 min-w-0 text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:bg-slate-800 hover:text-white focus:outline-none flex items-center justify-between transition-colors border border-transparent cursor-pointer';
             btn.dataset.areaName = areaNode.name;
             if (activeArea === areaNode.name && areaGridPanel && !areaGridPanel.classList.contains('hidden')) {
                 btn.classList.add('bg-slate-800', 'text-white', 'border-slate-700');
@@ -150,7 +166,7 @@
                     </span>
                     <span class="truncate">${safeEscapeHtml(areaNode.name)}</span>
                 </div>
-                <span class="text-[10px] font-mono text-slate-400 bg-slate-800/80 border border-slate-700/60 px-2 py-0.5 rounded-full">${houseCount} Houses</span>
+                <span class="text-[10px] font-mono text-slate-400 bg-slate-800/80 border border-slate-700/60 px-2 py-0.5 rounded-full flex-shrink-0">${houseCount} Houses</span>
             `;
             btn.onclick = (e) => {
                 e.stopPropagation();
@@ -159,6 +175,23 @@
                 }
             };
             li.appendChild(btn);
+
+            if (!staticReadOnly && canDelete) {
+                const delBtn = document.createElement('button');
+                delBtn.type = 'button';
+                delBtn.className = 'area-delete-btn opacity-0 group-hover:opacity-100 focus:opacity-100 p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-950/60 transition-all flex-shrink-0 cursor-pointer';
+                delBtn.dataset.areaName = areaNode.name;
+                delBtn.title = deleteAreaLabel;
+                delBtn.setAttribute('aria-label', deleteAreaLabel);
+                delBtn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>`;
+                delBtn.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openDeleteAreaModal(areaNode.name);
+                };
+                li.appendChild(delBtn);
+            }
+
             ul.appendChild(li);
         });
         houseListEl.appendChild(ul);
@@ -615,10 +648,327 @@
         }
     }
 
+    function openDeleteAreaModal(areaNameOverride) {
+        const hasI18n = typeof window !== 'undefined' && window.i18n && typeof window.i18n.t === 'function';
+        const isAr = Boolean(hasI18n && typeof window.i18n.getLanguage === 'function' && window.i18n.getLanguage() === 'ar');
+
+        if (!canCurrentUserDelete()) {
+            const toastFn = (typeof showToast === 'function') ? showToast : (typeof window !== 'undefined' ? window.showToast : null);
+            if (toastFn) {
+                const msg = hasI18n
+                    ? window.i18n.t('delete_area.toast_restricted', 'Area deletion is restricted for Contributor accounts.')
+                    : 'Area deletion is restricted for Contributor accounts.';
+                toastFn(msg, 'error');
+            }
+            return;
+        }
+
+        const resolvedArea = (typeof areaNameOverride === 'string' && areaNameOverride.trim())
+            ? areaNameOverride.trim()
+            : ((typeof currentArea !== 'undefined' && currentArea)
+                ? currentArea
+                : (typeof window !== 'undefined' ? (window.currentArea || '') : ''));
+        if (!resolvedArea) return;
+
+        const modal = document.getElementById('delete-area-modal');
+        if (!modal) return;
+
+        targetAreaToDelete = resolvedArea;
+
+        const tree = getTreeState();
+        const areaNode = tree.find(a => a.name === resolvedArea || a.id === resolvedArea);
+        const houseCount = (areaNode && Array.isArray(areaNode.children)) ? areaNode.children.length : 0;
+
+        const msgEl = document.getElementById('delete-area-msg');
+        if (msgEl) {
+            if (isAr) {
+                msgEl.innerHTML = `هل أنت متأكد من رغبتك في حذف المنطقة <strong id="delete-area-target-name" class="text-slate-900 font-bold">${safeEscapeHtml(resolvedArea)}</strong> نهائياً؟ سيتم محو كافة المنازل والمستأجرين والوثائق والملفات التابعة لها من القرص.`;
+            } else {
+                msgEl.innerHTML = `Are you sure you want to permanently delete area <strong id="delete-area-target-name" class="text-slate-900 font-bold">${safeEscapeHtml(resolvedArea)}</strong>? All houses, tenants, documents, and files inside it will be removed from disk.`;
+            }
+        } else {
+            const targetEl = document.getElementById('delete-area-target-name');
+            if (targetEl) targetEl.textContent = resolvedArea;
+        }
+
+        const countInfoEl = document.getElementById('delete-area-house-count-info');
+        if (countInfoEl) {
+            if (houseCount > 0) {
+                const tpl = hasI18n
+                    ? window.i18n.t('delete_area.house_count_warning', 'This area contains {count} house(s) that will be permanently deleted.')
+                    : 'This area contains {count} house(s) that will be permanently deleted.';
+                countInfoEl.textContent = tpl.replace('{count}', String(houseCount));
+            } else {
+                countInfoEl.textContent = hasI18n
+                    ? window.i18n.t('delete_area.empty_area_note', 'This area currently contains 0 houses.')
+                    : 'This area currently contains 0 houses.';
+            }
+        }
+
+        const confirmLabelEl = document.getElementById('delete-area-confirm-label');
+        const expectedPhrase = `delete ${resolvedArea}`;
+        if (confirmLabelEl) {
+            if (isAr) {
+                confirmLabelEl.innerHTML = `لتأكيد الحذف، اكتب <span id="delete-area-phrase-hint" class="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-rose-700 font-bold select-all">${safeEscapeHtml(expectedPhrase)}</span> في الحقل أدناه:`;
+            } else {
+                confirmLabelEl.innerHTML = `To confirm deletion, type <span id="delete-area-phrase-hint" class="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-rose-700 font-bold select-all">${safeEscapeHtml(expectedPhrase)}</span> in the field below:`;
+            }
+        } else {
+            const hintEl = document.getElementById('delete-area-phrase-hint');
+            if (hintEl) hintEl.textContent = expectedPhrase;
+        }
+
+        const confirmInput = document.getElementById('delete-area-confirm-input');
+        const confirmBtn = document.getElementById('delete-area-confirm-btn');
+        const statusEl = document.getElementById('delete-area-status');
+        const spinnerEl = document.getElementById('delete-area-spinner');
+
+        if (confirmInput) {
+            confirmInput.value = '';
+            confirmInput.disabled = false;
+        }
+        if (confirmBtn) confirmBtn.disabled = true;
+        if (statusEl) {
+            statusEl.classList.add('hidden');
+            statusEl.textContent = '';
+        }
+        if (spinnerEl) spinnerEl.classList.add('hidden');
+
+        modal.classList.remove('hidden');
+        if (confirmInput && typeof confirmInput.focus === 'function') {
+            confirmInput.focus();
+        }
+    }
+
+    function closeDeleteAreaModal() {
+        const modal = document.getElementById('delete-area-modal');
+        if (modal) modal.classList.add('hidden');
+        const confirmInput = document.getElementById('delete-area-confirm-input');
+        const statusEl = document.getElementById('delete-area-status');
+        const spinnerEl = document.getElementById('delete-area-spinner');
+        if (confirmInput) {
+            confirmInput.value = '';
+            confirmInput.disabled = false;
+        }
+        if (statusEl) {
+            statusEl.classList.add('hidden');
+            statusEl.textContent = '';
+        }
+        if (spinnerEl) spinnerEl.classList.add('hidden');
+        targetAreaToDelete = null;
+    }
+
+    function handleDeleteAreaConfirmInput() {
+        const confirmInput = document.getElementById('delete-area-confirm-input');
+        const confirmBtn = document.getElementById('delete-area-confirm-btn');
+        if (!confirmInput || !confirmBtn || !targetAreaToDelete) return;
+        const typed = confirmInput.value.trim().toLowerCase();
+        const expected = (`delete ${targetAreaToDelete}`).trim().toLowerCase();
+        confirmBtn.disabled = (typed !== expected);
+    }
+
+    async function executeDeleteArea() {
+        const hasI18n = typeof window !== 'undefined' && window.i18n && typeof window.i18n.t === 'function';
+        const isAr = Boolean(hasI18n && typeof window.i18n.getLanguage === 'function' && window.i18n.getLanguage() === 'ar');
+
+        if (!canCurrentUserDelete()) {
+            const toastFn = (typeof showToast === 'function') ? showToast : (typeof window !== 'undefined' ? window.showToast : null);
+            if (toastFn) {
+                toastFn(hasI18n ? window.i18n.t('delete_area.toast_restricted', 'Area deletion is restricted for Contributor accounts.') : 'Area deletion is restricted for Contributor accounts.', 'error');
+            }
+            return;
+        }
+
+        if (!targetAreaToDelete) return;
+        const confirmBtn = document.getElementById('delete-area-confirm-btn');
+        const confirmInput = document.getElementById('delete-area-confirm-input');
+        const statusEl = document.getElementById('delete-area-status');
+        const spinnerEl = document.getElementById('delete-area-spinner');
+
+        if (!confirmBtn || confirmBtn.disabled) return;
+
+        confirmBtn.disabled = true;
+        if (confirmInput) confirmInput.disabled = true;
+        if (spinnerEl) spinnerEl.classList.remove('hidden');
+        if (statusEl) {
+            statusEl.classList.add('hidden');
+            statusEl.textContent = '';
+        }
+
+        const areaBeingDeleted = targetAreaToDelete;
+        const activeAreaBefore = (typeof currentArea !== 'undefined' && currentArea)
+            ? currentArea
+            : (typeof window !== 'undefined' ? window.currentArea : null);
+
+        try {
+            const res = (typeof window !== 'undefined' && typeof window.deleteAreaApi === 'function')
+                ? await window.deleteAreaApi(areaBeingDeleted)
+                : await fetch(`/api/areas/${encodeURIComponent(areaBeingDeleted)}`, { method: 'DELETE' });
+
+            if (!res.ok) {
+                if (res.status === 403) {
+                    const restrictedMsg = hasI18n
+                        ? window.i18n.t('delete_area.toast_restricted', 'Area deletion is restricted for Contributor accounts.')
+                        : 'Area deletion is restricted for Contributor accounts.';
+                    throw new Error(restrictedMsg);
+                }
+                const errData = await res.json().catch(() => ({}));
+                const fallbackMsg = hasI18n
+                    ? window.i18n.t('delete_area.err_failed', 'Failed to delete area')
+                    : 'Failed to delete area';
+                throw new Error(errData.detail || errData.error || `${fallbackMsg} (${res.status})`);
+            }
+
+            closeDeleteAreaModal();
+
+            await loadTree();
+            const remainingTree = getTreeState();
+
+            if (activeAreaBefore === areaBeingDeleted) {
+                if (typeof currentHouse !== 'undefined') currentHouse = null;
+                if (typeof window !== 'undefined') window.currentHouse = null;
+                if (typeof currentTenant !== 'undefined') currentTenant = null;
+                if (typeof window !== 'undefined') window.currentTenant = null;
+
+                if (remainingTree.length > 0 && typeof window !== 'undefined' && typeof window.selectAreaGrid === 'function') {
+                    window.selectAreaGrid(remainingTree[0]);
+                    renderSidebar();
+                } else {
+                    if (typeof currentArea !== 'undefined') currentArea = null;
+                    if (typeof window !== 'undefined') window.currentArea = null;
+                    try {
+                        if (typeof history !== 'undefined' && typeof history.replaceState === 'function') {
+                            history.replaceState(null, null, window.location.pathname);
+                        }
+                    } catch (_) {}
+
+                    const hideIds = [
+                        'area-grid-panel',
+                        'document-list-panel',
+                        'document-viewer-panel',
+                        'resizer-2',
+                        'stats-badge',
+                        'grid-area-stats',
+                        'btn-delete-area-header',
+                        'grid-tenure-legend',
+                        'grid-house-sort-container',
+                        'grid-view-options-wrapper',
+                        'grid-integrity-toolbar',
+                        'open-add-house-modal-btn',
+                        'back-to-grid-btn',
+                        'tab-back-to-tenants',
+                        'document-empty-state'
+                    ];
+                    hideIds.forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) {
+                            el.classList.add('hidden');
+                            el.classList.remove('flex', 'inline-flex', 'grid', 'block');
+                        }
+                    });
+
+                    const welcomePanel = document.getElementById('welcome-panel');
+                    if (welcomePanel) welcomePanel.classList.remove('hidden');
+
+                    const currentHouseTitle = document.getElementById('current-house-title');
+                    if (currentHouseTitle) {
+                        currentHouseTitle.textContent = hasI18n
+                            ? window.i18n.t('nav.select_area', 'Select an Area')
+                            : 'Select an Area';
+                    }
+
+                    renderSidebar();
+                }
+            } else {
+                renderSidebar();
+            }
+
+            const toastFn = (typeof showToast === 'function') ? showToast : (typeof window !== 'undefined' ? window.showToast : null);
+            if (toastFn) {
+                const msg = isAr
+                    ? `تم حذف المنطقة '${areaBeingDeleted}' بنجاح`
+                    : (hasI18n ? `${window.i18n.t('delete_area.toast_deleted', 'Area deleted successfully')}: ${areaBeingDeleted}` : `Area '${areaBeingDeleted}' deleted successfully`);
+                toastFn(msg, 'success');
+            }
+        } catch (err) {
+            if (statusEl) {
+                statusEl.textContent = err.message || 'Failed to delete area.';
+                statusEl.classList.remove('hidden');
+            }
+            if (spinnerEl) spinnerEl.classList.add('hidden');
+            if (confirmInput) confirmInput.disabled = false;
+            if (confirmBtn) confirmBtn.disabled = false;
+        }
+    }
+
+    function initDeleteAreaModal() {
+        const headerBtn = document.getElementById('btn-delete-area-header');
+        if (headerBtn) {
+            headerBtn.onclick = (e) => {
+                e.preventDefault();
+                openDeleteAreaModal();
+            };
+        }
+
+        const closeBtn = document.getElementById('delete-area-modal-close');
+        if (closeBtn) closeBtn.onclick = closeDeleteAreaModal;
+
+        const cancelBtn = document.getElementById('delete-area-cancel');
+        if (cancelBtn) cancelBtn.onclick = closeDeleteAreaModal;
+
+        const confirmInput = document.getElementById('delete-area-confirm-input');
+        if (confirmInput) {
+            confirmInput.oninput = handleDeleteAreaConfirmInput;
+            confirmInput.onkeydown = (e) => {
+                const confirmBtn = document.getElementById('delete-area-confirm-btn');
+                if (e.key === 'Enter' && confirmBtn && !confirmBtn.disabled) {
+                    e.preventDefault();
+                    executeDeleteArea();
+                }
+            };
+        }
+
+        const confirmBtn = document.getElementById('delete-area-confirm-btn');
+        if (confirmBtn) confirmBtn.onclick = executeDeleteArea;
+
+        const modal = document.getElementById('delete-area-modal');
+        if (modal) {
+            modal.onclick = (e) => {
+                if (e.target === modal) closeDeleteAreaModal();
+            };
+        }
+
+        if (typeof window !== 'undefined') {
+            if (window._deleteAreaEscapeHandler) {
+                document.removeEventListener('keydown', window._deleteAreaEscapeHandler);
+            }
+            window._deleteAreaEscapeHandler = (e) => {
+                if (e.key === 'Escape') {
+                    const m = document.getElementById('delete-area-modal');
+                    if (m && !m.classList.contains('hidden')) {
+                        closeDeleteAreaModal();
+                    }
+                }
+            };
+            document.addEventListener('keydown', window._deleteAreaEscapeHandler);
+
+            if (window._sidebarAuthHandler) {
+                window.removeEventListener('auth:user-changed', window._sidebarAuthHandler);
+            }
+            window._sidebarAuthHandler = () => {
+                if (!getTreeLoadingState() && (typeof currentViewMode === 'undefined' || currentViewMode !== 'db')) {
+                    renderSidebar();
+                }
+            };
+            window.addEventListener('auth:user-changed', window._sidebarAuthHandler);
+        }
+    }
+
     if (typeof document !== 'undefined') {
         const initAll = () => {
             initSidebarCollapse();
             initAddAreaModal();
+            initDeleteAreaModal();
         };
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initAll);
@@ -633,6 +983,10 @@
     window.closeAddAreaModal = closeAddAreaModal;
     window.handleAddAreaSubmit = handleAddAreaSubmit;
     window.initAddAreaModal = initAddAreaModal;
+    window.openDeleteAreaModal = openDeleteAreaModal;
+    window.closeDeleteAreaModal = closeDeleteAreaModal;
+    window.executeDeleteArea = executeDeleteArea;
+    window.initDeleteAreaModal = initDeleteAreaModal;
     window.isSidebarCollapsed = isSidebarCollapsed;
     window.toggleSidebar = toggleSidebar;
     window.initSidebarCollapse = initSidebarCollapse;
