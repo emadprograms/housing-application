@@ -14,11 +14,29 @@ public class FileOrganizerRepository : IFileOrganizerRepository
 {
     private readonly ISqliteDbConnectionFactory _connectionFactory;
     private readonly IConfiguration? _configuration;
+    private readonly IStoragePathSettingsService? _pathSettings;
 
-    public FileOrganizerRepository(ISqliteDbConnectionFactory connectionFactory, IConfiguration? configuration = null)
+    public FileOrganizerRepository(
+        ISqliteDbConnectionFactory connectionFactory,
+        IConfiguration? configuration = null,
+        IStoragePathSettingsService? pathSettings = null)
     {
         _connectionFactory = connectionFactory;
         _configuration = configuration;
+        _pathSettings = pathSettings;
+    }
+
+    private string ResolveRepositoryAreasRoot(string? areasRoot)
+    {
+        if (!string.IsNullOrWhiteSpace(areasRoot))
+            return areasRoot;
+
+        if (_pathSettings != null && !string.IsNullOrWhiteSpace(_pathSettings.AreasRootPath))
+            return _pathSettings.AreasRootPath;
+
+        return _configuration?["AREAS_ROOT_PATH"]
+            ?? Environment.GetEnvironmentVariable("AREAS_ROOT_PATH")
+            ?? "../areas";
     }
 
     private static async Task SyncTenantStartDateAsync(IDbConnection conn, IDbTransaction tx, int tenantId)
@@ -1694,9 +1712,7 @@ public class FileOrganizerRepository : IFileOrganizerRepository
 
         await tx.CommitAsync();
 
-        var resolvedAreasRoot = !string.IsNullOrEmpty(areasRoot)
-            ? areasRoot
-            : (_configuration?["AREAS_ROOT_PATH"] ?? Environment.GetEnvironmentVariable("AREAS_ROOT_PATH") ?? "../areas");
+        var resolvedAreasRoot = ResolveRepositoryAreasRoot(areasRoot);
 
         if (!string.IsNullOrWhiteSpace(resolvedAreasRoot))
         {
@@ -1835,9 +1851,7 @@ public class FileOrganizerRepository : IFileOrganizerRepository
 
         await tx.CommitAsync();
 
-        var resolvedAreasRoot = !string.IsNullOrEmpty(areasRoot)
-            ? areasRoot
-            : (_configuration?["AREAS_ROOT_PATH"] ?? Environment.GetEnvironmentVariable("AREAS_ROOT_PATH") ?? "../areas");
+        var resolvedAreasRoot = ResolveRepositoryAreasRoot(areasRoot);
 
         var strippedHouse = cleanHouseId.Contains(" - ") ? cleanHouseId.Split(" - ")[0].Trim() : cleanHouseId;
         var candidateDirs = new List<string>
@@ -2012,9 +2026,7 @@ public class FileOrganizerRepository : IFileOrganizerRepository
 
     public async Task<bool> DeleteDocumentAsync(string areaId, string houseId, string vaultId, string? areasRoot = null)
     {
-        var resolvedAreasRoot = !string.IsNullOrEmpty(areasRoot)
-            ? areasRoot
-            : (_configuration?["AREAS_ROOT_PATH"] ?? Environment.GetEnvironmentVariable("AREAS_ROOT_PATH") ?? "../areas");
+        var resolvedAreasRoot = ResolveRepositoryAreasRoot(areasRoot);
 
         var cleanHouseId = houseId.Contains(" - ") ? houseId.Split(" - ")[0].Trim() : houseId.Trim();
 
@@ -2070,9 +2082,7 @@ public class FileOrganizerRepository : IFileOrganizerRepository
         IEnumerable<string> vaultIds,
         string? areasRoot = null)
     {
-        var resolvedAreasRoot = !string.IsNullOrEmpty(areasRoot)
-            ? areasRoot
-            : (_configuration?["AREAS_ROOT_PATH"] ?? Environment.GetEnvironmentVariable("AREAS_ROOT_PATH") ?? "../areas");
+        var resolvedAreasRoot = ResolveRepositoryAreasRoot(areasRoot);
 
         var cleanHouseId = houseId.Contains(" - ") ? houseId.Split(" - ")[0].Trim() : houseId.Trim();
 
@@ -2214,9 +2224,7 @@ public class FileOrganizerRepository : IFileOrganizerRepository
         int? targetTenantId = null,
         string? areasRoot = null)
     {
-        var resolvedAreasRoot = !string.IsNullOrEmpty(areasRoot)
-            ? areasRoot
-            : (_configuration?["AREAS_ROOT_PATH"] ?? Environment.GetEnvironmentVariable("AREAS_ROOT_PATH") ?? "../areas");
+        var resolvedAreasRoot = ResolveRepositoryAreasRoot(areasRoot);
 
         var cleanHouseId = houseId.Contains(" - ") ? houseId.Split(" - ")[0].Trim() : houseId.Trim();
         var formattedCategory = Constants.FormatCategoryWithPrefix(targetCategory);
@@ -2788,9 +2796,7 @@ WHERE (house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHous
         if (request.PageNumbers == null || request.PageNumbers.Count == 0)
             throw new ArgumentException("At least one page number must be specified for extraction.");
 
-        var resolvedAreasRoot = !string.IsNullOrEmpty(areasRoot)
-            ? areasRoot
-            : (_configuration?["AREAS_ROOT_PATH"] ?? Environment.GetEnvironmentVariable("AREAS_ROOT_PATH") ?? "../areas");
+        var resolvedAreasRoot = ResolveRepositoryAreasRoot(areasRoot);
 
         var cleanHouseId = houseId.Contains(" - ") ? houseId.Split(" - ")[0].Trim() : houseId.Trim();
 
@@ -3070,9 +3076,7 @@ WHERE (house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHous
         if (request.PageNumbers == null || request.PageNumbers.Count == 0)
             throw new ArgumentException("At least one page number must be specified for deletion.");
 
-        var resolvedAreasRoot = !string.IsNullOrEmpty(areasRoot)
-            ? areasRoot
-            : (_configuration?["AREAS_ROOT_PATH"] ?? Environment.GetEnvironmentVariable("AREAS_ROOT_PATH") ?? "../areas");
+        var resolvedAreasRoot = ResolveRepositoryAreasRoot(areasRoot);
 
         var cleanHouseId = houseId.Contains(" - ") ? houseId.Split(" - ")[0].Trim() : houseId.Trim();
 
@@ -3232,9 +3236,7 @@ WHERE (house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHous
         if (request.PageOrder == null || request.PageOrder.Count == 0)
             throw new ArgumentException("Page order must not be empty.");
 
-        var resolvedAreasRoot = !string.IsNullOrEmpty(areasRoot)
-            ? areasRoot
-            : (_configuration?["AREAS_ROOT_PATH"] ?? Environment.GetEnvironmentVariable("AREAS_ROOT_PATH") ?? "../areas");
+        var resolvedAreasRoot = ResolveRepositoryAreasRoot(areasRoot);
 
         var cleanHouseId = houseId.Contains(" - ") ? houseId.Split(" - ")[0].Trim() : houseId.Trim();
 
@@ -3379,9 +3381,7 @@ WHERE (house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHous
         if (rotations.Count == 0)
             throw new ArgumentException("Rotations dictionary must not be empty.");
 
-        var resolvedAreasRoot = !string.IsNullOrEmpty(areasRoot)
-            ? areasRoot
-            : (_configuration?["AREAS_ROOT_PATH"] ?? Environment.GetEnvironmentVariable("AREAS_ROOT_PATH") ?? "../areas");
+        var resolvedAreasRoot = ResolveRepositoryAreasRoot(areasRoot);
 
         var cleanHouseId = houseId.Contains(" - ") ? houseId.Split(" - ")[0].Trim() : houseId.Trim();
 
@@ -3490,9 +3490,7 @@ WHERE (house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHous
         if (request.VaultIds == null || request.VaultIds.Count < 2)
             throw new ArgumentException("At least two documents must be selected to perform a merge.");
 
-        var resolvedAreasRoot = !string.IsNullOrEmpty(areasRoot)
-            ? areasRoot
-            : (_configuration?["AREAS_ROOT_PATH"] ?? Environment.GetEnvironmentVariable("AREAS_ROOT_PATH") ?? "../areas");
+        var resolvedAreasRoot = ResolveRepositoryAreasRoot(areasRoot);
 
         var cleanHouseId = houseId.Contains(" - ") ? houseId.Split(" - ")[0].Trim() : houseId.Trim();
 

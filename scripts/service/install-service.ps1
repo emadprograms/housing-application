@@ -136,9 +136,9 @@ if ($existingTask) {
 Get-Process -Name "FileOrganizer.Web" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
 Start-Sleep -Seconds 1
 
-# 5. Create Scheduled Task to run 24/7 at system startup
+# 5. Create Scheduled Task to run 24/7 at system startup (paths are loaded dynamically from config.paths.json)
 Write-Host "Registering background 24/7 service with Windows..." -ForegroundColor Cyan
-$Arguments = "--urls http://0.0.0.0:$Port --ORGANIZER_DB_PATH `"$DbPath`" --AREAS_ROOT_PATH `"$AreasRoot`""
+$Arguments = "--urls http://0.0.0.0:$Port"
 
 $Action = New-ScheduledTaskAction -Execute $ExePath -Argument $Arguments -WorkingDirectory $WorkingDir
 $Trigger = New-ScheduledTaskTrigger -AtStartup

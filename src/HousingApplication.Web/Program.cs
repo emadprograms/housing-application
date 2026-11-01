@@ -81,6 +81,7 @@ builder.Services.AddAuthorization();
 
 // Register DI services
 builder.Services.AddSingleton<ISqliteDbConnectionFactory, SqliteDbConnectionFactory>();
+builder.Services.AddSingleton<IStoragePathSettingsService, StoragePathSettingsService>();
 builder.Services.AddScoped<IFileOrganizerRepository, FileOrganizerRepository>();
 
 // Configure response compression for fast asset and API delivery over internet
@@ -90,6 +91,7 @@ builder.Services.AddResponseCompression(options =>
 });
 
 var app = builder.Build();
+var storagePathService = app.Services.GetRequiredService<IStoragePathSettingsService>();
 
 // Ensure DB schema is initialized
 using (var scope = app.Services.CreateScope())
@@ -175,8 +177,9 @@ app.MapGet("/api/health", () => Results.Ok(new
 {
     status = "healthy",
     timestamp = DateTime.UtcNow,
-    build_version = "2026.09.22.1",
+    build_version = "2026.11.01.1",
     applicant_support = true,
+    storage_settings_support = true,
     executable_path = Environment.ProcessPath
 }));
 
@@ -224,23 +227,7 @@ static bool IsRestrictedFromDelete(HttpContext ctx)
     return false;
 }
 
-static string ResolveAreasRoot(IConfiguration config)
-{
-    var explicitRoot = config["AREAS_ROOT_PATH"] 
-        ?? config["AREAS_ROOT"] 
-        ?? config["areas_root"] 
-        ?? Environment.GetEnvironmentVariable("AREAS_ROOT_PATH")
-        ?? Environment.GetEnvironmentVariable("AREAS_ROOT");
-
-    if (!string.IsNullOrWhiteSpace(explicitRoot) && Directory.Exists(explicitRoot))
-        return Path.GetFullPath(explicitRoot);
-
-    if (Directory.Exists(@"D:\areas_v11"))
-        return @"D:\areas_v11";
-
-    var defaultPath = Path.GetFullPath("../areas");
-    return Directory.Exists(defaultPath) ? defaultPath : Directory.GetCurrentDirectory();
-}
+string ResolveAreasRoot(IConfiguration config) => storagePathService.ResolveAreasRoot(config);
 
 // ---------------------------------------------------------------------------
 // Authentication API
@@ -1760,6 +1747,83 @@ app.MapGet("/api/db/inspector/{tableName}", async (
     {
         return Results.BadRequest(new { error = ex.Message });
     }
+});
+
+// ---------------------------------------------------------------------------
+// Storage & Database Path Settings API (Admin-only)
+// ---------------------------------------------------------------------------
+app.MapGet("/api/settings/paths", async (
+    HttpContext httpContext,
+    IStoragePathSettingsService storageSettings,
+    IFileOrganizerRepository repo) =>
+{
+    if (IsRestrictedFromDelete(httpContext))
+    {
+        return Results.Json(
+            new { error = "Administrator privileges are required to view or modify storage paths." },
+            statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    var settings = await storageSettings.GetCurrentSettingsAsync(repo);
+    return Results.Ok(settings);
+});
+
+app.MapPost("/api/settings/paths/validate", async (
+    UpdateStoragePathsRequestDto request,
+    HttpContext httpContext,
+    IStoragePathSettingsService storageSettings) =>
+{
+    if (IsRestrictedFromDelete(httpContext))
+    {
+        return Results.Json(
+            new { error = "Administrator privileges are required to validate storage paths." },
+            statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    var result = await storageSettings.ValidatePathsAsync(
+        request.AreasRootPath,
+        request.OrganizerDbPath,
+        allowMissing: request.CreateIfMissing);
+    return Results.Ok(result);
+});
+
+app.MapPut("/api/settings/paths", async (
+    UpdateStoragePathsRequestDto request,
+    HttpContext httpContext,
+    IStoragePathSettingsService storageSettings,
+    IFileOrganizerRepository repo) =>
+{
+    if (IsRestrictedFromDelete(httpContext))
+    {
+        return Results.Json(
+            new { error = "Administrator privileges are required to update storage paths." },
+            statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    var (success, errorMessage, updatedSettings) = await storageSettings.UpdatePathsAsync(request, repo);
+    if (!success)
+    {
+        return Results.BadRequest(new { error = errorMessage ?? "Failed to update storage paths." });
+    }
+
+    return Results.Ok(updatedSettings);
+});
+
+app.MapGet("/api/settings/browse", (
+    string? path,
+    bool? includeDbFiles,
+    HttpContext httpContext,
+    IStoragePathSettingsService storageSettings) =>
+{
+    if (IsRestrictedFromDelete(httpContext))
+    {
+        return Results.Json(
+            new { error = "Administrator privileges are required to browse server directories." },
+            statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    var listing = storageSettings.BrowseServerFilesystem(path, includeDbFiles ?? true);
+    return Results.Ok(listing);
 });
 
 // ---------------------------------------------------------------------------
