@@ -1,7 +1,7 @@
 {
   "name": "housing-application",
   "version": "1.0.0",
-  "description": "<!-- generated-by: gsd-doc-writer --> # File Organizer",
+  "description": "Housing Application — ASP.NET Core & SQLite residential tenancy register and PDF archive management system",
   "main": "index.js",
   "directories": {
     "doc": "docs",
@@ -11,22 +11,28 @@
     "test": "vitest run",
     "test:web": "vitest run",
     "test:e2e": "vitest run",
-    "start:net": "./run-mac.sh",
-    "start:win": "powershell -ExecutionPolicy Bypass -File ./run-windows.ps1",
-    "start:mac": "./run-mac.sh"
+    "start:net": "./scripts/run-mac.sh",
+    "start:win": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/run-windows.ps1",
+    "start:mac": "./scripts/run-mac.sh",
+    "build:win": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/build-windows.ps1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/emadprograms/file-organizer.git"
+    "url": "git+https://github.com/emadprograms/housing-application.git"
   },
-  "keywords": [],
+  "keywords": [
+    "housing",
+    "archive",
+    "aspnet-core",
+    "sqlite"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/emadprograms/file-organizer/issues"
+    "url": "https://github.com/emadprograms/housing-application/issues"
   },
-  "homepage": "https://github.com/emadprograms/file-organizer#readme",
+  "homepage": "https://github.com/emadprograms/housing-application#readme",
   "devDependencies": {
     "@testing-library/dom": "^10.4.1",
     "jsdom": "^29.1.1",

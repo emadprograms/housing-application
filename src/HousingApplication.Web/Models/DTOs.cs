@@ -391,6 +391,9 @@ public record TenantDto
     [JsonPropertyName("is_present")]
     public bool? IsPresent { get; init; }
 
+    [JsonPropertyName("first_doc_date")]
+    public string? FirstDocDate { get; init; }
+
     [JsonPropertyName("last_doc_date")]
     public string? LastDocDate { get; init; }
 
@@ -767,6 +770,33 @@ public record BatchCopyResponseDto
     public List<string> NewVaultIds { get; init; } = new();
 }
 
+public record CreateAreaRequestDto
+{
+    [JsonPropertyName("area_id")]
+    public string? AreaId { get; init; }
+
+    [JsonPropertyName("name")]
+    public string? Name { get; init; }
+
+    [JsonPropertyName("code")]
+    public string? Code { get; init; }
+}
+
+public record CreateAreaResponseDto
+{
+    [JsonPropertyName("status")]
+    public string Status { get; init; } = "success";
+
+    [JsonPropertyName("area_id")]
+    public string AreaId { get; init; } = string.Empty;
+
+    [JsonPropertyName("code")]
+    public string? Code { get; init; }
+
+    [JsonPropertyName("message")]
+    public string? Message { get; init; }
+}
+
 public record CreateHouseRequestDto
 {
     [JsonPropertyName("house_id")]
@@ -1003,6 +1033,118 @@ public record MergeDocumentsResponseDto
     [JsonPropertyName("sources_deleted")]
     public bool SourcesDeleted { get; init; }
 }
+
+public record StoragePathsResponseDto
+{
+    [JsonPropertyName("areas_root_path")]
+    public string AreasRootPath { get; init; } = string.Empty;
+
+    [JsonPropertyName("areas_root_exists")]
+    public bool AreasRootExists { get; init; }
+
+    [JsonPropertyName("area_directory_count")]
+    public int AreaDirectoryCount { get; init; }
+
+    [JsonPropertyName("organizer_db_path")]
+    public string OrganizerDbPath { get; init; } = string.Empty;
+
+    [JsonPropertyName("organizer_db_exists")]
+    public bool OrganizerDbExists { get; init; }
+
+    [JsonPropertyName("organizer_db_size_bytes")]
+    public long OrganizerDbSizeBytes { get; init; }
+
+    [JsonPropertyName("settings_file_path")]
+    public string SettingsFilePath { get; init; } = string.Empty;
+
+    [JsonPropertyName("source")]
+    public string Source { get; init; } = "configuration";
+
+    [JsonPropertyName("tables")]
+    public Dictionary<string, int> Tables { get; init; } = new();
+}
+
+public record UpdateStoragePathsRequestDto
+{
+    [JsonPropertyName("areas_root_path")]
+    public string? AreasRootPath { get; init; }
+
+    [JsonPropertyName("organizer_db_path")]
+    public string? OrganizerDbPath { get; init; }
+
+    [JsonPropertyName("create_if_missing")]
+    public bool CreateIfMissing { get; init; } = false;
+}
+
+public record ValidateStoragePathsResponseDto
+{
+    [JsonPropertyName("valid")]
+    public bool Valid { get; init; }
+
+    [JsonPropertyName("message")]
+    public string? Message { get; init; }
+
+    [JsonPropertyName("warnings")]
+    public List<string> Warnings { get; init; } = new();
+
+    [JsonPropertyName("areas_root_path")]
+    public string AreasRootPath { get; init; } = string.Empty;
+
+    [JsonPropertyName("areas_root_exists")]
+    public bool AreasRootExists { get; init; }
+
+    [JsonPropertyName("area_directory_count")]
+    public int AreaDirectoryCount { get; init; }
+
+    [JsonPropertyName("sample_areas")]
+    public List<string> SampleAreas { get; init; } = new();
+
+    [JsonPropertyName("organizer_db_path")]
+    public string OrganizerDbPath { get; init; } = string.Empty;
+
+    [JsonPropertyName("organizer_db_exists")]
+    public bool OrganizerDbExists { get; init; }
+
+    [JsonPropertyName("organizer_db_valid_sqlite")]
+    public bool OrganizerDbValidSqlite { get; init; }
+
+    [JsonPropertyName("organizer_db_size_bytes")]
+    public long OrganizerDbSizeBytes { get; init; }
+
+    [JsonPropertyName("tables")]
+    public Dictionary<string, int> Tables { get; init; } = new();
+}
+
+public record BrowseEntryDto
+{
+    [JsonPropertyName("name")]
+    public string Name { get; init; } = string.Empty;
+
+    [JsonPropertyName("path")]
+    public string Path { get; init; } = string.Empty;
+
+    [JsonPropertyName("is_directory")]
+    public bool IsDirectory { get; init; }
+
+    [JsonPropertyName("size_bytes")]
+    public long? SizeBytes { get; init; }
+}
+
+public record BrowsePathsResponseDto
+{
+    [JsonPropertyName("current_path")]
+    public string CurrentPath { get; init; } = string.Empty;
+
+    [JsonPropertyName("parent_path")]
+    public string? ParentPath { get; init; }
+
+    [JsonPropertyName("roots")]
+    public List<string> Roots { get; init; } = new();
+
+    [JsonPropertyName("entries")]
+    public List<BrowseEntryDto> Entries { get; init; } = new();
+}
+
 
 
 

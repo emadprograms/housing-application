@@ -741,6 +741,8 @@ html.dark #batch-move-modal > div,
 html.dark #batch-copy-modal > div,
 html.dark #batch-delete-modal > div,
 html.dark #delete-house-modal > div,
+html.dark #delete-area-modal > div,
+html.dark #add-area-modal > div,
 html.dark #add-house-modal > div,
 html.dark #keyboard-shortcuts-modal > div,
 html.dark #export-archive-modal > div,
@@ -755,6 +757,8 @@ html.dark #quick-look-modal > div > div:first-child,
 html.dark #tenant-modal > div > div:first-child,
 html.dark #doc-action-modal > div > div:first-child,
 html.dark #delete-house-modal > div > div:first-child,
+html.dark #delete-area-modal > div > div:first-child,
+html.dark #add-area-modal > div > div:first-child,
 html.dark #add-house-modal > div > div:first-child,
 html.dark #keyboard-shortcuts-modal > div > div:first-child,
 html.dark #export-archive-modal > div > div:first-child,
@@ -768,6 +772,8 @@ html.dark #batch-delete-modal > div > div:first-child {
 html.dark #tenant-modal > div > div:last-child,
 html.dark #doc-action-modal > div > div:last-child,
 html.dark #delete-house-modal > div > div:last-child,
+html.dark #delete-area-modal > div > div:last-child,
+html.dark #add-area-modal > div > div:last-child,
 html.dark #add-house-modal > div > div:last-child,
 html.dark #export-archive-modal > div > div:last-child,
 html.dark #batch-move-modal > div > div:last-child,
@@ -781,6 +787,8 @@ html.dark #batch-delete-modal > div > div:last-child {
 html.dark #tenant-modal-cancel,
 html.dark #doc-modal-cancel,
 html.dark #delete-house-cancel,
+html.dark #delete-area-cancel,
+html.dark #btn-add-area-cancel,
 html.dark #btn-add-house-cancel,
 html.dark #btn-cancel-export-archive,
 html.dark #btn-batch-move-cancel,
@@ -794,6 +802,8 @@ html.dark #btn-batch-delete-cancel {
 html.dark #tenant-modal-cancel:hover,
 html.dark #doc-modal-cancel:hover,
 html.dark #delete-house-cancel:hover,
+html.dark #delete-area-cancel:hover,
+html.dark #btn-add-area-cancel:hover,
 html.dark #btn-add-house-cancel:hover,
 html.dark #btn-cancel-export-archive:hover,
 html.dark #btn-batch-move-cancel:hover,
@@ -808,6 +818,8 @@ html.dark #btn-batch-delete-cancel:hover {
 html.dark #tenant-modal-close,
 html.dark #doc-modal-close,
 html.dark #delete-house-modal-close,
+html.dark #delete-area-modal-close,
+html.dark #add-area-close,
 html.dark #add-house-close,
 html.dark #shortcuts-modal-close,
 html.dark #export-archive-modal-close,
@@ -821,6 +833,8 @@ html.dark #btn-ingest-close {
 html.dark #tenant-modal-close:hover,
 html.dark #doc-modal-close:hover,
 html.dark #delete-house-modal-close:hover,
+html.dark #delete-area-modal-close:hover,
+html.dark #add-area-close:hover,
 html.dark #add-house-close:hover,
 html.dark #shortcuts-modal-close:hover,
 html.dark #export-archive-modal-close:hover,
@@ -1007,8 +1021,10 @@ button, a, input, select, textarea, .cursor-pointer,
         padding-bottom: max(8rem, env(safe-area-inset-bottom, 3rem)) !important;
     }
 
-    /* Make document action 3-dot menu button always visible on touchscreens */
-    .doc-menu-btn {
+    /* Make document action 3-dot menu button and delete triggers always visible on touchscreens */
+    .doc-menu-btn,
+    .area-delete-btn,
+    .house-card-delete-btn {
         opacity: 1 !important;
     }
 

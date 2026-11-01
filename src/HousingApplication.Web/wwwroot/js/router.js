@@ -5,6 +5,7 @@
         currentViewMode = mode;
 
         const sidebarSectionTitle = document.getElementById('sidebar-section-title');
+        const openAddAreaBtn = document.getElementById('open-add-area-modal-btn');
         const welcomePanel = document.getElementById('welcome-panel');
         const documentEmptyState = document.getElementById('document-empty-state');
         const docListPanel = document.getElementById('document-list-panel');
@@ -23,7 +24,15 @@
         }
 
         if (currentViewMode === 'db') {
-            if (sidebarSectionTitle) sidebarSectionTitle.textContent = "Database";
+            if (sidebarSectionTitle) {
+                sidebarSectionTitle.textContent = (typeof window !== 'undefined' && window.i18n && typeof window.i18n.t === 'function')
+                    ? window.i18n.t('sidebar.database', 'Database')
+                    : "Database";
+            }
+            if (openAddAreaBtn) {
+                openAddAreaBtn.classList.add('hidden');
+                openAddAreaBtn.classList.remove('inline-flex');
+            }
 
             if (welcomePanel) welcomePanel.classList.add('hidden');
             if (docListPanel) {
@@ -51,11 +60,16 @@
                 gridViewPopover.classList.add('hidden');
             }
             const gridAreaStats = document.getElementById('grid-area-stats');
+            const deleteAreaHeaderBtn = document.getElementById('btn-delete-area-header');
             const gridTenureLegend = document.getElementById('grid-tenure-legend');
             const gridHouseSortContainer = document.getElementById('grid-house-sort-container');
             const gridIntegrityToolbar = document.getElementById('grid-integrity-toolbar');
             const openAddHouseBtn = document.getElementById('open-add-house-modal-btn');
             if (gridAreaStats) gridAreaStats.classList.add('hidden');
+            if (deleteAreaHeaderBtn) {
+                deleteAreaHeaderBtn.classList.add('hidden');
+                deleteAreaHeaderBtn.classList.remove('flex');
+            }
             if (gridTenureLegend) {
                 gridTenureLegend.classList.add('hidden');
                 gridTenureLegend.classList.remove('flex', 'grid');
@@ -86,7 +100,15 @@
             }
         } else {
             currentViewMode = 'overview';
-            if (sidebarSectionTitle) sidebarSectionTitle.textContent = "Areas";
+            if (sidebarSectionTitle) {
+                sidebarSectionTitle.textContent = (typeof window !== 'undefined' && window.i18n && typeof window.i18n.t === 'function')
+                    ? window.i18n.t('sidebar.areas', 'Areas')
+                    : "Areas";
+            }
+            if (openAddAreaBtn) {
+                openAddAreaBtn.classList.remove('hidden');
+                openAddAreaBtn.classList.add('inline-flex');
+            }
 
             if (databaseInspectorPanel) {
                 databaseInspectorPanel.classList.add('hidden');
@@ -310,11 +332,19 @@
             gridViewPopover.classList.add('hidden');
         }
         const gridAreaStats = document.getElementById('grid-area-stats');
+        const deleteAreaHeaderBtn = document.getElementById('btn-delete-area-header');
         const gridTenureLegend = document.getElementById('grid-tenure-legend');
         const gridHouseSortContainer = document.getElementById('grid-house-sort-container');
         const gridIntegrityToolbar = document.getElementById('grid-integrity-toolbar');
         const openAddHouseBtn = document.getElementById('open-add-house-modal-btn');
         if (gridAreaStats) gridAreaStats.classList.add('hidden');
+        if (deleteAreaHeaderBtn) {
+            deleteAreaHeaderBtn.classList.add('hidden');
+            deleteAreaHeaderBtn.classList.remove('flex');
+        }
+        if (typeof window !== 'undefined' && typeof window.syncDeleteHouseQuickBtn === 'function') {
+            window.syncDeleteHouseQuickBtn();
+        }
         if (gridTenureLegend) {
             gridTenureLegend.classList.add('hidden');
             gridTenureLegend.classList.remove('flex', 'grid');

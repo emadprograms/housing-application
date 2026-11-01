@@ -25,7 +25,7 @@
 
             // Pre-seed fallback users list for offline/fast-init support
             this.fallbackUsers = [
-                { id: 1, username: 'Emad', displayName: 'Emad', role: 'Admin' },
+                { id: 1, username: 'Emad', displayName: 'Emad', role: 'SuperUser' },
                 { id: 2, username: 'Bubshait', displayName: 'Bubshait', role: 'Admin' },
                 { id: 3, username: 'Ehtezaz', displayName: 'Ehtezaz', role: 'Admin' },
                 { id: 4, username: 'Mustafa', displayName: 'Mustafa', role: 'Admin' },
@@ -36,6 +36,14 @@
                 { id: 9, username: 'Shaima', displayName: 'Shaima', role: 'Contributor' },
                 { id: 10, username: 'Mona', displayName: 'Mona', role: 'Contributor' }
             ];
+        }
+
+        normalizeRole(rawRole, canDeleteHint = false) {
+            const lower = String(rawRole || '').trim().toLowerCase();
+            if (lower === 'superuser') return 'SuperUser';
+            if (lower === 'admin') return 'Admin';
+            if (!lower && canDeleteHint) return 'Admin';
+            return 'Contributor';
         }
 
         async init() {
@@ -96,13 +104,25 @@
                     }
                 }
 
-                // Handle 403 Forbidden (RBAC Delete Guards)
+                // Handle 403 Forbidden (RBAC Guards)
                 if (response.status === 403) {
                     const urlStr = typeof resource === 'string' ? resource : resource.url || '';
                     if (urlStr.includes('/api/')) {
                         if (typeof window.showToast === 'function') {
                             const isEn = window.i18n && window.i18n.getLanguage() === 'en';
-                            window.showToast(isEn ? 'Deletion is restricted for Contributor accounts.' : 'عذراً: ليس لديك صلاحية حذف الوثائق أو العناصر (قراءة ورفع فقط)', 'error');
+                            if (urlStr.includes('/api/users')) {
+                                const msg = (window.i18n && typeof window.i18n.t === 'function')
+                                    ? window.i18n.t('user_mgmt.superuser_only_error')
+                                    : (isEn ? 'Only the Super User can manage users and permissions.' : 'إدارة المستخدمين وتعديل الصلاحيات متاحة للمشرف العام فقط.');
+                                window.showToast(msg, 'error');
+                            } else if (urlStr.includes('/api/settings/')) {
+                                const msg = (window.i18n && typeof window.i18n.t === 'function')
+                                    ? window.i18n.t('storage_settings.admin_only_error')
+                                    : (isEn ? 'Administrator privileges are required to modify storage paths.' : 'هذه الإعدادات متاحة لمدير النظام فقط.');
+                                window.showToast(msg, 'error');
+                            } else {
+                                window.showToast(isEn ? 'Deletion is restricted for Contributor accounts.' : 'عذراً: ليس لديك صلاحية حذف الوثائق أو العناصر (قراءة ورفع فقط)', 'error');
+                            }
                         }
                     }
                 }
@@ -311,14 +331,15 @@
                 if (res.ok) {
                     const data = await res.json();
                     if (data && data.authenticated && data.user) {
-                        const rawRole = data.user.role || (data.user.can_delete ? 'Admin' : 'Contributor');
-                        const isAdminRole = rawRole.toLowerCase() === 'admin';
-                        const role = isAdminRole ? 'Admin' : 'Contributor';
+                        const role = this.normalizeRole(data.user.role, Boolean(data.user.canDelete || data.user.can_delete));
+                        const isPrivileged = role === 'SuperUser' || role === 'Admin';
                         this.currentUser = {
                             ...data.user,
                             displayName: data.user.displayName || data.user.display_name || data.user.username,
                             role: role,
-                            canDelete: isAdminRole || Boolean(data.user.can_delete)
+                            isSuperUser: role === 'SuperUser',
+                            canManageUsers: role === 'SuperUser',
+                            canDelete: isPrivileged || Boolean(data.user.canDelete || data.user.can_delete)
                         };
                         this.updateNavbarProfile();
                         this.closeLoginModal();
@@ -375,14 +396,15 @@
                 // Path 1: Backend natively processed login and returned 200 OK
                 if (res && res.ok && (data.success === true || data.status === 'success')) {
                     const user = data.user || {};
-                    const rawRole = user.role || (user.can_delete ? 'Admin' : 'Contributor');
-                    const isAdminRole = rawRole.toLowerCase() === 'admin';
-                    const role = isAdminRole ? 'Admin' : 'Contributor';
+                    const role = this.normalizeRole(user.role, Boolean(user.canDelete || user.can_delete));
+                    const isPrivileged = role === 'SuperUser' || role === 'Admin';
                     this.currentUser = {
                         ...user,
                         displayName: user.displayName || user.display_name || user.username || cleanUser,
                         role: role,
-                        canDelete: isAdminRole || Boolean(user.can_delete)
+                        isSuperUser: role === 'SuperUser',
+                        canManageUsers: role === 'SuperUser',
+                        canDelete: isPrivileged || Boolean(user.canDelete || user.can_delete)
                     };
                     try {
                         localStorage.setItem('housing_auth_user', JSON.stringify(this.currentUser));
@@ -394,9 +416,11 @@
 
                     if (typeof window.showToast === 'function') {
                         const isEn = window.i18n && window.i18n.getLanguage() === 'en';
-                        const roleLabel = isAdminRole
-                            ? (isEn ? 'Full Access' : 'صلاحيات كاملة')
-                            : (isEn ? 'Read & Upload' : 'قراءة ورفع فقط');
+                        const roleLabel = role === 'SuperUser'
+                            ? (isEn ? 'Super User' : 'المشرف العام')
+                            : isPrivileged
+                                ? (isEn ? 'Full Access' : 'صلاحيات كاملة')
+                                : (isEn ? 'Read & Upload' : 'قراءة ورفع فقط');
                         const welcome = isEn ? `Welcome ${this.currentUser.displayName} (${roleLabel})` : `مرحباً ${this.currentUser.displayName} (${roleLabel})`;
                         window.showToast(welcome, 'success');
                     }
@@ -423,13 +447,15 @@
                 );
 
                 if (matchedUser && isValidPassword) {
-                    const isAdmin = matchedUser.role === 'Admin';
+                    const isPrivileged = matchedUser.role === 'SuperUser' || matchedUser.role === 'Admin';
                     this.currentUser = {
                         id: matchedUser.id,
                         username: matchedUser.username,
                         displayName: matchedUser.displayName,
                         role: matchedUser.role,
-                        canDelete: isAdmin
+                        isSuperUser: matchedUser.role === 'SuperUser',
+                        canManageUsers: matchedUser.role === 'SuperUser',
+                        canDelete: isPrivileged
                     };
                     try {
                         localStorage.setItem('housing_auth_user', JSON.stringify(this.currentUser));
@@ -441,9 +467,11 @@
 
                     if (typeof window.showToast === 'function') {
                         const isEn = window.i18n && window.i18n.getLanguage() === 'en';
-                        const roleLabel = isAdmin
-                            ? (isEn ? 'Full Access' : 'صلاحيات كاملة')
-                            : (isEn ? 'Read & Upload' : 'قراءة ورفع فقط');
+                        const roleLabel = matchedUser.role === 'SuperUser'
+                            ? (isEn ? 'Super User' : 'المشرف العام')
+                            : isPrivileged
+                                ? (isEn ? 'Full Access' : 'صلاحيات كاملة')
+                                : (isEn ? 'Read & Upload' : 'قراءة ورفع فقط');
                         const welcome = isEn ? `Welcome ${this.currentUser.displayName} (${roleLabel})` : `مرحباً ${this.currentUser.displayName} (${roleLabel})`;
                         window.showToast(welcome, 'success');
                     }
@@ -589,13 +617,16 @@
                 return;
             }
 
-            const isAdmin = this.currentUser.role === 'Admin';
+            const roleLower = (this.currentUser.role || '').toLowerCase();
+            const isSuperUser = roleLower === 'superuser';
+            const isAdmin = isSuperUser || roleLower === 'admin';
             const initial = (this.currentUser.displayName || this.currentUser.username || 'U').charAt(0).toUpperCase();
+            const avatarColor = isSuperUser ? 'bg-amber-600' : (isAdmin ? 'bg-emerald-600' : 'bg-blue-600');
 
             // Top navbar button updates
             if (avatarBadge) {
                 avatarBadge.textContent = initial;
-                avatarBadge.className = `w-6 h-6 rounded-full ${isAdmin ? 'bg-emerald-600' : 'bg-blue-600'} text-white font-bold text-[11px] flex items-center justify-center shadow-xs flex-shrink-0`;
+                avatarBadge.className = `w-6 h-6 rounded-full ${avatarColor} text-white font-bold text-[11px] flex items-center justify-center shadow-xs flex-shrink-0`;
             }
 
             if (nameElem) {
@@ -603,7 +634,10 @@
             }
 
             if (roleBadge) {
-                if (isAdmin) {
+                if (isSuperUser) {
+                    roleBadge.textContent = window.i18n ? window.i18n.t('auth.superuser_badge') : 'مشرف عام';
+                    roleBadge.className = 'text-[9px] font-semibold text-amber-600 dark:text-amber-400 leading-tight truncate';
+                } else if (isAdmin) {
                     roleBadge.textContent = window.i18n ? window.i18n.t('auth.full_access_badge') : 'صلاحيات كاملة';
                     roleBadge.className = 'text-[9px] font-semibold text-emerald-600 dark:text-emerald-400 leading-tight truncate';
                 } else {
@@ -615,13 +649,16 @@
             // Profile Dropdown updates
             if (dropdownAvatar) {
                 dropdownAvatar.textContent = initial;
-                dropdownAvatar.className = `w-10 h-10 rounded-xl ${isAdmin ? 'bg-emerald-600' : 'bg-blue-600'} text-white font-bold text-base flex items-center justify-center shadow-sm flex-shrink-0`;
+                dropdownAvatar.className = `w-10 h-10 rounded-xl ${avatarColor} text-white font-bold text-base flex items-center justify-center shadow-sm flex-shrink-0`;
             }
             if (dropdownName) {
                 dropdownName.textContent = this.currentUser.displayName || this.currentUser.username;
             }
             if (dropdownRoleBadge) {
-                if (isAdmin) {
+                if (isSuperUser) {
+                    dropdownRoleBadge.textContent = window.i18n ? window.i18n.t('common.superuser') : 'المشرف العام';
+                    dropdownRoleBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-200 dark:border-amber-800';
+                } else if (isAdmin) {
                     dropdownRoleBadge.textContent = window.i18n ? window.i18n.t('common.admin') : 'مدير النظام';
                     dropdownRoleBadge.className = 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800';
                 } else {
@@ -630,12 +667,47 @@
                 }
             }
             if (dropdownRoleDesc) {
-                if (isAdmin) {
+                if (isSuperUser) {
+                    dropdownRoleDesc.textContent = window.i18n ? window.i18n.t('auth.superuser_desc') : 'المشرف العام الوحيد: تحكم كامل بالنظام مع صلاحية إضافة وحذف المستخدمين وتغيير الصلاحيات.';
+                } else if (isAdmin) {
                     dropdownRoleDesc.textContent = window.i18n ? window.i18n.t('auth.admin_desc') : 'صلاحيات كاملة: قراءة، رفع، تعديل وحذف كافة الوثائق والمنازل.';
                 } else {
                     dropdownRoleDesc.textContent = window.i18n ? window.i18n.t('auth.contributor_desc') : 'صلاحيات محدودة: قراءة واستعراض ورفع الوثائق. خاصية الحذف محجوبة بالكامل.';
                 }
             }
+
+            const userMgmtBtn = document.getElementById('btn-open-user-management');
+            if (userMgmtBtn) {
+                userMgmtBtn.classList.toggle('hidden', !isSuperUser);
+            }
+            const storageMenuBtn = document.getElementById('btn-open-storage-settings');
+            if (storageMenuBtn) {
+                storageMenuBtn.classList.toggle('hidden', !isAdmin);
+            }
+            const dbChangePathsBtn = document.getElementById('db-change-paths-btn');
+            if (dbChangePathsBtn) {
+                dbChangePathsBtn.classList.toggle('hidden', !isAdmin);
+            }
+        }
+
+        applyUpdatedCurrentUser(userObj) {
+            if (!userObj) return;
+            const role = this.normalizeRole(userObj.role, Boolean(userObj.canDelete || userObj.can_delete));
+            const isPrivileged = role === 'SuperUser' || role === 'Admin';
+            this.currentUser = {
+                ...this.currentUser,
+                ...userObj,
+                displayName: userObj.displayName || userObj.display_name || userObj.username,
+                role: role,
+                isSuperUser: role === 'SuperUser',
+                canManageUsers: role === 'SuperUser',
+                canDelete: isPrivileged
+            };
+            try {
+                localStorage.setItem('housing_auth_user', JSON.stringify(this.currentUser));
+            } catch (e) {}
+            this.updateNavbarProfile();
+            this.notifyStateChanged();
         }
 
         notifyStateChanged() {
@@ -643,6 +715,8 @@
                 detail: {
                     user: this.currentUser,
                     canDelete: this.hasDeletePermission(),
+                    canManageUsers: this.canManageUsers(),
+                    isSuperUser: this.isSuperUser(),
                     isAdmin: this.isAdmin(),
                     isContributor: this.isContributor()
                 }
@@ -668,10 +742,20 @@
             return true;
         }
 
+        isSuperUser() {
+            if (!this.currentUser) return false;
+            const role = (this.currentUser.role || '').toLowerCase();
+            return role === 'superuser' || Boolean(this.currentUser.isSuperUser || this.currentUser.is_super_user);
+        }
+
+        canManageUsers() {
+            return this.isSuperUser();
+        }
+
         isAdmin() {
             if (!this.currentUser) return true;
             const role = (this.currentUser.role || '').toLowerCase();
-            return role === 'admin';
+            return role === 'superuser' || role === 'admin';
         }
 
         isContributor() {

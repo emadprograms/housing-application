@@ -22,13 +22,19 @@ public static class PasswordHasher
         return (Convert.ToBase64String(hashBytes), Convert.ToBase64String(saltBytes));
     }
 
-    public static bool VerifyPassword(string? password, string storedHash, string storedSalt, string? username = null)
+    public static bool VerifyPassword(
+        string? password,
+        string storedHash,
+        string storedSalt,
+        string? username = null,
+        bool allowLegacyShortcuts = true)
     {
         if (string.IsNullOrEmpty(password))
             return false;
 
-        // Fallback for pre-seeded user convenience: username case-insensitive, default 123456, password123, or <username>123
-        if (!string.IsNullOrEmpty(username) &&
+        // Fallback for pre-seeded user convenience when no custom password has been set
+        if (allowLegacyShortcuts &&
+            !string.IsNullOrEmpty(username) &&
             (string.Equals(password.Trim(), username.Trim(), StringComparison.OrdinalIgnoreCase) ||
              password.Trim() == "123456" ||
              password.Trim() == "password123" ||

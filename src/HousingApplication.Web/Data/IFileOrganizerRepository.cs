@@ -40,6 +40,8 @@ public interface IFileOrganizerRepository
     Task<int> DeleteCategoryAsync(string houseId, string categoryName);
     Task<DbInfoResponseDto> GetDbStatsAsync();
     Task<DbTableResponseDto> GetDbTableDataAsync(string tableName, int limit = 50, int offset = 0, string? search = null);
+    Task<CreateAreaResponseDto> CreateAreaAsync(string areaId, string? code = null, string? areasRoot = null);
+    Task<bool> DeleteAreaAsync(string areaId, string? areasRoot = null);
     Task<CreateHouseResponseDto> CreateHouseAsync(string areaId, string houseId, string? initialTenantName = null, string? startDate = null, string? areasRoot = null);
     Task<bool> DeleteHouseAsync(string areaId, string houseId, string? areasRoot = null);
     Task<bool> UpdateTenantDatesAsync(int tenantId, string? startDate, string? endDate);
@@ -53,6 +55,10 @@ public interface IFileOrganizerRepository
     Task<User?> GetUserByUsernameAsync(string username);
     Task<User?> GetUserByIdAsync(int id);
     Task<IReadOnlyList<UserDto>> GetAllUsersAsync();
+    Task<(bool Success, string? ErrorMessage, UserDto? User)> CreateUserAsync(CreateUserRequestDto request);
+    Task<(bool Success, string? ErrorMessage, UserDto? User)> UpdateUserAsync(int userId, UpdateUserRequestDto request);
+    Task<(bool Success, string? ErrorMessage)> DeleteUserAsync(int userId, int? actingUserId = null);
+    Task<(bool Success, string? ErrorMessage, UserDto? NewSuperUser)> TransferSuperUserAsync(int targetUserId);
 
     // Helpers for database seeding and testing
     Task<Area> AddAreaAsync(string areaId, string? code = null);

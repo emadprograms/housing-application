@@ -95,7 +95,8 @@ CREATE TABLE IF NOT EXISTS users (
     salt TEXT NOT NULL,
     role TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    is_active INTEGER NOT NULL DEFAULT 1
+    is_active INTEGER NOT NULL DEFAULT 1,
+    has_custom_password INTEGER NOT NULL DEFAULT 0
 );
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 ";
@@ -210,7 +211,7 @@ CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 
     public static readonly (string Username, string DisplayName, string Role)[] DefaultUsers = new[]
     {
-        ("Emad", "Emad", "Admin"),
+        ("Emad", "Emad", "SuperUser"),
         ("Bubshait", "Bubshait", "Admin"),
         ("Ehtezaz", "Ehtezaz", "Admin"),
         ("Mustafa", "Mustafa", "Admin"),
@@ -237,25 +238,38 @@ CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
                         salt TEXT NOT NULL,
                         role TEXT NOT NULL,
                         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                        is_active INTEGER NOT NULL DEFAULT 1
+                        is_active INTEGER NOT NULL DEFAULT 1,
+                        has_custom_password INTEGER NOT NULL DEFAULT 0
                     );
                     CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);";
                 createCmd.ExecuteNonQuery();
             }
 
-            foreach (var (username, displayName, role) in DefaultUsers)
+            try
             {
-                using var checkCmd = connection.CreateCommand();
-                checkCmd.CommandText = "SELECT COUNT(1) FROM users WHERE LOWER(username) = LOWER(@u);";
-                checkCmd.Parameters.AddWithValue("@u", username);
-                var exists = Convert.ToInt32(checkCmd.ExecuteScalar()) > 0;
-                if (!exists)
+                using var alterCmd = connection.CreateCommand();
+                alterCmd.CommandText = "ALTER TABLE users ADD COLUMN has_custom_password INTEGER NOT NULL DEFAULT 0;";
+                alterCmd.ExecuteNonQuery();
+            }
+            catch (SqliteException) { }
+
+            int totalUsers;
+            using (var countCmd = connection.CreateCommand())
+            {
+                countCmd.CommandText = "SELECT COUNT(1) FROM users;";
+                totalUsers = Convert.ToInt32(countCmd.ExecuteScalar());
+            }
+
+            // Seed initial accounts only when the users table is empty so deleted accounts never reappear on restart
+            if (totalUsers == 0)
+            {
+                foreach (var (username, displayName, role) in DefaultUsers)
                 {
                     var (hash, salt) = Common.PasswordHasher.HashPassword($"{username.ToLower()}123");
                     using var insCmd = connection.CreateCommand();
                     insCmd.CommandText = @"
-                        INSERT INTO users (username, display_name, password_hash, salt, role, is_active)
-                        VALUES (@u, @d, @h, @s, @r, 1);";
+                        INSERT INTO users (username, display_name, password_hash, salt, role, is_active, has_custom_password)
+                        VALUES (@u, @d, @h, @s, @r, 1, 0);";
                     insCmd.Parameters.AddWithValue("@u", username);
                     insCmd.Parameters.AddWithValue("@d", displayName);
                     insCmd.Parameters.AddWithValue("@h", hash);
@@ -264,6 +278,8 @@ CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
                     insCmd.ExecuteNonQuery();
                 }
             }
+
+            EnsureSuperUserInvariant(connection);
         }
         catch (SqliteException) { }
     }
@@ -283,25 +299,38 @@ CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
                         salt TEXT NOT NULL,
                         role TEXT NOT NULL,
                         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                        is_active INTEGER NOT NULL DEFAULT 1
+                        is_active INTEGER NOT NULL DEFAULT 1,
+                        has_custom_password INTEGER NOT NULL DEFAULT 0
                     );
                     CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);";
                 await createCmd.ExecuteNonQueryAsync();
             }
 
-            foreach (var (username, displayName, role) in DefaultUsers)
+            try
             {
-                using var checkCmd = connection.CreateCommand();
-                checkCmd.CommandText = "SELECT COUNT(1) FROM users WHERE LOWER(username) = LOWER(@u);";
-                checkCmd.Parameters.AddWithValue("@u", username);
-                var count = Convert.ToInt32(await checkCmd.ExecuteScalarAsync());
-                if (count == 0)
+                using var alterCmd = connection.CreateCommand();
+                alterCmd.CommandText = "ALTER TABLE users ADD COLUMN has_custom_password INTEGER NOT NULL DEFAULT 0;";
+                await alterCmd.ExecuteNonQueryAsync();
+            }
+            catch (SqliteException) { }
+
+            int totalUsers;
+            using (var countCmd = connection.CreateCommand())
+            {
+                countCmd.CommandText = "SELECT COUNT(1) FROM users;";
+                totalUsers = Convert.ToInt32(await countCmd.ExecuteScalarAsync());
+            }
+
+            // Seed initial accounts only when the users table is empty so deleted accounts never reappear on restart
+            if (totalUsers == 0)
+            {
+                foreach (var (username, displayName, role) in DefaultUsers)
                 {
                     var (hash, salt) = Common.PasswordHasher.HashPassword($"{username.ToLower()}123");
                     using var insCmd = connection.CreateCommand();
                     insCmd.CommandText = @"
-                        INSERT INTO users (username, display_name, password_hash, salt, role, is_active)
-                        VALUES (@u, @d, @h, @s, @r, 1);";
+                        INSERT INTO users (username, display_name, password_hash, salt, role, is_active, has_custom_password)
+                        VALUES (@u, @d, @h, @s, @r, 1, 0);";
                     insCmd.Parameters.AddWithValue("@u", username);
                     insCmd.Parameters.AddWithValue("@d", displayName);
                     insCmd.Parameters.AddWithValue("@h", hash);
@@ -310,8 +339,124 @@ CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
                     await insCmd.ExecuteNonQueryAsync();
                 }
             }
+
+            await EnsureSuperUserInvariantAsync(connection);
         }
         catch (SqliteException) { }
+    }
+
+    private static void EnsureSuperUserInvariant(SqliteConnection connection)
+    {
+        var superIds = new List<int>();
+        using (var supCmd = connection.CreateCommand())
+        {
+            supCmd.CommandText = @"
+                SELECT id FROM users
+                WHERE role = 'SuperUser' AND is_active = 1
+                ORDER BY CASE WHEN LOWER(username) = 'emad' THEN 0 ELSE 1 END, id ASC;";
+            using var reader = supCmd.ExecuteReader();
+            while (reader.Read())
+            {
+                superIds.Add(reader.GetInt32(0));
+            }
+        }
+
+        if (superIds.Count == 0)
+        {
+            int? candidateId = null;
+            using (var candCmd = connection.CreateCommand())
+            {
+                candCmd.CommandText = @"
+                    SELECT id FROM users
+                    WHERE is_active = 1
+                    ORDER BY
+                        CASE WHEN LOWER(username) = 'emad' THEN 0
+                             WHEN role = 'Admin' THEN 1
+                             ELSE 2 END,
+                        id ASC
+                    LIMIT 1;";
+                var scalar = candCmd.ExecuteScalar();
+                if (scalar != null && scalar != DBNull.Value)
+                    candidateId = Convert.ToInt32(scalar);
+            }
+
+            if (candidateId.HasValue)
+            {
+                using var promCmd = connection.CreateCommand();
+                promCmd.CommandText = "UPDATE users SET role = 'SuperUser' WHERE id = @Id;";
+                promCmd.Parameters.AddWithValue("@Id", candidateId.Value);
+                promCmd.ExecuteNonQuery();
+            }
+        }
+        else if (superIds.Count > 1)
+        {
+            var keepId = superIds[0];
+            using var dedupCmd = connection.CreateCommand();
+            dedupCmd.CommandText = "UPDATE users SET role = 'Admin' WHERE role = 'SuperUser' AND is_active = 1 AND id != @KeepId;";
+            dedupCmd.Parameters.AddWithValue("@KeepId", keepId);
+            dedupCmd.ExecuteNonQuery();
+        }
+
+        using var idxCmd = connection.CreateCommand();
+        idxCmd.CommandText = "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_single_superuser ON users(role) WHERE role = 'SuperUser' AND is_active = 1;";
+        idxCmd.ExecuteNonQuery();
+    }
+
+    private static async Task EnsureSuperUserInvariantAsync(SqliteConnection connection)
+    {
+        var superIds = new List<int>();
+        using (var supCmd = connection.CreateCommand())
+        {
+            supCmd.CommandText = @"
+                SELECT id FROM users
+                WHERE role = 'SuperUser' AND is_active = 1
+                ORDER BY CASE WHEN LOWER(username) = 'emad' THEN 0 ELSE 1 END, id ASC;";
+            using var reader = await supCmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                superIds.Add(reader.GetInt32(0));
+            }
+        }
+
+        if (superIds.Count == 0)
+        {
+            int? candidateId = null;
+            using (var candCmd = connection.CreateCommand())
+            {
+                candCmd.CommandText = @"
+                    SELECT id FROM users
+                    WHERE is_active = 1
+                    ORDER BY
+                        CASE WHEN LOWER(username) = 'emad' THEN 0
+                             WHEN role = 'Admin' THEN 1
+                             ELSE 2 END,
+                        id ASC
+                    LIMIT 1;";
+                var scalar = await candCmd.ExecuteScalarAsync();
+                if (scalar != null && scalar != DBNull.Value)
+                    candidateId = Convert.ToInt32(scalar);
+            }
+
+            if (candidateId.HasValue)
+            {
+                using var promCmd = connection.CreateCommand();
+                promCmd.CommandText = "UPDATE users SET role = 'SuperUser' WHERE id = @Id;";
+                promCmd.Parameters.AddWithValue("@Id", candidateId.Value);
+                await promCmd.ExecuteNonQueryAsync();
+            }
+        }
+        else if (superIds.Count > 1)
+        {
+            var keepId = superIds[0];
+            using var dedupCmd = connection.CreateCommand();
+            dedupCmd.CommandText = "UPDATE users SET role = 'Admin' WHERE role = 'SuperUser' AND is_active = 1 AND id != @KeepId;";
+            dedupCmd.Parameters.AddWithValue("@KeepId", keepId);
+            await dedupCmd.ExecuteNonQueryAsync();
+        }
+
+        using var idxCmd = connection.CreateCommand();
+        idxCmd.CommandText = "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_single_superuser ON users(role) WHERE role = 'SuperUser' AND is_active = 1;";
+        await idxCmd.ExecuteNonQueryAsync();
     }
 
     private static void EnsureTenantStartDateNullable(SqliteConnection connection)

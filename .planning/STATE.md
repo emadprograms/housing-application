@@ -1,13 +1,14 @@
 ---
-gsd_state_version: 1.0
+gsd_state_version: "1.0"
 milestone: v18.1
-milestone_name: UI & Localization Consistency Polish
 current_phase: "128: Automated Localization Suite & Full Regression Verification"
 status: completed
-last_updated: "2026-09-24T08:47:55.749Z"
-last_activity: 2026-09-24
-last_activity_desc: Milestone v18.1 completed and archived
-state_head: a455ec13e3228fabf6cb560725390841e4b06dda
+stopped_at: "Completed quick task 261101-ean: in-app Admin Storage & Database Path Settings"
+last_updated: "2026-11-01T10:31:23.740Z"
+last_activity: 2026-11-01
+last_activity_desc: Quick task 261101-6bf completed (Delete Area and Delete House UI)
+state_head: 621f7ea65c3a191e08d4333cbd1db901074f17f9
+milestone_name: UI & Localization Consistency Polish
 progress:
   total_phases: 4
   completed_phases: 4
@@ -27,7 +28,7 @@ progress:
 Phase: Milestone v18.1 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-09-24 — Milestone v18.1 completed and archived
+Last activity: 2026-11-01 — Completed quick task 261101-6bf: Delete Area and Delete House UI
 
 ## Context
 
@@ -116,6 +117,21 @@ Milestone v18.1 resolves remaining small issues, hardcoded strings, and localiza
 - `260920-login-home-page-animated`: Animated Login Home Page with Logo & Preset Removal (QCK-57). Created a dedicated, entertaining Login Home Page as the entry point with floating animated `pictures/logo.png`, pulsing glowing halo, ambient floating glowing orbs, subtle grid background, bold gradient `Housing Application` title, interactive feature badges, and error shake. Completely removed preset user buttons (`#login-presets-container` and user chips) in favor of clean manual authentication. Maintained 100% dual-asset parity across `src/` and `dist/`. All 12 tests in `auth_manager.test.js` passing.
 - `260921-d6n`: Convert Transparent Ministry Logo into Multi-Resolution Icon & Web Favicon (QCK-58). Generated multi-resolution Windows .ico (16, 32, 48, 64, 128, 256) and PNG favicons from logo.png with 100% alpha transparency. Deployed across src/ and dist/win-x64/ wwwroot, updated index.html with favicon/apple-touch-icon tags, and configured <ApplicationIcon> in HousingApplication.Web.csproj. Verified by 20 passing Vitest tests.
 - `260923-cqe`: Document-Driven End Date for Past Tenants & Zero Manual Date Entry (QCK-59). Made past residents' end date 100% document-driven (derived from MAX(primary_date)) across FileOrganizerRepository, updated tenant-manager.js to render tenant-end-input as readonly, eliminated manual user entry in House Settings modal, and added automated backend/frontend test coverage.
+- `261101-6bf`: Delete Area and Discoverable Delete House UI (QCK-60). Added transactional `DeleteAreaAsync` cascade (`pages` -> `documents` -> `batches` -> `tenants` -> `houses` -> `areas` + safe directory removal) and Admin-only `DELETE /api/areas/{areaId}` endpoint, `#delete-area-modal` with typed phrase confirmation and house-count warning, sidebar `.area-delete-btn` & Area Overview `#btn-delete-area-header`, and discoverable Delete House triggers on Area Grid cards (`.house-card-delete-btn`) and House panel header (`#btn-delete-house-quick`). Verified by 752 passing Vitest tests across 53 files and 100% `wwwroot` parity.
+- `261101-8gl`: Document-Driven Start Date for Houses & Tenants and Remove Add-House Start Date Option (QCK-61). Removed `#add-house-tenant-date-input` from `#add-house-modal` and enforced `start_date: null` on house creation (`area-grid.js`, `Program.cs`, `CreateHouseAsync`). Added `SyncTenantStartDateAsync` across all document write/update/move/delete/merge/page-split methods in `FileOrganizerRepository.cs` (clearing `start_date` to `NULL` when zero dated documents remain), added `FirstDocDate` (`first_doc_date`) to `TenantDto` + `minDocDate` priority in `BulkUpdateTenantsAsync`, added `resolveFirstDocDate` in `tenant-manager.js`, and eliminated hardcoded `'2020-01-01'` fallback in `house-profile.js` static mode. Verified by 754 passing Vitest tests across 53 files and 100% `wwwroot` parity.
+- `261101-cvl`: Pull Remote Changes, Clean Up Root Directory, and Organize Repository (QCK-62). Pulled `17b9be7` (`areas_v11` sibling paths, recompiled `win-x64` binary, `.agents` gitignore), removed duplicate root icons (`app.ico`, `favicon.ico`, `logo.png`) and `scratch_test.html`, organized launchers & build scripts under `scripts/`, Windows 24/7 service scripts under `scripts/service/`, legacy Python utilities & configs under `scripts/legacy/`, and outdated Python v5.3 docs under `docs/legacy/` while adding current ASP.NET Core `README.md`, `docs/ARCHITECTURE.md`, `docs/DEPLOYMENT.md`, and `repo_structure.test.js`. Verified by 757 passing Vitest tests across 54 files.
+- `261101-ean`: Web App Storage & Database Path Settings (QCK-63). Added thread-safe `StoragePathSettingsService` and hot-swappable `SqliteDbConnectionFactory.UpdateDatabasePath` (with SQLite pool release and `MemoryConfigurationProvider` test isolation), Admin-only `/api/settings/{paths,paths/validate,browse}` endpoints, atomic `config.paths.json` persistence, and bilingual Admin Storage & Database Paths modal (`storage-settings.js`) with inline server directory/`.db` browser and live tree reload. Verified by 766 passing Vitest tests across 55 files and 100% `wwwroot` parity.
+- `261101-keu`: Super User Role & In-App User and Permission Management (QCK-64). Upgraded RBAC to 3 tiers (`SuperUser` [strictly 1, initially `Emad`], `Admin`, `Contributor`/Regular User) enforced by SQLite partial unique index `idx_users_single_superuser`, `CookieAuthenticationEvents.OnValidatePrincipal` live session validation/revocation, `has_custom_password` strict PBKDF2 verification, `SuperUser`-only `/api/users` CRUD + transactional `/api/users/{id}/transfer-superuser`, and bilingual User & Role Management modal (`user-management.js`). Verified by 774 passing Vitest tests across 56 files, expanded xUnit `AuthAndRbacTests.cs`, and 100% `wwwroot` parity.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 261101-6bf | Delete Area and Delete House UI | 2026-11-01 | e9d72e5 | [261101-6bf-delete-area-and-delete-house-ui](./quick/261101-6bf-delete-area-and-delete-house-ui/) |
+| 261101-8gl | Document-Driven Start Date for Houses & Tenants and Remove Add-House Start Date Option | 2026-11-01 | e1480ed | [261101-8gl-document-driven-start-date-for-houses-an](./quick/261101-8gl-document-driven-start-date-for-houses-an/) |
+| 261101-cvl | Organize Repository Structure and Clean Up Root Directory | 2026-11-01 | dd428d5 | [261101-cvl-organize-repository-structure-and-clean-](./quick/261101-cvl-organize-repository-structure-and-clean-/) |
+| 261101-ean | Add Web App Settings to Configure Areas Folder and Organizer DB Paths | 2026-11-01 | 621f7ea | [261101-ean-add-web-app-settings-to-configure-areas-](./quick/261101-ean-add-web-app-settings-to-configure-areas-/) |
+| 261101-keu | Add Super User Role and In-App User & Permission Management | 2026-11-01 | 84e388b | [261101-keu-add-super-user-role-and-in-app-user-and-](./quick/261101-keu-add-super-user-role-and-in-app-user-and-/) |
 
 ## Deferred Items
 
@@ -145,8 +161,14 @@ Items acknowledged and deferred at milestone close on 2026-09-13:
 Phase: Milestone v17.0 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-09-23 — Quick task 260923-cqe completed (document-driven past tenant end date)
+Last activity: 2026-11-01 — Quick task 261101-keu completed (3-tier SuperUser/Admin/Regular User RBAC and in-app User & Role Management)
 
 ## Operator Next Steps
 
 - Start the next milestone with /gsd-new-milestone
+
+## Session
+
+**Last session:** 2026-11-01T10:31:23.714Z
+**Stopped at:** Completed quick task 261101-ean: in-app Admin Storage & Database Path Settings
+**Resume file:** None

@@ -25,6 +25,8 @@
                 const tenantDocCounts = {};
                 const tenantCatSets = {};
                 const tenantCatCounts = {};
+                const tenantMinDates = {};
+                const tenantMaxDates = {};
                 let unassignedDocCount = 0;
                 const unassignedCatCounts = {};
                 const unassignedCatSet = new Set();
@@ -32,8 +34,18 @@
                 groups.forEach(g => {
                     const t = g.primary_tenant;
                     const c = g.category || g.folder_path;
+                    const gDates = (g.dates || []).filter(d => d && d !== 'NONE').sort();
                     if (t) {
                         tenantDocCounts[t] = (tenantDocCounts[t] || 0) + 1;
+                        if (gDates.length > 0) {
+                            if (!tenantMinDates[t] || gDates[0] < tenantMinDates[t]) {
+                                tenantMinDates[t] = gDates[0];
+                            }
+                            const gMax = gDates[gDates.length - 1];
+                            if (!tenantMaxDates[t] || gMax > tenantMaxDates[t]) {
+                                tenantMaxDates[t] = gMax;
+                            }
+                        }
                         if (!tenantCatSets[t]) tenantCatSets[t] = new Set();
                         if (!tenantCatCounts[t]) tenantCatCounts[t] = {};
                         if (c) {
@@ -79,9 +91,20 @@
 
                 const tenants = knownTenants.map((kt, idx) => {
                     const isRes = (kt.is_resident !== 0 && kt.is_resident !== false && kt.isResident !== 0 && kt.isResident !== false);
-                    const sDate = kt.start_date || '2020-01-01';
-                    const eDate = isRes ? (kt.end_date || null) : null;
-                    const isActive = isRes && (!eDate || eDate === 'PRESENT' || eDate === '');
+                    const sDate = tenantMinDates[kt.name] || kt.start_date || null;
+                    const rawEnd = kt.end_date || null;
+                    const isActive = isRes && (!rawEnd || rawEnd === 'PRESENT' || rawEnd === '');
+                    const eDate = isRes ? (isActive ? null : (tenantMaxDates[kt.name] || rawEnd || null)) : null;
+                    let durationStrAr = '';
+                    if (!isRes) {
+                        durationStrAr = 'متقدم (لم يسكن)';
+                    } else if (isActive) {
+                        durationStrAr = sDate ? `بدء الإيجار ${String(sDate).substring(0, 4)} (مستمر)` : '';
+                    } else if (sDate && eDate) {
+                        durationStrAr = `فترة الإيجار: ${String(sDate).substring(0, 4)} – ${String(eDate).substring(0, 4)}`;
+                    } else if (sDate) {
+                        durationStrAr = `بدء الإيجار ${String(sDate).substring(0, 4)}`;
+                    }
                     return {
                         id: idx + 1,
                         name: kt.name,
@@ -90,7 +113,7 @@
                         is_active: isActive,
                         is_resident: isRes ? 1 : 0,
                         notes: kt.notes || null,
-                        duration_str_ar: !isRes ? 'متقدم (لم يسكن)' : (isActive ? `بدء الإيجار ${sDate.substring(0, 4)} (مستمر)` : `فترة الإيجار: ${sDate.substring(0, 4)} – ${eDate.substring(0, 4)}`),
+                        duration_str_ar: durationStrAr,
                         document_count: tenantDocCounts[kt.name] || 0,
                         category_count: (tenantCatSets[kt.name] || new Set()).size,
                         categories: Array.from(tenantCatSets[kt.name] || []),

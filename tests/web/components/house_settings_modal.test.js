@@ -532,4 +532,91 @@ describe('House Settings Modal Layout & UX (QCK-22)', () => {
     expect(endInput.tagName.toLowerCase()).toBe('input');
     expect(endInput.getAttribute('type')).toBe('text');
   });
+
+  it('always prioritizes first_doc_date / earliest document date as tenant start_date over stale manual dates', async () => {
+    global.currentTimeline = [
+      { tenant_id: 301, primary_tenant: 'Doc Driven Tenant', primary_date: '2023-09-12' },
+      { tenant_id: 301, primary_tenant: 'Doc Driven Tenant', primary_date: '2021-04-03' }
+    ];
+
+    global.fetch = vi.fn().mockImplementation((url, opts) => {
+      if (opts && opts.method === 'POST') {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ status: 'success', reallocated_count: 0, tenants_count: 2 })
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: async () => [
+          {
+            id: 301,
+            name: 'Doc Driven Tenant',
+            start_date: '2025-01-01',
+            end_date: null,
+            is_resident: 1,
+            is_present: true,
+            first_doc_date: '2021-04-03',
+            last_doc_date: '2023-09-12'
+          },
+          {
+            id: 302,
+            name: 'New House Tenant Without Docs',
+            start_date: null,
+            end_date: null,
+            is_resident: 1,
+            is_present: false,
+            first_doc_date: null,
+            last_doc_date: null
+          }
+        ]
+      });
+    });
+
+    document.getElementById('btn-manage-tenants').click();
+    await new Promise(r => setTimeout(r, 20));
+
+    const rows = document.querySelectorAll('#tenant-modal-rows .tenant-row');
+    expect(rows.length).toBe(2);
+
+    expect(rows[0].querySelector('.tenant-start-input').value).toBe('2021-04-03');
+    expect(rows[1].querySelector('.tenant-start-input').value).toBe('تلقائي (عند أول رفع)');
+
+    const saveBtn = document.getElementById('tenant-modal-save');
+    saveBtn.click();
+    await new Promise(r => setTimeout(r, 20));
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      '/api/areas/Safra%20C/houses/500/tenants',
+      expect.objectContaining({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenants: [
+            {
+              id: 301,
+              name: 'Doc Driven Tenant',
+              start_date: '2021-04-03',
+              end_date: null,
+              house_id: '500',
+              is_resident: 1,
+              notes: null
+            },
+            {
+              id: 302,
+              name: 'New House Tenant Without Docs',
+              start_date: null,
+              end_date: null,
+              house_id: '500',
+              is_resident: 1,
+              notes: null
+            }
+          ],
+          reallocate: true
+        })
+      })
+    );
+
+    delete global.currentTimeline;
+  });
 });

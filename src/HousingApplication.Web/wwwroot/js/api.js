@@ -92,5 +92,14 @@ function getNoteSnippet(notes, maxLen = 14) {
     return clean.substring(0, maxLen).trim() + '…';
 }
 
+async function deleteAreaApi(areaId) {
+    const cleanId = (areaId || '').trim();
+    if (!cleanId) throw new Error('Area ID is required.');
+    return await fetch(`/api/areas/${encodeURIComponent(cleanId)}`, {
+        method: 'DELETE'
+    });
+}
+
 window.escapeHtml = escapeHtml;
 window.getNoteSnippet = getNoteSnippet;
+window.deleteAreaApi = deleteAreaApi;

@@ -20,7 +20,6 @@ describe('+ Add House Modal Component (Phase 107)', () => {
           <select id="add-house-area-select" required></select>
           <input id="add-house-id-input" type="text" required />
           <input id="add-house-tenant-name-input" type="text" />
-          <input id="add-house-tenant-date-input" type="date" />
           <div id="add-house-status" class="hidden"></div>
         </form>
         <button id="btn-add-house-cancel" type="button">Cancel</button>
@@ -112,7 +111,7 @@ describe('+ Add House Modal Component (Phase 107)', () => {
     expect(areaSelect.value).toBe('Al-Malqa');
   });
 
-  it('opens add house modal and populates area select from globalTreeData with currentArea selected', () => {
+  it('opens add house modal and populates area select from globalTreeData with currentArea selected and no start date input', () => {
     const openBtn = document.getElementById('open-add-house-modal-btn');
     const modal = document.getElementById('add-house-modal');
     const areaSelect = document.getElementById('add-house-area-select');
@@ -125,7 +124,7 @@ describe('+ Add House Modal Component (Phase 107)', () => {
     expect(modal.classList.contains('hidden')).toBe(false);
     expect(areaSelect.options.length).toBe(2);
     expect(areaSelect.value).toBe('Safra C');
-    expect(dateInput.value).not.toBe('');
+    expect(dateInput).toBeNull();
   });
 
   it('closes modal when clicking cancel button, close button, backdrop, or pressing Escape', () => {
@@ -168,18 +167,16 @@ describe('+ Add House Modal Component (Phase 107)', () => {
     expect(window.showToast).not.toHaveBeenCalled();
   });
 
-  it('submits valid house creation, shows toast, and refreshes grid', async () => {
+  it('submits valid house creation with start_date: null, shows toast, and refreshes grid', async () => {
     window.openAddHouseModal('Safra C');
     const areaSelect = document.getElementById('add-house-area-select');
     const idInput = document.getElementById('add-house-id-input');
     const tenantInput = document.getElementById('add-house-tenant-name-input');
-    const dateInput = document.getElementById('add-house-tenant-date-input');
     const modal = document.getElementById('add-house-modal');
 
     areaSelect.value = 'Safra C';
     idInput.value = '515';
     tenantInput.value = 'عبد الله خالد';
-    dateInput.value = '2024-06-01';
 
     const mockResponse = {
       status: 'success',
@@ -205,7 +202,7 @@ describe('+ Add House Modal Component (Phase 107)', () => {
           house_id: '515',
           area_id: 'Safra C',
           initial_tenant_name: 'عبد الله خالد',
-          start_date: '2024-06-01',
+          start_date: null,
         })
       })
     );
@@ -213,6 +210,15 @@ describe('+ Add House Modal Component (Phase 107)', () => {
     expect(modal.classList.contains('hidden')).toBe(true);
     expect(window.showToast).toHaveBeenCalledWith('تمت إضافة المنزل بنجاح', 'success');
     expect(window.loadTree).toHaveBeenCalled();
+  });
+
+  it('ensures index.html has no start date input option in #add-house-modal', () => {
+    const htmlContent = fs.readFileSync(
+      path.resolve(__dirname, '../../../src/HousingApplication.Web/wwwroot/index.html'),
+      'utf8'
+    );
+    expect(htmlContent).not.toContain('add-house-tenant-date-input');
+    expect(htmlContent).not.toContain('data-i18n="add_house.start_date"');
   });
 
   it('displays error in status element when API returns conflict or failure', async () => {

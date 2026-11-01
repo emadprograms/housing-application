@@ -825,6 +825,16 @@
             gridAreaStats.textContent = `${rawHouses.length} Houses`;
             gridAreaStats.classList.remove('hidden');
         }
+        const deleteAreaHeaderBtn = document.getElementById('btn-delete-area-header');
+        if (deleteAreaHeaderBtn) {
+            const staticReadOnly = (typeof isStaticMode !== 'undefined' && isStaticMode) || (typeof window !== 'undefined' && Boolean(window.isStaticMode));
+            const canDelete = (typeof window !== 'undefined' && window.authManager && typeof window.authManager.hasDeletePermission === 'function')
+                ? window.authManager.hasDeletePermission()
+                : true;
+            const showDeleteAreaBtn = !staticReadOnly && canDelete;
+            deleteAreaHeaderBtn.classList.toggle('hidden', !showDeleteAreaBtn);
+            deleteAreaHeaderBtn.classList.toggle('flex', showDeleteAreaBtn);
+        }
         if (gridTenureLegend) {
             gridTenureLegend.classList.remove('hidden');
             gridTenureLegend.classList.add('flex');
@@ -1083,6 +1093,16 @@
                 `;
             }
 
+            const staticReadOnly = (typeof isStaticMode !== 'undefined' && isStaticMode) || (typeof window !== 'undefined' && Boolean(window.isStaticMode));
+            const canDelete = (typeof window !== 'undefined' && window.authManager && typeof window.authManager.hasDeletePermission === 'function')
+                ? window.authManager.hasDeletePermission()
+                : true;
+            const deleteCardBtnHtml = (!staticReadOnly && canDelete)
+                ? `<button type="button" class="house-card-delete-btn opacity-0 group-hover:opacity-100 focus:opacity-100 p-1 -mr-1 rounded-md text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/60 transition-all flex items-center justify-center flex-shrink-0 cursor-pointer">
+                       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                   </button>`
+                : '';
+
             card.innerHTML = `
                 <div class="card-main-content flex-1 min-h-0 flex flex-col">
                     <div class="flex items-center justify-between gap-2 pb-2.5 mb-2.5 border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
@@ -1097,6 +1117,7 @@
                         <div class="flex items-center gap-1.5 flex-shrink-0">
                             ${integrityBadgeHtml}
                             <span class="tenure-badge text-[10px] px-2 py-0.5 rounded border flex-shrink-0 ${badgeClass}">${badgeLabel}</span>
+                            ${deleteCardBtnHtml}
                         </div>
                     </div>
 
@@ -1110,6 +1131,24 @@
                     ${footerHtml}
                 </div>
             `;
+
+            const cardDeleteBtn = card.querySelector('.house-card-delete-btn');
+            if (cardDeleteBtn) {
+                const deleteHouseTitle = (isLiveI18n && typeof window.i18n.t === 'function')
+                    ? window.i18n.t('delete_house.title', isEn ? 'Delete House' : 'حذف المنزل')
+                    : (isLiveI18n ? (isEn ? 'Delete House' : 'حذف المنزل') : 'Delete House');
+                cardDeleteBtn.dataset.areaName = areaNode.name;
+                cardDeleteBtn.dataset.houseId = house.id;
+                cardDeleteBtn.title = deleteHouseTitle;
+                cardDeleteBtn.setAttribute('aria-label', deleteHouseTitle);
+                cardDeleteBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (typeof window.openDeleteHouseModal === 'function') {
+                        window.openDeleteHouseModal(areaNode.name, house.id);
+                    }
+                });
+            }
 
             if (orderedTenants.length > 3) {
                 const tenantsSection = card.querySelector('.tenants-overview-section');
@@ -1221,11 +1260,19 @@
         }
         closeGridViewOptions();
         const gridAreaStats = document.getElementById('grid-area-stats');
+        const deleteAreaHeaderBtn = document.getElementById('btn-delete-area-header');
         const gridTenureLegend = document.getElementById('grid-tenure-legend');
         const gridHouseSortContainer = document.getElementById('grid-house-sort-container');
         const gridIntegrityToolbar = document.getElementById('grid-integrity-toolbar');
         const openAddHouseBtn = document.getElementById('open-add-house-modal-btn');
         if (gridAreaStats) gridAreaStats.classList.add('hidden');
+        if (deleteAreaHeaderBtn) {
+            deleteAreaHeaderBtn.classList.add('hidden');
+            deleteAreaHeaderBtn.classList.remove('flex');
+        }
+        if (typeof window !== 'undefined' && typeof window.syncDeleteHouseQuickBtn === 'function') {
+            window.syncDeleteHouseQuickBtn();
+        }
         if (gridTenureLegend) {
             gridTenureLegend.classList.add('hidden');
             gridTenureLegend.classList.remove('flex', 'grid');
@@ -1252,7 +1299,6 @@
         const areaSelect = document.getElementById('add-house-area-select');
         const idInput = document.getElementById('add-house-id-input');
         const tenantInput = document.getElementById('add-house-tenant-name-input');
-        const dateInput = document.getElementById('add-house-tenant-date-input');
         const statusEl = document.getElementById('add-house-status');
         const spinner = document.getElementById('add-house-spinner');
         const submitBtn = document.getElementById('btn-add-house-submit');
@@ -1267,13 +1313,6 @@
 
         if (idInput) idInput.value = '';
         if (tenantInput) tenantInput.value = '';
-        if (dateInput) {
-            try {
-                dateInput.value = new Date().toISOString().split('T')[0];
-            } catch (e) {
-                dateInput.value = '';
-            }
-        }
 
         // Populate area options
         if (areaSelect) {
@@ -1282,15 +1321,24 @@
             const targetArea = preselectedArea || (typeof currentArea !== 'undefined' ? currentArea : window.currentArea);
 
             if (tree.length > 0) {
+                let matchedTarget = false;
                 tree.forEach(a => {
                     const opt = document.createElement('option');
                     opt.value = a.name || a.id;
                     opt.textContent = a.name || a.id;
                     if (targetArea && (a.name === targetArea || a.id === targetArea)) {
                         opt.selected = true;
+                        matchedTarget = true;
                     }
                     areaSelect.appendChild(opt);
                 });
+                if (preselectedArea && !matchedTarget) {
+                    const opt = document.createElement('option');
+                    opt.value = preselectedArea;
+                    opt.textContent = preselectedArea;
+                    opt.selected = true;
+                    areaSelect.appendChild(opt);
+                }
             } else if (targetArea) {
                 const opt = document.createElement('option');
                 opt.value = targetArea;
@@ -1317,7 +1365,6 @@
         const areaSelect = document.getElementById('add-house-area-select');
         const idInput = document.getElementById('add-house-id-input');
         const tenantInput = document.getElementById('add-house-tenant-name-input');
-        const dateInput = document.getElementById('add-house-tenant-date-input');
         const statusEl = document.getElementById('add-house-status');
         const spinner = document.getElementById('add-house-spinner');
         const submitBtn = document.getElementById('btn-add-house-submit');
@@ -1325,7 +1372,6 @@
         const areaId = areaSelect ? areaSelect.value.trim() : '';
         const houseId = idInput ? idInput.value.trim() : '';
         const tenantName = tenantInput ? tenantInput.value.trim() : '';
-        const startDate = dateInput ? dateInput.value.trim() : '';
 
         const isLiveI18n = (typeof window !== 'undefined' && window.i18n);
         const isLiveEn = isLiveI18n && window.i18n.getLanguage() === 'en';
@@ -1355,7 +1401,7 @@
                 house_id: houseId,
                 area_id: areaId,
                 initial_tenant_name: tenantName || null,
-                start_date: startDate || null,
+                start_date: null,
             };
 
             const res = await fetch(`/api/areas/${encodeURIComponent(areaId)}/houses`, {
@@ -1425,6 +1471,15 @@
             };
         }
 
+        const newAreaBtn = document.getElementById('btn-add-house-new-area');
+        if (newAreaBtn) {
+            newAreaBtn.onclick = () => {
+                if (typeof window !== 'undefined' && typeof window.openAddAreaModal === 'function') {
+                    window.openAddAreaModal({ returnToAddHouse: true });
+                }
+            };
+        }
+
         const closeBtn = document.getElementById('add-house-close');
         if (closeBtn) closeBtn.onclick = closeAddHouseModal;
 
@@ -1483,6 +1538,28 @@
             }
         };
         window.addEventListener('languageChanged', window._areaGridLangHandler);
+
+        if (window._areaGridAuthHandler) {
+            window.removeEventListener('auth:user-changed', window._areaGridAuthHandler);
+        }
+        window._areaGridAuthHandler = function() {
+            let targetNode = currentAreaNode;
+            if (!targetNode && typeof window !== 'undefined' && window.currentArea && window.globalTreeData && Array.isArray(window.globalTreeData)) {
+                targetNode = window.globalTreeData.find(a => a.name === window.currentArea || a.id === window.currentArea);
+            }
+            const areaGridPanel = document.getElementById('area-grid-panel');
+            const isPanelActive = Boolean(areaGridPanel && !areaGridPanel.classList.contains('hidden'));
+            if (targetNode && isPanelActive) {
+                renderAreaGrid(targetNode);
+            } else {
+                const deleteAreaHeaderBtn = document.getElementById('btn-delete-area-header');
+                if (deleteAreaHeaderBtn) {
+                    deleteAreaHeaderBtn.classList.add('hidden');
+                    deleteAreaHeaderBtn.classList.remove('flex');
+                }
+            }
+        };
+        window.addEventListener('auth:user-changed', window._areaGridAuthHandler);
     }
 
     window.selectAreaGrid = selectAreaGrid;

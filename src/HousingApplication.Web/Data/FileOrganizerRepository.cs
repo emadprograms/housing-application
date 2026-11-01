@@ -14,11 +14,46 @@ public class FileOrganizerRepository : IFileOrganizerRepository
 {
     private readonly ISqliteDbConnectionFactory _connectionFactory;
     private readonly IConfiguration? _configuration;
+    private readonly IStoragePathSettingsService? _pathSettings;
 
-    public FileOrganizerRepository(ISqliteDbConnectionFactory connectionFactory, IConfiguration? configuration = null)
+    public FileOrganizerRepository(
+        ISqliteDbConnectionFactory connectionFactory,
+        IConfiguration? configuration = null,
+        IStoragePathSettingsService? pathSettings = null)
     {
         _connectionFactory = connectionFactory;
         _configuration = configuration;
+        _pathSettings = pathSettings;
+    }
+
+    private string ResolveRepositoryAreasRoot(string? areasRoot)
+    {
+        if (!string.IsNullOrWhiteSpace(areasRoot))
+            return areasRoot;
+
+        if (_pathSettings != null && !string.IsNullOrWhiteSpace(_pathSettings.AreasRootPath))
+            return _pathSettings.AreasRootPath;
+
+        return _configuration?["AREAS_ROOT_PATH"]
+            ?? Environment.GetEnvironmentVariable("AREAS_ROOT_PATH")
+            ?? "../areas";
+    }
+
+    private static async Task SyncTenantStartDateAsync(IDbConnection conn, IDbTransaction tx, int tenantId)
+    {
+        if (tenantId <= 0) return;
+
+        var minDate = await conn.QueryFirstOrDefaultAsync<string?>(
+            "SELECT MIN(primary_date) FROM documents WHERE tenant_id = @TenantId AND is_timeline_visible = 1 AND primary_date IS NOT NULL AND primary_date != '';",
+            new { TenantId = tenantId }, tx);
+
+        string? normalizedMin = !string.IsNullOrWhiteSpace(minDate)
+            ? (minDate.Length >= 10 ? minDate[..10] : minDate)
+            : null;
+
+        await conn.ExecuteAsync(
+            "UPDATE tenants SET start_date = @MinDate WHERE id = @TenantId;",
+            new { MinDate = normalizedMin, TenantId = tenantId }, tx);
     }
 
     public async Task EnsureSchemaAsync()
@@ -811,6 +846,7 @@ public class FileOrganizerRepository : IFileOrganizerRepository
                        ELSE t.start_date 
                    END AS StartDate, 
                    t.end_date AS EndDate,
+                   d.min_date AS FirstDocDate,
                    d.max_date AS LastDocDate,
                    t.house_id AS HouseId, t.is_resident AS IsResident, t.notes AS Notes
             FROM tenants t
@@ -1318,6 +1354,11 @@ public class FileOrganizerRepository : IFileOrganizerRepository
             }, tx);
         }
 
+        if (request.TenantId > 0)
+        {
+            await SyncTenantStartDateAsync(conn, tx, request.TenantId);
+        }
+
         await tx.CommitAsync();
 
         return new IngestResponseDto
@@ -1422,34 +1463,18 @@ public class FileOrganizerRepository : IFileOrganizerRepository
                 new { PrimaryDate = primaryDate, VaultId = vaultId }, tx);
         }
 
-        // Keep tenant start_date synced to earliest document date
+        // Keep tenant start_date synced to earliest document date (or null when zero dated documents remain)
         if (primaryDate != null || tenantId.HasValue)
         {
             var targetTenantId = tenantId ?? existing.TenantId;
             if (targetTenantId > 0)
             {
-                var minDate = await conn.QueryFirstOrDefaultAsync<string>(
-                    "SELECT MIN(primary_date) FROM documents WHERE tenant_id = @TenantId AND is_timeline_visible = 1 AND primary_date IS NOT NULL AND primary_date != '';",
-                    new { TenantId = targetTenantId }, tx);
-                if (!string.IsNullOrWhiteSpace(minDate))
-                {
-                    await conn.ExecuteAsync(
-                        "UPDATE tenants SET start_date = @MinDate WHERE id = @TenantId;",
-                        new { MinDate = minDate, TenantId = targetTenantId }, tx);
-                }
+                await SyncTenantStartDateAsync(conn, tx, targetTenantId);
             }
 
             if (tenantId.HasValue && tenantId.Value != existing.TenantId && existing.TenantId > 0)
             {
-                var prevMinDate = await conn.QueryFirstOrDefaultAsync<string>(
-                    "SELECT MIN(primary_date) FROM documents WHERE tenant_id = @TenantId AND is_timeline_visible = 1 AND primary_date IS NOT NULL AND primary_date != '';",
-                    new { TenantId = existing.TenantId }, tx);
-                if (!string.IsNullOrWhiteSpace(prevMinDate))
-                {
-                    await conn.ExecuteAsync(
-                        "UPDATE tenants SET start_date = @MinDate WHERE id = @TenantId;",
-                        new { MinDate = prevMinDate, TenantId = existing.TenantId }, tx);
-                }
+                await SyncTenantStartDateAsync(conn, tx, existing.TenantId);
             }
         }
 
@@ -1571,6 +1596,149 @@ public class FileOrganizerRepository : IFileOrganizerRepository
         };
     }
 
+    private static readonly char[] InvalidAreaNameChars = { '/', '\\', ':', '*', '?', '"', '<', '>', '|', '\0' };
+
+    public async Task<CreateAreaResponseDto> CreateAreaAsync(
+        string areaId,
+        string? code = null,
+        string? areasRoot = null)
+    {
+        var cleanAreaId = areaId?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(cleanAreaId))
+        {
+            throw new ArgumentException("Area name is required and cannot be empty.");
+        }
+
+        if (cleanAreaId is "." or ".." ||
+            cleanAreaId.EndsWith('.') ||
+            cleanAreaId.IndexOfAny(InvalidAreaNameChars) >= 0 ||
+            cleanAreaId.Any(char.IsControl))
+        {
+            throw new ArgumentException("Area name contains invalid characters.");
+        }
+
+        var cleanCode = string.IsNullOrWhiteSpace(code) ? null : code.Trim();
+
+        await using var conn = await _connectionFactory.CreateConnectionAsync();
+
+        var existingArea = await conn.QueryFirstOrDefaultAsync<Area>(
+            "SELECT id AS Id, code AS Code FROM areas WHERE LOWER(id) = LOWER(@Id);",
+            new { Id = cleanAreaId });
+
+        if (existingArea != null)
+        {
+            throw new InvalidOperationException($"Area '{existingArea.Id}' already exists.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(areasRoot))
+        {
+            var fullRoot = Path.GetFullPath(areasRoot);
+            var rootWithSep = fullRoot.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            var areaDir = Path.GetFullPath(Path.Combine(fullRoot, cleanAreaId));
+            if (!areaDir.StartsWith(rootWithSep, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException("Area name contains invalid path segments.");
+            }
+            Directory.CreateDirectory(areaDir);
+        }
+
+        await conn.ExecuteAsync(
+            "INSERT INTO areas (id, code) VALUES (@Id, @Code);",
+            new { Id = cleanAreaId, Code = cleanCode });
+
+        return new CreateAreaResponseDto
+        {
+            Status = "success",
+            AreaId = cleanAreaId,
+            Code = cleanCode,
+            Message = $"Area '{cleanAreaId}' registered successfully."
+        };
+    }
+
+    public async Task<bool> DeleteAreaAsync(string areaId, string? areasRoot = null)
+    {
+        var cleanAreaId = areaId?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(cleanAreaId))
+        {
+            return false;
+        }
+
+        if (cleanAreaId is "." or ".." ||
+            cleanAreaId.EndsWith('.') ||
+            cleanAreaId.IndexOfAny(InvalidAreaNameChars) >= 0 ||
+            cleanAreaId.Any(char.IsControl))
+        {
+            throw new ArgumentException("Area name contains invalid characters.");
+        }
+
+        await using var conn = await _connectionFactory.CreateConnectionAsync();
+        var existingArea = await conn.QueryFirstOrDefaultAsync<Area>(
+            "SELECT id AS Id, code AS Code FROM areas WHERE id = @Id;",
+            new { Id = cleanAreaId });
+
+        if (existingArea == null)
+        {
+            existingArea = await conn.QueryFirstOrDefaultAsync<Area>(
+                "SELECT id AS Id, code AS Code FROM areas WHERE LOWER(id) = LOWER(@Id);",
+                new { Id = cleanAreaId });
+            if (existingArea == null)
+            {
+                return false;
+            }
+        }
+
+        var canonicalAreaId = existingArea.Id;
+
+        await using var tx = await conn.BeginTransactionAsync();
+
+        await conn.ExecuteAsync(
+            "DELETE FROM pages WHERE house_id IN (SELECT id FROM houses WHERE area_id = @AreaId);",
+            new { AreaId = canonicalAreaId }, tx);
+        await conn.ExecuteAsync(
+            "DELETE FROM documents WHERE house_id IN (SELECT id FROM houses WHERE area_id = @AreaId);",
+            new { AreaId = canonicalAreaId }, tx);
+        await conn.ExecuteAsync(
+            "DELETE FROM batches WHERE house_id IN (SELECT id FROM houses WHERE area_id = @AreaId);",
+            new { AreaId = canonicalAreaId }, tx);
+        await conn.ExecuteAsync(
+            "DELETE FROM tenants WHERE house_id IN (SELECT id FROM houses WHERE area_id = @AreaId);",
+            new { AreaId = canonicalAreaId }, tx);
+        await conn.ExecuteAsync(
+            "DELETE FROM houses WHERE area_id = @AreaId;",
+            new { AreaId = canonicalAreaId }, tx);
+        var rows = await conn.ExecuteAsync(
+            "DELETE FROM areas WHERE id = @AreaId;",
+            new { AreaId = canonicalAreaId }, tx);
+
+        await tx.CommitAsync();
+
+        var resolvedAreasRoot = ResolveRepositoryAreasRoot(areasRoot);
+
+        if (!string.IsNullOrWhiteSpace(resolvedAreasRoot))
+        {
+            try
+            {
+                var fullRoot = Path.GetFullPath(resolvedAreasRoot);
+                var rootWithSep = fullRoot.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+                var candidateNames = new[] { canonicalAreaId, cleanAreaId }.Distinct(StringComparer.Ordinal);
+                foreach (var candidate in candidateNames)
+                {
+                    var areaDir = Path.GetFullPath(Path.Combine(fullRoot, candidate));
+                    if (areaDir.StartsWith(rootWithSep, StringComparison.OrdinalIgnoreCase) && Directory.Exists(areaDir))
+                    {
+                        Directory.Delete(areaDir, recursive: true);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Ignore directory deletion errors so database deletion still completes cleanly
+            }
+        }
+
+        return rows > 0;
+    }
+
     public async Task<CreateHouseResponseDto> CreateHouseAsync(
         string areaId,
         string houseId,
@@ -1615,18 +1783,18 @@ public class FileOrganizerRepository : IFileOrganizerRepository
         // Register house
         await conn.ExecuteAsync("INSERT INTO houses (id, area_id) VALUES (@Id, @AreaId);", new { Id = cleanHouseId, AreaId = cleanAreaId });
 
-        // Optional initial tenant
+        // Optional initial tenant (start_date is strictly derived when the first document is entered)
         int? tenantId = null;
         if (!string.IsNullOrWhiteSpace(initialTenantName))
         {
             var cleanTenantName = initialTenantName.Trim();
-            var sDate = !string.IsNullOrWhiteSpace(startDate) ? startDate.Trim() : null;
+            string? initialStartDate = null;
 
             tenantId = await conn.ExecuteScalarAsync<int>(@"
                 INSERT INTO tenants (house_id, name, start_date)
                 VALUES (@HouseId, @Name, @StartDate);
                 SELECT last_insert_rowid();",
-                new { HouseId = cleanHouseId, Name = cleanTenantName, StartDate = (object?)sDate ?? DBNull.Value });
+                new { HouseId = cleanHouseId, Name = cleanTenantName, StartDate = initialStartDate });
         }
 
         // Directory scaffolding
@@ -1683,9 +1851,7 @@ public class FileOrganizerRepository : IFileOrganizerRepository
 
         await tx.CommitAsync();
 
-        var resolvedAreasRoot = !string.IsNullOrEmpty(areasRoot)
-            ? areasRoot
-            : (_configuration?["AREAS_ROOT_PATH"] ?? Environment.GetEnvironmentVariable("AREAS_ROOT_PATH") ?? "../areas");
+        var resolvedAreasRoot = ResolveRepositoryAreasRoot(areasRoot);
 
         var strippedHouse = cleanHouseId.Contains(" - ") ? cleanHouseId.Split(" - ")[0].Trim() : cleanHouseId;
         var candidateDirs = new List<string>
@@ -1860,9 +2026,7 @@ public class FileOrganizerRepository : IFileOrganizerRepository
 
     public async Task<bool> DeleteDocumentAsync(string areaId, string houseId, string vaultId, string? areasRoot = null)
     {
-        var resolvedAreasRoot = !string.IsNullOrEmpty(areasRoot)
-            ? areasRoot
-            : (_configuration?["AREAS_ROOT_PATH"] ?? Environment.GetEnvironmentVariable("AREAS_ROOT_PATH") ?? "../areas");
+        var resolvedAreasRoot = ResolveRepositoryAreasRoot(areasRoot);
 
         var cleanHouseId = houseId.Contains(" - ") ? houseId.Split(" - ")[0].Trim() : houseId.Trim();
 
@@ -1904,15 +2068,7 @@ public class FileOrganizerRepository : IFileOrganizerRepository
 
         if (docTenantId > 0)
         {
-            var minDate = await conn.QueryFirstOrDefaultAsync<string>(
-                "SELECT MIN(primary_date) FROM documents WHERE tenant_id = @TenantId AND is_timeline_visible = 1 AND primary_date IS NOT NULL AND primary_date != '';",
-                new { TenantId = docTenantId }, tx);
-            if (!string.IsNullOrWhiteSpace(minDate))
-            {
-                await conn.ExecuteAsync(
-                    "UPDATE tenants SET start_date = @MinDate WHERE id = @TenantId;",
-                    new { MinDate = minDate, TenantId = docTenantId }, tx);
-            }
+            await SyncTenantStartDateAsync(conn, tx, docTenantId);
         }
 
         await tx.CommitAsync();
@@ -1926,9 +2082,7 @@ public class FileOrganizerRepository : IFileOrganizerRepository
         IEnumerable<string> vaultIds,
         string? areasRoot = null)
     {
-        var resolvedAreasRoot = !string.IsNullOrEmpty(areasRoot)
-            ? areasRoot
-            : (_configuration?["AREAS_ROOT_PATH"] ?? Environment.GetEnvironmentVariable("AREAS_ROOT_PATH") ?? "../areas");
+        var resolvedAreasRoot = ResolveRepositoryAreasRoot(areasRoot);
 
         var cleanHouseId = houseId.Contains(" - ") ? houseId.Split(" - ")[0].Trim() : houseId.Trim();
 
@@ -1980,15 +2134,7 @@ public class FileOrganizerRepository : IFileOrganizerRepository
 
         foreach (var tid in affectedTenantIds)
         {
-            var minDate = await conn.QueryFirstOrDefaultAsync<string>(
-                "SELECT MIN(primary_date) FROM documents WHERE tenant_id = @TenantId AND is_timeline_visible = 1 AND primary_date IS NOT NULL AND primary_date != '';",
-                new { TenantId = tid }, tx);
-            if (!string.IsNullOrWhiteSpace(minDate))
-            {
-                await conn.ExecuteAsync(
-                    "UPDATE tenants SET start_date = @MinDate WHERE id = @TenantId;",
-                    new { MinDate = minDate, TenantId = tid }, tx);
-            }
+            await SyncTenantStartDateAsync(conn, tx, tid);
         }
 
         await tx.CommitAsync();
@@ -2012,6 +2158,22 @@ public class FileOrganizerRepository : IFileOrganizerRepository
 
         await using var conn = await _connectionFactory.CreateConnectionAsync();
         await using var tx = await conn.BeginTransactionAsync();
+
+        var affectedTenantIds = new HashSet<int>();
+        if (targetTenantId.HasValue)
+        {
+            var prevTenantIds = await conn.QueryAsync<int>(
+                "SELECT DISTINCT tenant_id FROM documents WHERE vault_id IN @VaultIds;",
+                new { VaultIds = vaultIds }, tx);
+            foreach (var tid in prevTenantIds)
+            {
+                if (tid > 0) affectedTenantIds.Add(tid);
+            }
+            if (targetTenantId.Value > 0)
+            {
+                affectedTenantIds.Add(targetTenantId.Value);
+            }
+        }
 
         var movedIds = new List<string>();
         foreach (var vaultId in vaultIds)
@@ -2038,6 +2200,11 @@ public class FileOrganizerRepository : IFileOrganizerRepository
             }
         }
 
+        foreach (var tid in affectedTenantIds)
+        {
+            await SyncTenantStartDateAsync(conn, tx, tid);
+        }
+
         await tx.CommitAsync();
 
         return new BatchMoveResponseDto
@@ -2057,9 +2224,7 @@ public class FileOrganizerRepository : IFileOrganizerRepository
         int? targetTenantId = null,
         string? areasRoot = null)
     {
-        var resolvedAreasRoot = !string.IsNullOrEmpty(areasRoot)
-            ? areasRoot
-            : (_configuration?["AREAS_ROOT_PATH"] ?? Environment.GetEnvironmentVariable("AREAS_ROOT_PATH") ?? "../areas");
+        var resolvedAreasRoot = ResolveRepositoryAreasRoot(areasRoot);
 
         var cleanHouseId = houseId.Contains(" - ") ? houseId.Split(" - ")[0].Trim() : houseId.Trim();
         var formattedCategory = Constants.FormatCategoryWithPrefix(targetCategory);
@@ -2246,14 +2411,36 @@ public class FileOrganizerRepository : IFileOrganizerRepository
             for (int i = 0; i < tenants.Count; i++)
             {
                 var t = tenants[i];
-                var sDate = !string.IsNullOrWhiteSpace(t.StartDate) ? (t.StartDate.Length >= 10 ? t.StartDate[..10] : t.StartDate) : null;
+                var existingByName = !t.Id.HasValue 
+                    ? currentTenants.FirstOrDefault(ct => string.Equals(ct.Name.Trim(), t.Name.Trim(), StringComparison.OrdinalIgnoreCase))
+                    : null;
+                var resolvedTenantId = t.Id ?? existingByName?.Id;
+
+                // Start date of the tenant is always the date of their first document when documents exist
+                string? minDocDate = null;
+                if (resolvedTenantId.HasValue)
+                {
+                    minDocDate = await conn.ExecuteScalarAsync<string?>(@"
+                        SELECT MIN(primary_date) 
+                        FROM documents 
+                        WHERE tenant_id = @TenantId 
+                          AND is_timeline_visible = 1 
+                          AND primary_date IS NOT NULL 
+                          AND primary_date != '';",
+                        new { TenantId = resolvedTenantId.Value }, tx);
+                }
+
+                var sDate = !string.IsNullOrWhiteSpace(minDocDate)
+                    ? (minDocDate.Length >= 10 ? minDocDate[..10] : minDocDate)
+                    : (!string.IsNullOrWhiteSpace(t.StartDate) ? (t.StartDate.Length >= 10 ? t.StartDate[..10] : t.StartDate) : null);
+
                 var isPresent = (i == presentTenantIndex);
                 string? eDate = null;
                 if (t.IsResident == 1 && !isPresent)
                 {
                     // End date of the past tenant is always the date of their last document arrival
                     string? maxDocDate = null;
-                    if (t.Id.HasValue)
+                    if (resolvedTenantId.HasValue)
                     {
                         maxDocDate = await conn.ExecuteScalarAsync<string?>(@"
                             SELECT MAX(primary_date) 
@@ -2262,19 +2449,7 @@ public class FileOrganizerRepository : IFileOrganizerRepository
                               AND is_timeline_visible = 1 
                               AND primary_date IS NOT NULL 
                               AND primary_date != '';",
-                            new { TenantId = t.Id.Value }, tx);
-                    }
-                    if (string.IsNullOrWhiteSpace(maxDocDate))
-                    {
-                        maxDocDate = await conn.ExecuteScalarAsync<string?>(@"
-                            SELECT MAX(primary_date) 
-                            FROM documents 
-                            WHERE (house_id = @HouseId OR house_id = @CleanHouseId)
-                              AND (primary_tenant = @Name OR tenant = @Name)
-                              AND is_timeline_visible = 1 
-                              AND primary_date IS NOT NULL 
-                              AND primary_date != '';",
-                            new { HouseId = houseId, CleanHouseId = cleanHouseId, Name = t.Name.Trim() }, tx);
+                            new { TenantId = resolvedTenantId.Value }, tx);
                     }
 
                     if (!string.IsNullOrWhiteSpace(maxDocDate))
@@ -2287,27 +2462,23 @@ public class FileOrganizerRepository : IFileOrganizerRepository
                     }
                 }
 
-                var existingByName = !t.Id.HasValue 
-                    ? currentTenants.FirstOrDefault(ct => string.Equals(ct.Name.Trim(), t.Name.Trim(), StringComparison.OrdinalIgnoreCase))
-                    : null;
-
                 if (t.Id.HasValue && currentTenants.Any(ct => ct.Id == t.Id.Value))
                 {
                     await conn.ExecuteAsync(
                         "UPDATE tenants SET name = @Name, start_date = @StartDate, end_date = @EndDate, is_resident = @IsResident, notes = @Notes WHERE id = @Id;",
-                        new { Name = t.Name.Trim(), StartDate = (object?)sDate ?? DBNull.Value, EndDate = (object?)eDate ?? DBNull.Value, IsResident = t.IsResident, Notes = t.Notes, Id = t.Id.Value }, tx);
+                        new { Name = t.Name.Trim(), StartDate = sDate, EndDate = eDate, IsResident = t.IsResident, Notes = t.Notes, Id = t.Id.Value }, tx);
                 }
                 else if (existingByName != null)
                 {
                     await conn.ExecuteAsync(
                         "UPDATE tenants SET name = @Name, start_date = @StartDate, end_date = @EndDate, is_resident = @IsResident, notes = @Notes WHERE id = @Id;",
-                        new { Name = t.Name.Trim(), StartDate = (object?)sDate ?? DBNull.Value, EndDate = (object?)eDate ?? DBNull.Value, IsResident = t.IsResident, Notes = t.Notes, Id = existingByName.Id }, tx);
+                        new { Name = t.Name.Trim(), StartDate = sDate, EndDate = eDate, IsResident = t.IsResident, Notes = t.Notes, Id = existingByName.Id }, tx);
                 }
                 else
                 {
                     await conn.ExecuteAsync(
                         "INSERT INTO tenants (house_id, name, start_date, end_date, is_resident, notes) VALUES (@HouseId, @Name, @StartDate, @EndDate, @IsResident, @Notes);",
-                        new { HouseId = targetHouseId, Name = t.Name.Trim(), StartDate = (object?)sDate ?? DBNull.Value, EndDate = (object?)eDate ?? DBNull.Value, IsResident = t.IsResident, Notes = t.Notes }, tx);
+                        new { HouseId = targetHouseId, Name = t.Name.Trim(), StartDate = sDate, EndDate = eDate, IsResident = t.IsResident, Notes = t.Notes }, tx);
                 }
             }
 
@@ -2347,6 +2518,20 @@ public class FileOrganizerRepository : IFileOrganizerRepository
                     }
 
                     await conn.ExecuteAsync("DELETE FROM tenants WHERE id = @Id;", new { Id = rt.Id }, tx);
+                }
+
+                if (fallbackTenant != null)
+                {
+                    var fallbackMin = await conn.QueryFirstOrDefaultAsync<string?>(
+                        "SELECT MIN(primary_date) FROM documents WHERE tenant_id = @TenantId AND is_timeline_visible = 1 AND primary_date IS NOT NULL AND primary_date != '';",
+                        new { TenantId = fallbackTenant.Id }, tx);
+                    if (!string.IsNullOrWhiteSpace(fallbackMin))
+                    {
+                        var cleanFallbackMin = fallbackMin.Length >= 10 ? fallbackMin[..10] : fallbackMin;
+                        await conn.ExecuteAsync(
+                            "UPDATE tenants SET start_date = @MinDate WHERE id = @TenantId;",
+                            new { MinDate = cleanFallbackMin, TenantId = fallbackTenant.Id }, tx);
+                    }
                 }
             }
         }
@@ -2394,11 +2579,18 @@ WHERE (house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHous
 
                     if (targetTenant != null && targetTenant.Id != doc.TenantId)
                     {
+                        var prevTid = doc.TenantId;
                         await conn.ExecuteAsync("UPDATE documents SET tenant_id = @TenantId WHERE vault_id = @VaultId;",
                             new { TenantId = targetTenant.Id, VaultId = doc.VaultId }, tx);
                         await conn.ExecuteAsync("UPDATE pages SET tenant_id = @TenantId WHERE vault_id = @VaultId;",
                             new { TenantId = targetTenant.Id, VaultId = doc.VaultId }, tx);
                         reallocatedCount++;
+
+                        await SyncTenantStartDateAsync(conn, tx, targetTenant.Id);
+                        if (prevTid > 0)
+                        {
+                            await SyncTenantStartDateAsync(conn, tx, prevTid);
+                        }
                     }
                 }
             }
@@ -2604,9 +2796,7 @@ WHERE (house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHous
         if (request.PageNumbers == null || request.PageNumbers.Count == 0)
             throw new ArgumentException("At least one page number must be specified for extraction.");
 
-        var resolvedAreasRoot = !string.IsNullOrEmpty(areasRoot)
-            ? areasRoot
-            : (_configuration?["AREAS_ROOT_PATH"] ?? Environment.GetEnvironmentVariable("AREAS_ROOT_PATH") ?? "../areas");
+        var resolvedAreasRoot = ResolveRepositoryAreasRoot(areasRoot);
 
         var cleanHouseId = houseId.Contains(" - ") ? houseId.Split(" - ")[0].Trim() : houseId.Trim();
 
@@ -2846,6 +3036,15 @@ WHERE (house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHous
             // New document is recorded with is_manual = 1.
         }
 
+        if (targetTenantId > 0)
+        {
+            await SyncTenantStartDateAsync(conn, tx, targetTenantId);
+        }
+        if (sourceDeleted && src.TenantId > 0 && src.TenantId != targetTenantId)
+        {
+            await SyncTenantStartDateAsync(conn, tx, src.TenantId);
+        }
+
         await tx.CommitAsync();
 
         var tenantName = await conn.QueryFirstOrDefaultAsync<string>(
@@ -2877,9 +3076,7 @@ WHERE (house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHous
         if (request.PageNumbers == null || request.PageNumbers.Count == 0)
             throw new ArgumentException("At least one page number must be specified for deletion.");
 
-        var resolvedAreasRoot = !string.IsNullOrEmpty(areasRoot)
-            ? areasRoot
-            : (_configuration?["AREAS_ROOT_PATH"] ?? Environment.GetEnvironmentVariable("AREAS_ROOT_PATH") ?? "../areas");
+        var resolvedAreasRoot = ResolveRepositoryAreasRoot(areasRoot);
 
         var cleanHouseId = houseId.Contains(" - ") ? houseId.Split(" - ")[0].Trim() : houseId.Trim();
 
@@ -3013,6 +3210,11 @@ WHERE (house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHous
         await conn.ExecuteAsync("UPDATE batches SET page_count = MAX(0, page_count - @DeletedCount) WHERE id = @BatchId;",
             new { DeletedCount = pagesToDelete.Count, BatchId = src.BatchId }, tx);
 
+        if (documentDeleted && src.TenantId > 0)
+        {
+            await SyncTenantStartDateAsync(conn, tx, src.TenantId);
+        }
+
         await tx.CommitAsync();
 
         return new DeletePagesResponseDto
@@ -3034,9 +3236,7 @@ WHERE (house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHous
         if (request.PageOrder == null || request.PageOrder.Count == 0)
             throw new ArgumentException("Page order must not be empty.");
 
-        var resolvedAreasRoot = !string.IsNullOrEmpty(areasRoot)
-            ? areasRoot
-            : (_configuration?["AREAS_ROOT_PATH"] ?? Environment.GetEnvironmentVariable("AREAS_ROOT_PATH") ?? "../areas");
+        var resolvedAreasRoot = ResolveRepositoryAreasRoot(areasRoot);
 
         var cleanHouseId = houseId.Contains(" - ") ? houseId.Split(" - ")[0].Trim() : houseId.Trim();
 
@@ -3181,9 +3381,7 @@ WHERE (house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHous
         if (rotations.Count == 0)
             throw new ArgumentException("Rotations dictionary must not be empty.");
 
-        var resolvedAreasRoot = !string.IsNullOrEmpty(areasRoot)
-            ? areasRoot
-            : (_configuration?["AREAS_ROOT_PATH"] ?? Environment.GetEnvironmentVariable("AREAS_ROOT_PATH") ?? "../areas");
+        var resolvedAreasRoot = ResolveRepositoryAreasRoot(areasRoot);
 
         var cleanHouseId = houseId.Contains(" - ") ? houseId.Split(" - ")[0].Trim() : houseId.Trim();
 
@@ -3292,9 +3490,7 @@ WHERE (house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHous
         if (request.VaultIds == null || request.VaultIds.Count < 2)
             throw new ArgumentException("At least two documents must be selected to perform a merge.");
 
-        var resolvedAreasRoot = !string.IsNullOrEmpty(areasRoot)
-            ? areasRoot
-            : (_configuration?["AREAS_ROOT_PATH"] ?? Environment.GetEnvironmentVariable("AREAS_ROOT_PATH") ?? "../areas");
+        var resolvedAreasRoot = ResolveRepositoryAreasRoot(areasRoot);
 
         var cleanHouseId = houseId.Contains(" - ") ? houseId.Split(" - ")[0].Trim() : houseId.Trim();
 
@@ -3515,18 +3711,25 @@ WHERE (house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHous
             }
         }
 
-        // Update tenant start date if relevant
+        // Sync start_date for target tenant and any source tenants whose documents were merged/deleted
+        var affectedMergeTenantIds = new HashSet<int>();
         if (targetTenantId > 0)
         {
-            var minDate = await conn.QueryFirstOrDefaultAsync<string>(
-                "SELECT MIN(primary_date) FROM documents WHERE tenant_id = @TenantId AND is_timeline_visible = 1 AND primary_date IS NOT NULL AND primary_date != '';",
-                new { TenantId = targetTenantId }, tx);
-            if (!string.IsNullOrWhiteSpace(minDate))
+            affectedMergeTenantIds.Add(targetTenantId);
+        }
+        if (request.DeleteSources)
+        {
+            foreach (var doc in orderedDocs)
             {
-                await conn.ExecuteAsync(
-                    "UPDATE tenants SET start_date = @MinDate WHERE id = @TenantId;",
-                    new { MinDate = minDate, TenantId = targetTenantId }, tx);
+                if (doc.TenantId > 0)
+                {
+                    affectedMergeTenantIds.Add(doc.TenantId);
+                }
             }
+        }
+        foreach (var tid in affectedMergeTenantIds)
+        {
+            await SyncTenantStartDateAsync(conn, tx, tid);
         }
 
         await tx.CommitAsync();
@@ -3550,7 +3753,11 @@ WHERE (house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHous
         if (string.IsNullOrWhiteSpace(username)) return null;
         await using var conn = await _connectionFactory.CreateConnectionAsync();
         return await conn.QuerySingleOrDefaultAsync<User>(
-            "SELECT id, username, display_name AS DisplayName, password_hash AS PasswordHash, salt, role, created_at AS CreatedAt, is_active AS IsActive FROM users WHERE LOWER(username) = LOWER(@Username) AND is_active = 1;",
+            @"SELECT id, username, display_name AS DisplayName, password_hash AS PasswordHash, salt, role,
+                     created_at AS CreatedAt, is_active AS IsActive,
+                     COALESCE(has_custom_password, 0) AS HasCustomPassword
+              FROM users
+              WHERE LOWER(username) = LOWER(@Username) AND is_active = 1;",
             new { Username = username.Trim() });
     }
 
@@ -3558,7 +3765,11 @@ WHERE (house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHous
     {
         await using var conn = await _connectionFactory.CreateConnectionAsync();
         return await conn.QuerySingleOrDefaultAsync<User>(
-            "SELECT id, username, display_name AS DisplayName, password_hash AS PasswordHash, salt, role, created_at AS CreatedAt, is_active AS IsActive FROM users WHERE id = @Id AND is_active = 1;",
+            @"SELECT id, username, display_name AS DisplayName, password_hash AS PasswordHash, salt, role,
+                     created_at AS CreatedAt, is_active AS IsActive,
+                     COALESCE(has_custom_password, 0) AS HasCustomPassword
+              FROM users
+              WHERE id = @Id AND is_active = 1;",
             new { Id = id });
     }
 
@@ -3566,14 +3777,290 @@ WHERE (house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHous
     {
         await using var conn = await _connectionFactory.CreateConnectionAsync();
         var users = await conn.QueryAsync<User>(
-            "SELECT id, username, display_name AS DisplayName, password_hash AS PasswordHash, salt, role, created_at AS CreatedAt, is_active AS IsActive FROM users WHERE is_active = 1 ORDER BY CASE WHEN role = 'Admin' THEN 1 ELSE 2 END, id ASC;");
-        return users.Select(u => new UserDto
+            @"SELECT id, username, display_name AS DisplayName, password_hash AS PasswordHash, salt, role,
+                     created_at AS CreatedAt, is_active AS IsActive,
+                     COALESCE(has_custom_password, 0) AS HasCustomPassword
+              FROM users
+              WHERE is_active = 1
+              ORDER BY CASE WHEN role = 'SuperUser' THEN 0 WHEN role = 'Admin' THEN 1 ELSE 2 END, id ASC;");
+        return users.Select(ToUserDto).ToList();
+    }
+
+    private static UserDto ToUserDto(User u) => new()
+    {
+        Id = u.Id,
+        Username = u.Username,
+        DisplayName = u.DisplayName,
+        Role = u.Role,
+        CreatedAt = u.CreatedAt
+    };
+
+    private static (bool Valid, string NormalizedRole, string? ErrorMessage) ValidateAssignableRole(string? rawRole)
+    {
+        var trimmed = (rawRole ?? "Contributor").Trim();
+        if (string.Equals(trimmed, "SuperUser", StringComparison.OrdinalIgnoreCase))
         {
-            Id = u.Id,
-            Username = u.Username,
-            DisplayName = u.DisplayName,
-            Role = u.Role
-        }).ToList();
+            return (false, string.Empty, "There can only be one Super User. Use Transfer Super User to assign Super User ownership.");
+        }
+
+        if (string.Equals(trimmed, "Admin", StringComparison.OrdinalIgnoreCase))
+        {
+            return (true, "Admin", null);
+        }
+
+        if (string.Equals(trimmed, "Contributor", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(trimmed, "Regular", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(trimmed, "RegularUser", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(trimmed, "User", StringComparison.OrdinalIgnoreCase))
+        {
+            return (true, "Contributor", null);
+        }
+
+        return (false, string.Empty, $"Unsupported role '{trimmed}'. Allowed roles are Admin or Contributor (Regular User).");
+    }
+
+    public async Task<(bool Success, string? ErrorMessage, UserDto? User)> CreateUserAsync(CreateUserRequestDto request)
+    {
+        var cleanUsername = (request.Username ?? string.Empty).Trim();
+        if (cleanUsername.Length < 2 || cleanUsername.Length > 40)
+        {
+            return (false, "Username must be between 2 and 40 characters.", null);
+        }
+
+        if (cleanUsername.Any(char.IsWhiteSpace) || cleanUsername.Any(char.IsControl))
+        {
+            return (false, "Username cannot contain spaces or control characters.", null);
+        }
+
+        var cleanPassword = (request.Password ?? string.Empty).Trim();
+        if (cleanPassword.Length < 4)
+        {
+            return (false, "Password must be at least 4 characters.", null);
+        }
+
+        var (validRole, normalizedRole, roleErr) = ValidateAssignableRole(request.Role);
+        if (!validRole)
+        {
+            return (false, roleErr, null);
+        }
+
+        var cleanDisplayName = string.IsNullOrWhiteSpace(request.DisplayName)
+            ? cleanUsername
+            : request.DisplayName.Trim();
+
+        await using var conn = await _connectionFactory.CreateConnectionAsync();
+        var existing = await conn.QuerySingleOrDefaultAsync<(int Id, int IsActive)>(
+            "SELECT id, is_active FROM users WHERE LOWER(username) = LOWER(@Username);",
+            new { Username = cleanUsername });
+
+        var (hash, salt) = PasswordHasher.HashPassword(cleanPassword);
+
+        if (existing.Id > 0)
+        {
+            if (existing.IsActive == 1)
+            {
+                return (false, $"Username '{cleanUsername}' already exists.", null);
+            }
+
+            await conn.ExecuteAsync(
+                @"UPDATE users
+                  SET username = @Username,
+                      display_name = @DisplayName,
+                      password_hash = @Hash,
+                      salt = @Salt,
+                      role = @Role,
+                      is_active = 1,
+                      has_custom_password = 1
+                  WHERE id = @Id;",
+                new
+                {
+                    Id = existing.Id,
+                    Username = cleanUsername,
+                    DisplayName = cleanDisplayName,
+                    Hash = hash,
+                    Salt = salt,
+                    Role = normalizedRole
+                });
+
+            var reactivated = await GetUserByIdAsync(existing.Id);
+            return reactivated != null
+                ? (true, null, ToUserDto(reactivated))
+                : (false, "Failed to load reactivated user.", null);
+        }
+
+        var newId = await conn.ExecuteScalarAsync<int>(
+            @"INSERT INTO users (username, display_name, password_hash, salt, role, is_active, has_custom_password)
+              VALUES (@Username, @DisplayName, @Hash, @Salt, @Role, 1, 1);
+              SELECT last_insert_rowid();",
+            new
+            {
+                Username = cleanUsername,
+                DisplayName = cleanDisplayName,
+                Hash = hash,
+                Salt = salt,
+                Role = normalizedRole
+            });
+
+        var created = await GetUserByIdAsync(newId);
+        return created != null
+            ? (true, null, ToUserDto(created))
+            : (false, "Failed to load newly created user.", null);
+    }
+
+    public async Task<(bool Success, string? ErrorMessage, UserDto? User)> UpdateUserAsync(int userId, UpdateUserRequestDto request)
+    {
+        var existing = await GetUserByIdAsync(userId);
+        if (existing == null)
+        {
+            return (false, "User not found.", null);
+        }
+
+        var nextRole = existing.Role;
+        if (!string.IsNullOrWhiteSpace(request.Role))
+        {
+            if (string.Equals(existing.Role, "SuperUser", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.Equals(request.Role.Trim(), "SuperUser", StringComparison.OrdinalIgnoreCase))
+                {
+                    return (false, "Cannot demote the Super User directly. Transfer the Super User role to another account first so there is always one Super User.", null);
+                }
+            }
+            else
+            {
+                var (validRole, normalizedRole, roleErr) = ValidateAssignableRole(request.Role);
+                if (!validRole)
+                {
+                    return (false, roleErr, null);
+                }
+                nextRole = normalizedRole;
+            }
+        }
+
+        var nextDisplayName = string.IsNullOrWhiteSpace(request.DisplayName)
+            ? existing.DisplayName
+            : request.DisplayName.Trim();
+
+        var nextHash = existing.PasswordHash;
+        var nextSalt = existing.Salt;
+        var nextHasCustomPass = existing.HasCustomPassword;
+
+        if (!string.IsNullOrWhiteSpace(request.Password))
+        {
+            var cleanPassword = request.Password.Trim();
+            if (cleanPassword.Length < 4)
+            {
+                return (false, "Password must be at least 4 characters.", null);
+            }
+
+            (nextHash, nextSalt) = PasswordHasher.HashPassword(cleanPassword);
+            nextHasCustomPass = 1;
+        }
+
+        await using var conn = await _connectionFactory.CreateConnectionAsync();
+        await conn.ExecuteAsync(
+            @"UPDATE users
+              SET display_name = @DisplayName,
+                  role = @Role,
+                  password_hash = @Hash,
+                  salt = @Salt,
+                  has_custom_password = @HasCustomPassword
+              WHERE id = @Id AND is_active = 1;",
+            new
+            {
+                Id = userId,
+                DisplayName = nextDisplayName,
+                Role = nextRole,
+                Hash = nextHash,
+                Salt = nextSalt,
+                HasCustomPassword = nextHasCustomPass
+            });
+
+        var updated = await GetUserByIdAsync(userId);
+        return updated != null
+            ? (true, null, ToUserDto(updated))
+            : (false, "Failed to reload updated user.", null);
+    }
+
+    public async Task<(bool Success, string? ErrorMessage)> DeleteUserAsync(int userId, int? actingUserId = null)
+    {
+        var existing = await GetUserByIdAsync(userId);
+        if (existing == null)
+        {
+            return (false, "User not found.");
+        }
+
+        if (string.Equals(existing.Role, "SuperUser", StringComparison.OrdinalIgnoreCase))
+        {
+            return (false, "The Super User account cannot be deleted. Transfer the Super User role to another account first.");
+        }
+
+        if (actingUserId.HasValue && actingUserId.Value == userId)
+        {
+            return (false, "You cannot delete your own active account.");
+        }
+
+        await using var conn = await _connectionFactory.CreateConnectionAsync();
+        var affected = await conn.ExecuteAsync(
+            "DELETE FROM users WHERE id = @Id AND role != 'SuperUser';",
+            new { Id = userId });
+
+        return affected > 0
+            ? (true, null)
+            : (false, "Failed to delete user.");
+    }
+
+    public async Task<(bool Success, string? ErrorMessage, UserDto? NewSuperUser)> TransferSuperUserAsync(int targetUserId)
+    {
+        var target = await GetUserByIdAsync(targetUserId);
+        if (target == null)
+        {
+            return (false, "Target user not found.", null);
+        }
+
+        if (string.Equals(target.Role, "SuperUser", StringComparison.OrdinalIgnoreCase))
+        {
+            return (true, null, ToUserDto(target));
+        }
+
+        await using var conn = await _connectionFactory.CreateConnectionAsync();
+        await using var tx = await conn.BeginTransactionAsync();
+
+        try
+        {
+            // Step 1: Demote current SuperUser to Admin first so idx_users_single_superuser stays satisfied
+            await conn.ExecuteAsync(
+                "UPDATE users SET role = 'Admin' WHERE role = 'SuperUser' AND is_active = 1;",
+                transaction: tx);
+
+            // Step 2: Promote target user to SuperUser
+            var promoted = await conn.ExecuteAsync(
+                "UPDATE users SET role = 'SuperUser' WHERE id = @TargetId AND is_active = 1;",
+                new { TargetId = targetUserId },
+                tx);
+
+            // Step 3: Verify exact cardinality == 1 before committing
+            var activeSuperCount = await conn.ExecuteScalarAsync<int>(
+                "SELECT COUNT(*) FROM users WHERE role = 'SuperUser' AND is_active = 1;",
+                transaction: tx);
+
+            if (promoted != 1 || activeSuperCount != 1)
+            {
+                await tx.RollbackAsync();
+                return (false, "Failed to transfer Super User role while preserving single-SuperUser invariant.", null);
+            }
+
+            await tx.CommitAsync();
+        }
+        catch (Exception ex)
+        {
+            await tx.RollbackAsync();
+            return (false, $"Failed to transfer Super User role: {ex.Message}", null);
+        }
+
+        var updatedTarget = await GetUserByIdAsync(targetUserId);
+        return updatedTarget != null
+            ? (true, null, ToUserDto(updatedTarget))
+            : (false, "Failed to reload new Super User.", null);
     }
 }
 

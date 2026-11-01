@@ -1,5 +1,9 @@
 #!/bin/bash
+set -e
 export PATH="$HOME/.dotnet:$PATH"
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_ROOT"
 
 # Remote paths (SMB network share)
 REMOTE_DB="/Volumes/arshad-pc/areas_v11/organizer.db"
@@ -32,18 +36,24 @@ if [ -f "$REMOTE_DB" ]; then
         echo "✅ Existing local copy is valid: $LOCAL_DB ($(du -h "$LOCAL_DB" | cut -f1))"
     fi
     DB_PATH="$LOCAL_DB"
+elif [ -f "$REPO_ROOT/../areas_v11/organizer.db" ]; then
+    DB_PATH="$(cd "$REPO_ROOT/../areas_v11" && pwd)/organizer.db"
+    AREAS_ROOT="$(cd "$REPO_ROOT/../areas_v11" && pwd)"
+elif [ -f "$REPO_ROOT/areas_v11/organizer.db" ]; then
+    DB_PATH="$REPO_ROOT/areas_v11/organizer.db"
+    AREAS_ROOT="$REPO_ROOT/areas_v11"
 elif [ -f "$LOCAL_DB" ]; then
     DB_PATH="$LOCAL_DB"
     echo "⚠️  Remote DB not available, using existing local copy"
 else
-    DB_PATH="$(pwd)/organizer.db"
-    AREAS_ROOT="$(pwd)/areas"
+    DB_PATH="$REPO_ROOT/organizer.db"
+    AREAS_ROOT="$REPO_ROOT/areas"
 fi
 
 PORT=5000
-LOCAL_IP=$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || ifconfig | grep "inet " | grep -v 127.0.0.1 | head -n1 | awk '{print $2}')
+LOCAL_IP=$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || ifconfig 2>/dev/null | grep "inet " | grep -v 127.0.0.1 | head -n1 | awk '{print $2}')
 
-echo "🚀 Starting Housing Application .NET Web Server on Mac..."
+echo "🚀 Starting Housing Application .NET Web Server..."
 echo "📁 Database: $DB_PATH"
 echo "📂 Areas Root: $AREAS_ROOT"
 echo "🌐 Local:   http://localhost:$PORT"
@@ -51,4 +61,4 @@ if [ -n "$LOCAL_IP" ]; then
     echo "📱 Network: http://$LOCAL_IP:$PORT  (Accessible to other devices on the same Wi-Fi / network)"
 fi
 
-~/.dotnet/dotnet run --project src/HousingApplication.Web/HousingApplication.Web.csproj --urls "http://0.0.0.0:$PORT" --ORGANIZER_DB_PATH "$DB_PATH" --AREAS_ROOT_PATH "$AREAS_ROOT"
+dotnet run --project "$REPO_ROOT/src/HousingApplication.Web/HousingApplication.Web.csproj" --urls "http://0.0.0.0:$PORT" --ORGANIZER_DB_PATH "$DB_PATH" --AREAS_ROOT_PATH "$AREAS_ROOT"

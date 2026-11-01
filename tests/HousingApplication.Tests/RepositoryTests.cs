@@ -2873,6 +2873,96 @@ public class RepositoryTests : IDisposable
         Assert.NotNull(profile);
         Assert.Null(profile.ActiveResident);
     }
+
+    [Fact]
+    public async Task CreateHouseAndDocumentLifecycle_StartDateIsAlwaysFirstDocumentDate_AndResetsWhenEmpty()
+    {
+        var areaId = "AreaDocStart";
+        var houseId = "H-DocStart1";
+        await _repo.AddAreaAsync(areaId, "ADS");
+
+        // 1. Creating a house ignores any manual startDate — start_date remains null until a document is entered
+        var createRes = await _repo.CreateHouseAsync(areaId, houseId, "مستأجر أول", startDate: "2026-11-01");
+        Assert.Equal("success", createRes.Status);
+        Assert.NotNull(createRes.TenantId);
+        var tenantId = createRes.TenantId!.Value;
+
+        var initialTenants = await _repo.GetTenantsAsync(houseId);
+        Assert.Single(initialTenants);
+        Assert.Null(initialTenants[0].StartDate);
+        Assert.Null(initialTenants[0].FirstDocDate);
+
+        var initialProfile = await _repo.GetHouseProfileAsync(areaId, houseId);
+        Assert.NotNull(initialProfile);
+        Assert.Null(initialProfile!.Tenants[0].StartDate);
+
+        var initialTree = await _repo.GetTreeAsync();
+        var initialHouseNode = initialTree.First(a => a.Name == areaId).Children!.First(h => h.Id == houseId);
+        Assert.Null(initialHouseNode.Subtitle);
+        Assert.Null(initialHouseNode.Children![0].StartDate);
+
+        // 2. Enter first document (2024-05-15) -> StartDate becomes 2024-05-15 everywhere
+        var doc1 = await _repo.AddManualDocumentAsync(new IngestRequestDto
+        {
+            AreaId = areaId,
+            HouseId = houseId,
+            TenantId = tenantId,
+            Category = "05 - عقود",
+            ArabicTitle = "عقد أول",
+            PrimaryDate = "2024-05-15",
+            PageCount = 1
+        });
+        Assert.NotNull(doc1.VaultId);
+
+        var afterDoc1 = await _repo.GetTenantsAsync(houseId);
+        Assert.Equal("2024-05-15", afterDoc1[0].StartDate);
+        Assert.Equal("2024-05-15", afterDoc1[0].FirstDocDate);
+
+        // 3. Enter an earlier document (2021-02-10) -> StartDate snaps to 2021-02-10
+        var doc2 = await _repo.AddManualDocumentAsync(new IngestRequestDto
+        {
+            AreaId = areaId,
+            HouseId = houseId,
+            TenantId = tenantId,
+            Category = "01 - طلبات",
+            ArabicTitle = "طلب أقدم",
+            PrimaryDate = "2021-02-10",
+            PageCount = 1
+        });
+        Assert.NotNull(doc2.VaultId);
+
+        var afterDoc2 = await _repo.GetTenantsAsync(houseId);
+        Assert.Equal("2021-02-10", afterDoc2[0].StartDate);
+
+        // 4. BulkUpdateTenantsAsync cannot override document-derived StartDate with a manual date
+        await _repo.BulkUpdateTenantsAsync(houseId, new List<TenantDto>
+        {
+            new TenantDto
+            {
+                Id = tenantId,
+                Name = "مستأجر أول",
+                StartDate = "2025-12-31",
+                EndDate = null,
+                HouseId = houseId,
+                IsResident = 1,
+                IsPresent = true
+            }
+        }, reallocate: false);
+
+        var afterBulk = await _repo.GetTenantsAsync(houseId);
+        Assert.Equal("2021-02-10", afterBulk[0].StartDate);
+
+        // 5. Delete earlier document -> StartDate advances to remaining earliest document (2024-05-15)
+        await _repo.DeleteDocumentAsync(areaId, houseId, doc2.VaultId!);
+        var afterDelEarlier = await _repo.GetTenantsAsync(houseId);
+        Assert.Equal("2024-05-15", afterDelEarlier[0].StartDate);
+
+        // 6. Delete final document -> StartDate resets cleanly to null
+        await _repo.DeleteDocumentAsync(areaId, houseId, doc1.VaultId!);
+        var afterDelAll = await _repo.GetTenantsAsync(houseId);
+        Assert.Null(afterDelAll[0].StartDate);
+        Assert.Null(afterDelAll[0].FirstDocDate);
+    }
 }
 
 

@@ -76,11 +76,65 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
             return Task.CompletedTask;
         };
+        options.Events.OnValidatePrincipal = async context =>
+        {
+            var principal = context.Principal;
+            if (principal?.Identity?.IsAuthenticated != true)
+                return;
+
+            var repo = context.HttpContext.RequestServices.GetService<IFileOrganizerRepository>();
+            if (repo == null)
+                return;
+
+            User? dbUser = null;
+            if (int.TryParse(principal.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var uid) && uid > 0)
+            {
+                dbUser = await repo.GetUserByIdAsync(uid);
+            }
+            else if (!string.IsNullOrWhiteSpace(principal.Identity.Name))
+            {
+                dbUser = await repo.GetUserByUsernameAsync(principal.Identity.Name);
+            }
+
+            if (dbUser == null || dbUser.IsActive == 0)
+            {
+                context.RejectPrincipal();
+                await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                return;
+            }
+
+            var currentRole = principal.FindFirst(ClaimTypes.Role)?.Value ?? principal.FindFirst("role")?.Value ?? string.Empty;
+            var currentDisplay = principal.FindFirst("display_name")?.Value ?? string.Empty;
+
+            if (!string.Equals(currentRole, dbUser.Role, StringComparison.Ordinal) ||
+                !string.Equals(currentDisplay, dbUser.DisplayName, StringComparison.Ordinal))
+            {
+                var canDelete = string.Equals(dbUser.Role, "SuperUser", StringComparison.OrdinalIgnoreCase) ||
+                                string.Equals(dbUser.Role, "Admin", StringComparison.OrdinalIgnoreCase);
+                var isSuper = string.Equals(dbUser.Role, "SuperUser", StringComparison.OrdinalIgnoreCase);
+
+                var refreshedClaims = new List<Claim>
+                {
+                    new(ClaimTypes.NameIdentifier, dbUser.Id.ToString()),
+                    new(ClaimTypes.Name, dbUser.Username),
+                    new("display_name", dbUser.DisplayName),
+                    new(ClaimTypes.Role, dbUser.Role),
+                    new("role", dbUser.Role),
+                    new("can_delete", canDelete.ToString().ToLowerInvariant()),
+                    new("can_manage_users", isSuper.ToString().ToLowerInvariant())
+                };
+
+                context.ReplacePrincipal(new ClaimsPrincipal(
+                    new ClaimsIdentity(refreshedClaims, CookieAuthenticationDefaults.AuthenticationScheme)));
+                context.ShouldRenew = true;
+            }
+        };
     });
 builder.Services.AddAuthorization();
 
 // Register DI services
 builder.Services.AddSingleton<ISqliteDbConnectionFactory, SqliteDbConnectionFactory>();
+builder.Services.AddSingleton<IStoragePathSettingsService, StoragePathSettingsService>();
 builder.Services.AddScoped<IFileOrganizerRepository, FileOrganizerRepository>();
 
 // Configure response compression for fast asset and API delivery over internet
@@ -90,6 +144,7 @@ builder.Services.AddResponseCompression(options =>
 });
 
 var app = builder.Build();
+var storagePathService = app.Services.GetRequiredService<IStoragePathSettingsService>();
 
 // Ensure DB schema is initialized
 using (var scope = app.Services.CreateScope())
@@ -175,17 +230,23 @@ app.MapGet("/api/health", () => Results.Ok(new
 {
     status = "healthy",
     timestamp = DateTime.UtcNow,
-    build_version = "2026.09.22.1",
+    build_version = "2026.11.01.2",
     applicant_support = true,
+    storage_settings_support = true,
+    user_management_support = true,
     executable_path = Environment.ProcessPath
 }));
 
 // ---------------------------------------------------------------------------
 // RBAC Security Helpers
 // ---------------------------------------------------------------------------
+static bool IsPrivilegedRole(string? role) =>
+    string.Equals(role, "SuperUser", StringComparison.OrdinalIgnoreCase) ||
+    string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase);
+
 static bool IsRestrictedFromDelete(HttpContext ctx)
 {
-    // If authenticated user is a Contributor, they cannot delete
+    // If authenticated user is a Contributor (Regular User), they cannot delete
     if (ctx.User.Identity?.IsAuthenticated == true)
     {
         if (ctx.User.IsInRole("Contributor")) return true;
@@ -193,19 +254,36 @@ static bool IsRestrictedFromDelete(HttpContext ctx)
         if (string.Equals(canDeleteClaim, "false", StringComparison.OrdinalIgnoreCase)) return true;
         var role = ctx.User.FindFirst(ClaimTypes.Role)?.Value ?? ctx.User.FindFirst("role")?.Value;
         if (string.Equals(role, "Contributor", StringComparison.OrdinalIgnoreCase)) return true;
-        if (string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase)) return false;
+        if (IsPrivilegedRole(role)) return false;
     }
 
     // Optional header-based role checking (for testing and automation)
     var headerRole = ctx.Request.Headers["X-User-Role"].FirstOrDefault();
     if (string.Equals(headerRole, "Contributor", StringComparison.OrdinalIgnoreCase))
         return true;
-    if (string.Equals(headerRole, "Admin", StringComparison.OrdinalIgnoreCase))
+    if (IsPrivilegedRole(headerRole))
         return false;
 
     var headerUser = ctx.Request.Headers["X-User"].FirstOrDefault();
     if (!string.IsNullOrEmpty(headerUser))
     {
+        var repo = ctx.RequestServices.GetService<IFileOrganizerRepository>();
+        if (repo != null)
+        {
+            try
+            {
+                var dbUser = repo.GetUserByUsernameAsync(headerUser.Trim()).GetAwaiter().GetResult();
+                if (dbUser != null)
+                {
+                    return !IsPrivilegedRole(dbUser.Role);
+                }
+            }
+            catch
+            {
+                // Fall back to default sets if DB lookup fails
+            }
+        }
+
         var contributors = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "Nawaf", "Naseem", "Mulla", "Mariam", "Shaima", "Mona"
@@ -224,23 +302,53 @@ static bool IsRestrictedFromDelete(HttpContext ctx)
     return false;
 }
 
-static string ResolveAreasRoot(IConfiguration config)
+static async Task<(bool IsSuperUser, int? ActingUserId)> CheckSuperUserAccessAsync(
+    HttpContext ctx,
+    IFileOrganizerRepository repo)
 {
-    var explicitRoot = config["AREAS_ROOT_PATH"] 
-        ?? config["AREAS_ROOT"] 
-        ?? config["areas_root"] 
-        ?? Environment.GetEnvironmentVariable("AREAS_ROOT_PATH")
-        ?? Environment.GetEnvironmentVariable("AREAS_ROOT");
+    if (ctx.User.Identity?.IsAuthenticated == true)
+    {
+        User? dbUser = null;
+        if (int.TryParse(ctx.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var uid) && uid > 0)
+        {
+            dbUser = await repo.GetUserByIdAsync(uid);
+        }
+        else if (!string.IsNullOrWhiteSpace(ctx.User.Identity.Name))
+        {
+            dbUser = await repo.GetUserByUsernameAsync(ctx.User.Identity.Name);
+        }
 
-    if (!string.IsNullOrWhiteSpace(explicitRoot) && Directory.Exists(explicitRoot))
-        return Path.GetFullPath(explicitRoot);
+        if (dbUser != null)
+        {
+            return (string.Equals(dbUser.Role, "SuperUser", StringComparison.OrdinalIgnoreCase), dbUser.Id);
+        }
 
-    if (Directory.Exists(@"D:\areas_v11"))
-        return @"D:\areas_v11";
+        var claimRole = ctx.User.FindFirst(ClaimTypes.Role)?.Value ?? ctx.User.FindFirst("role")?.Value;
+        int.TryParse(ctx.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var fallbackId);
+        return (string.Equals(claimRole, "SuperUser", StringComparison.OrdinalIgnoreCase), fallbackId > 0 ? fallbackId : null);
+    }
 
-    var defaultPath = Path.GetFullPath("../areas");
-    return Directory.Exists(defaultPath) ? defaultPath : Directory.GetCurrentDirectory();
+    var headerUser = ctx.Request.Headers["X-User"].FirstOrDefault();
+    var headerRole = ctx.Request.Headers["X-User-Role"].FirstOrDefault();
+
+    if (!string.IsNullOrWhiteSpace(headerUser))
+    {
+        var dbUser = await repo.GetUserByUsernameAsync(headerUser.Trim());
+        if (dbUser != null)
+        {
+            return (string.Equals(dbUser.Role, "SuperUser", StringComparison.OrdinalIgnoreCase), dbUser.Id);
+        }
+    }
+
+    if (string.Equals(headerRole, "SuperUser", StringComparison.OrdinalIgnoreCase))
+    {
+        return (true, null);
+    }
+
+    return (false, null);
 }
+
+string ResolveAreasRoot(IConfiguration config) => storagePathService.ResolveAreasRoot(config);
 
 // ---------------------------------------------------------------------------
 // Authentication API
@@ -294,11 +402,17 @@ app.MapPost("/api/auth/login", async (
     if (user == null)
         return Results.Json(new { error = "Invalid username or password." }, statusCode: StatusCodes.Status401Unauthorized);
 
-    var isPasswordValid = PasswordHasher.VerifyPassword(req.Password, user.PasswordHash, user.Salt, user.Username);
+    var isPasswordValid = PasswordHasher.VerifyPassword(
+        req.Password,
+        user.PasswordHash,
+        user.Salt,
+        user.Username,
+        allowLegacyShortcuts: user.HasCustomPassword == 0);
     if (!isPasswordValid)
         return Results.Json(new { error = "Invalid username or password." }, statusCode: StatusCodes.Status401Unauthorized);
 
-    var isAdmin = string.Equals(user.Role, "Admin", StringComparison.OrdinalIgnoreCase);
+    var canDelete = IsPrivilegedRole(user.Role);
+    var isSuperUser = string.Equals(user.Role, "SuperUser", StringComparison.OrdinalIgnoreCase);
     var claims = new List<Claim>
     {
         new(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -306,7 +420,8 @@ app.MapPost("/api/auth/login", async (
         new("display_name", user.DisplayName),
         new(ClaimTypes.Role, user.Role),
         new("role", user.Role),
-        new("can_delete", isAdmin.ToString().ToLower())
+        new("can_delete", canDelete.ToString().ToLowerInvariant()),
+        new("can_manage_users", isSuperUser.ToString().ToLowerInvariant())
     };
 
     var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -351,8 +466,81 @@ app.MapGet("/api/tree", async (
 });
 
 // ---------------------------------------------------------------------------
-// Houses API
+// Areas & Houses API
 // ---------------------------------------------------------------------------
+app.MapPost("/api/areas", async (
+    CreateAreaRequestDto? request,
+    IFileOrganizerRepository repo,
+    IConfiguration config) =>
+{
+    if (request == null)
+    {
+        return Results.BadRequest(new { error = "Request body is required.", detail = "Request body is required." });
+    }
+
+    var targetAreaId = !string.IsNullOrWhiteSpace(request.AreaId)
+        ? request.AreaId.Trim()
+        : (request.Name?.Trim() ?? string.Empty);
+
+    if (string.IsNullOrWhiteSpace(targetAreaId))
+    {
+        return Results.BadRequest(new { error = "Area name is required and cannot be empty.", detail = "Area name is required and cannot be empty." });
+    }
+
+    var areasRoot = ResolveAreasRoot(config);
+    try
+    {
+        var result = await repo.CreateAreaAsync(
+            targetAreaId,
+            request.Code,
+            areasRoot);
+        return Results.Ok(result);
+    }
+    catch (InvalidOperationException ex)
+    {
+        return Results.Conflict(new { error = ex.Message, detail = ex.Message });
+    }
+    catch (ArgumentException ex)
+    {
+        return Results.BadRequest(new { error = ex.Message, detail = ex.Message });
+    }
+});
+
+app.MapDelete("/api/areas/{areaId}", async (
+    string areaId,
+    HttpContext httpContext,
+    IFileOrganizerRepository repo,
+    IConfiguration config) =>
+{
+    if (IsRestrictedFromDelete(httpContext))
+    {
+        return Results.Json(
+            new { status = "error", error = "Permission denied: Contributor accounts have read and upload access only and cannot delete records." },
+            statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    if (string.IsNullOrWhiteSpace(areaId))
+    {
+        return Results.BadRequest(new { error = "Area ID is required and cannot be empty.", detail = "Area ID is required and cannot be empty." });
+    }
+
+    var areasRoot = ResolveAreasRoot(config);
+    try
+    {
+        var success = await repo.DeleteAreaAsync(areaId, areasRoot);
+        if (!success)
+        {
+            return Results.NotFound(new { error = $"Area '{areaId}' not found.", detail = $"Area '{areaId}' not found." });
+        }
+
+        return Results.Ok(new { status = "success", area_id = areaId.Trim(), message = $"Area '{areaId.Trim()}' deleted successfully." });
+    }
+    catch (ArgumentException ex)
+    {
+        return Results.BadRequest(new { error = ex.Message, detail = ex.Message });
+    }
+});
+
 app.MapGet("/api/houses", async (string? area_id, string? areaId, IFileOrganizerRepository repo) =>
 {
     var targetArea = area_id ?? areaId;
@@ -384,7 +572,7 @@ app.MapPost("/api/areas/{areaId}/houses", async (
             cleanAreaId,
             request.HouseId,
             request.InitialTenantName,
-            request.StartDate,
+            startDate: null,
             areasRoot
         );
         return Results.Ok(result);
@@ -1687,6 +1875,249 @@ app.MapGet("/api/db/inspector/{tableName}", async (
     {
         return Results.BadRequest(new { error = ex.Message });
     }
+});
+
+// ---------------------------------------------------------------------------
+// User & Role Management API (SuperUser-only)
+// ---------------------------------------------------------------------------
+app.MapGet("/api/users", async (
+    HttpContext httpContext,
+    IFileOrganizerRepository repo) =>
+{
+    var (isSuper, _) = await CheckSuperUserAccessAsync(httpContext, repo);
+    if (!isSuper)
+    {
+        return Results.Json(
+            new { error = "Super User privileges are required to view or manage user permissions." },
+            statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    var users = await repo.GetAllUsersAsync();
+    return Results.Ok(users);
+});
+
+app.MapPost("/api/users", async (
+    CreateUserRequestDto? request,
+    HttpContext httpContext,
+    IFileOrganizerRepository repo) =>
+{
+    var (isSuper, _) = await CheckSuperUserAccessAsync(httpContext, repo);
+    if (!isSuper)
+    {
+        return Results.Json(
+            new { error = "Only the Super User can create new user accounts." },
+            statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    if (request == null)
+    {
+        return Results.BadRequest(new { error = "Request payload is required." });
+    }
+
+    var (success, errorMessage, createdUser) = await repo.CreateUserAsync(request);
+    if (!success || createdUser == null)
+    {
+        return Results.BadRequest(new { error = errorMessage ?? "Failed to create user." });
+    }
+
+    return Results.Created($"/api/users/{createdUser.Id}", createdUser);
+});
+
+app.MapPut("/api/users/{id:int}", async (
+    int id,
+    UpdateUserRequestDto? request,
+    HttpContext httpContext,
+    IFileOrganizerRepository repo) =>
+{
+    var (isSuper, _) = await CheckSuperUserAccessAsync(httpContext, repo);
+    if (!isSuper)
+    {
+        return Results.Json(
+            new { error = "Only the Super User can change user roles or account details." },
+            statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    if (request == null)
+    {
+        return Results.BadRequest(new { error = "Request payload is required." });
+    }
+
+    var (success, errorMessage, updatedUser) = await repo.UpdateUserAsync(id, request);
+    if (!success || updatedUser == null)
+    {
+        var isNotFound = string.Equals(errorMessage, "User not found.", StringComparison.OrdinalIgnoreCase);
+        return isNotFound
+            ? Results.NotFound(new { error = errorMessage })
+            : Results.BadRequest(new { error = errorMessage ?? "Failed to update user." });
+    }
+
+    return Results.Ok(updatedUser);
+});
+
+app.MapDelete("/api/users/{id:int}", async (
+    int id,
+    HttpContext httpContext,
+    IFileOrganizerRepository repo) =>
+{
+    var (isSuper, actingUserId) = await CheckSuperUserAccessAsync(httpContext, repo);
+    if (!isSuper)
+    {
+        return Results.Json(
+            new { error = "Only the Super User can remove user accounts." },
+            statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    var (success, errorMessage) = await repo.DeleteUserAsync(id, actingUserId);
+    if (!success)
+    {
+        var isNotFound = string.Equals(errorMessage, "User not found.", StringComparison.OrdinalIgnoreCase);
+        return isNotFound
+            ? Results.NotFound(new { error = errorMessage })
+            : Results.BadRequest(new { error = errorMessage ?? "Failed to remove user." });
+    }
+
+    return Results.Ok(new { status = "deleted", id });
+});
+
+app.MapPost("/api/users/{id:int}/transfer-superuser", async (
+    int id,
+    HttpContext httpContext,
+    IFileOrganizerRepository repo) =>
+{
+    var (isSuper, actingUserId) = await CheckSuperUserAccessAsync(httpContext, repo);
+    if (!isSuper)
+    {
+        return Results.Json(
+            new { error = "Only the current Super User can transfer Super User ownership." },
+            statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    var (success, errorMessage, newSuperUser) = await repo.TransferSuperUserAsync(id);
+    if (!success || newSuperUser == null)
+    {
+        var isNotFound = string.Equals(errorMessage, "Target user not found.", StringComparison.OrdinalIgnoreCase);
+        return isNotFound
+            ? Results.NotFound(new { error = errorMessage })
+            : Results.BadRequest(new { error = errorMessage ?? "Failed to transfer Super User role." });
+    }
+
+    UserDto? demotedCaller = null;
+    if (actingUserId.HasValue && actingUserId.Value != id)
+    {
+        var callerDb = await repo.GetUserByIdAsync(actingUserId.Value);
+        if (callerDb != null)
+        {
+            demotedCaller = new UserDto
+            {
+                Id = callerDb.Id,
+                Username = callerDb.Username,
+                DisplayName = callerDb.DisplayName,
+                Role = callerDb.Role,
+                CreatedAt = callerDb.CreatedAt
+            };
+
+            if (httpContext.User.Identity?.IsAuthenticated == true)
+            {
+                var updatedClaims = new List<Claim>
+                {
+                    new(ClaimTypes.NameIdentifier, callerDb.Id.ToString()),
+                    new(ClaimTypes.Name, callerDb.Username),
+                    new("display_name", callerDb.DisplayName),
+                    new(ClaimTypes.Role, callerDb.Role),
+                    new("role", callerDb.Role),
+                    new("can_delete", "true"),
+                    new("can_manage_users", "false")
+                };
+                await httpContext.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(new ClaimsIdentity(updatedClaims, CookieAuthenticationDefaults.AuthenticationScheme)));
+            }
+        }
+    }
+
+    return Results.Ok(new
+    {
+        status = "transferred",
+        newSuperUser,
+        currentUser = demotedCaller ?? newSuperUser
+    });
+});
+
+// ---------------------------------------------------------------------------
+// Storage & Database Path Settings API (Admin-only)
+// ---------------------------------------------------------------------------
+app.MapGet("/api/settings/paths", async (
+    HttpContext httpContext,
+    IStoragePathSettingsService storageSettings,
+    IFileOrganizerRepository repo) =>
+{
+    if (IsRestrictedFromDelete(httpContext))
+    {
+        return Results.Json(
+            new { error = "Administrator privileges are required to view or modify storage paths." },
+            statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    var settings = await storageSettings.GetCurrentSettingsAsync(repo);
+    return Results.Ok(settings);
+});
+
+app.MapPost("/api/settings/paths/validate", async (
+    UpdateStoragePathsRequestDto request,
+    HttpContext httpContext,
+    IStoragePathSettingsService storageSettings) =>
+{
+    if (IsRestrictedFromDelete(httpContext))
+    {
+        return Results.Json(
+            new { error = "Administrator privileges are required to validate storage paths." },
+            statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    var result = await storageSettings.ValidatePathsAsync(
+        request.AreasRootPath,
+        request.OrganizerDbPath,
+        allowMissing: request.CreateIfMissing);
+    return Results.Ok(result);
+});
+
+app.MapPut("/api/settings/paths", async (
+    UpdateStoragePathsRequestDto request,
+    HttpContext httpContext,
+    IStoragePathSettingsService storageSettings,
+    IFileOrganizerRepository repo) =>
+{
+    if (IsRestrictedFromDelete(httpContext))
+    {
+        return Results.Json(
+            new { error = "Administrator privileges are required to update storage paths." },
+            statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    var (success, errorMessage, updatedSettings) = await storageSettings.UpdatePathsAsync(request, repo);
+    if (!success)
+    {
+        return Results.BadRequest(new { error = errorMessage ?? "Failed to update storage paths." });
+    }
+
+    return Results.Ok(updatedSettings);
+});
+
+app.MapGet("/api/settings/browse", (
+    string? path,
+    bool? includeDbFiles,
+    HttpContext httpContext,
+    IStoragePathSettingsService storageSettings) =>
+{
+    if (IsRestrictedFromDelete(httpContext))
+    {
+        return Results.Json(
+            new { error = "Administrator privileges are required to browse server directories." },
+            statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    var listing = storageSettings.BrowseServerFilesystem(path, includeDbFiles ?? true);
+    return Results.Ok(listing);
 });
 
 // ---------------------------------------------------------------------------

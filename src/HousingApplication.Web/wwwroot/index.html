@@ -35,7 +35,7 @@
             } catch (e) {}
         })();
     </script>
-    <link rel="stylesheet" href="css/styles.css?v=260912-03">
+    <link rel="stylesheet" href="css/styles.css?v=261101-02">
 </head>
 <body class="bg-slate-100 dark:bg-slate-950 font-sans text-slate-800 dark:text-slate-100 antialiased">
     <!-- Animated Open Login Home Page (Opaque with Lively Motion, Rendered at Top of Body) -->
@@ -155,7 +155,13 @@
 
             <!-- Sidebar Navigation Content -->
             <div class="p-3 flex-1 overflow-y-auto">
-                <h2 id="sidebar-section-title" class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5 px-1.5" data-i18n="sidebar.areas">Areas</h2>
+                <div class="flex items-center justify-between gap-2 mb-2.5 px-1.5">
+                    <h2 id="sidebar-section-title" class="text-[11px] font-bold text-slate-400 uppercase tracking-wider" data-i18n="sidebar.areas">Areas</h2>
+                    <button id="open-add-area-modal-btn" type="button" class="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold text-blue-400 hover:text-white bg-slate-800/80 hover:bg-blue-600 border border-slate-700/80 hover:border-blue-500 rounded-md transition-all cursor-pointer" title="Add New Area" data-i18n-title="add_area.title" aria-label="Add New Area" data-i18n-aria="add_area.title">
+                        <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                        <span data-i18n="sidebar.add_area">Add Area</span>
+                    </button>
+                </div>
                 <div id="house-list" class="space-y-1">
                     <p class="text-slate-500 text-xs px-2 py-1">Loading...</p>
                 </div>
@@ -188,6 +194,9 @@
                     
                     <div id="stats-badge" class="bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 text-xs font-semibold px-2.5 py-1 rounded-full border border-blue-200/60 dark:border-blue-800/60 hidden flex-shrink-0"></div>
                     <div id="grid-area-stats" class="bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 text-xs font-bold px-2.5 py-1 rounded-full border border-blue-200/60 dark:border-blue-800/60 hidden flex-shrink-0">0 Houses</div>
+                    <button id="btn-delete-area-header" type="button" data-i18n-title="delete_area.title" data-i18n-aria-label="delete_area.title" title="Delete Area" aria-label="Delete Area" class="hidden p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 border border-transparent hover:border-rose-200 dark:hover:border-rose-800/60 rounded-lg transition-all items-center justify-center flex-shrink-0 cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
                 </div>
 
                 <!-- Top Navbar Action Triggers -->
@@ -333,6 +342,22 @@
                                 <p id="dropdown-role-desc" class="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed"></p>
                             </div>
 
+                            <button id="btn-open-user-management" type="button" class="hidden w-full px-3 py-2 text-xs font-semibold text-amber-800 dark:text-amber-300 bg-amber-50/80 dark:bg-amber-950/40 hover:bg-amber-100/80 dark:hover:bg-amber-900/50 rounded-xl border border-amber-200 dark:border-amber-800/70 transition-colors flex items-center justify-between gap-2 cursor-pointer" title="Users &amp; Permissions" data-i18n-title="user_mgmt.menu_btn">
+                                <span class="flex items-center gap-2 min-w-0">
+                                    <svg class="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                    <span class="truncate" data-i18n="user_mgmt.menu_btn">Users &amp; Permissions</span>
+                                </span>
+                                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-200/70 dark:bg-amber-900/70 text-amber-900 dark:text-amber-200 flex-shrink-0">👑</span>
+                            </button>
+
+                            <button id="btn-open-storage-settings" type="button" class="w-full px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/70 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-700 dark:hover:text-blue-300 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors flex items-center justify-between gap-2 cursor-pointer" title="Storage &amp; Database Paths" data-i18n-title="storage_settings.menu_btn">
+                                <span class="flex items-center gap-2 min-w-0">
+                                    <svg class="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 3 3 8 3s8-1 8-3V7M4 7c0 2 3 3 8 3s8-1 8-3M4 7c0-2 3-3 8-3s8 1 8 3m0 5c0 2-3 3-8 3s-8-1-8-3"/></svg>
+                                    <span class="truncate" data-i18n="storage_settings.menu_btn">Storage &amp; Database Paths</span>
+                                </span>
+                                <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            </button>
+
                             <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
                                 <button id="btn-switch-user" type="button" class="px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
                                     <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
@@ -370,9 +395,13 @@
                             </div>
                             <p id="db-inspector-subtitle" class="text-xs text-slate-500 dark:text-slate-400 mt-1">Direct view of SQLite database records and relational tables.</p>
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 flex-wrap">
                             <span id="db-status-badge" class="bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800/60">Connected</span>
                             <span id="db-path-badge" class="bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-mono px-3 py-1 rounded-lg border border-slate-200 dark:border-slate-700 truncate max-w-xs shadow-2xs">organizer.db</span>
+                            <button id="db-change-paths-btn" type="button" class="px-2.5 py-1 rounded-lg border border-blue-200 dark:border-blue-800/70 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs" title="Change Paths" data-i18n-title="storage_settings.change_btn">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                                <span data-i18n="storage_settings.change_btn">Change Paths</span>
+                            </button>
                         </div>
                     </div>
 
@@ -429,6 +458,9 @@
                         </div>
                         <button id="btn-export-house-archive" type="button" data-i18n-title="export.title" title="Export House Archive" class="p-2 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 border border-transparent hover:border-blue-200 dark:hover:border-blue-800/60 rounded-lg transition-all flex items-center justify-center flex-shrink-0 cursor-pointer shadow-2xs" aria-label="Export House Archive">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        </button>
+                        <button id="btn-delete-house-quick" type="button" data-i18n-title="delete_house.title" data-i18n-aria-label="delete_house.title" title="Delete House" aria-label="Delete House" class="hidden p-2 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 border border-transparent hover:border-rose-200 dark:hover:border-rose-800/60 rounded-lg transition-all items-center justify-center flex-shrink-0 cursor-pointer shadow-2xs">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                         </button>
                         <button id="btn-manage-tenants" type="button" data-i18n-title="house_profile.settings_tooltip" title="House Settings" class="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 rounded-lg transition-all flex items-center justify-center flex-shrink-0 cursor-pointer shadow-2xs" aria-label="House Settings">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -530,6 +562,12 @@
                         </div>
                         <h3 class="text-base font-bold text-slate-900 tracking-tight">No area selected</h3>
                         <p class="mt-1.5 text-xs text-slate-500 leading-relaxed">Choose an area from the sidebar to view house records, timeline history, and categorized documents.</p>
+                        <div class="mt-4">
+                            <button id="welcome-add-area-btn" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-sm shadow-blue-500/25 cursor-pointer">
+                                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                                <span data-i18n="add_area.title">Add New Area</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </main>
@@ -1656,6 +1694,92 @@
         </div>
     </div>
 
+    <!-- Delete Area Confirmation Modal -->
+    <div id="delete-area-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center hidden p-4" tabindex="-1" role="dialog" aria-labelledby="delete-area-title" aria-modal="true">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-md w-full flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-rose-50/50">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-rose-100 border border-rose-200 text-rose-600 flex items-center justify-center shadow-2xs">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900 tracking-tight" id="delete-area-title" data-i18n="delete_area.title">Delete Area</h3>
+                        <p class="text-xs text-rose-600 font-medium" data-i18n="delete_area.irreversible">This action cannot be undone.</p>
+                    </div>
+                </div>
+                <button id="delete-area-modal-close" type="button" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" aria-label="Close" data-i18n-aria="common.close">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-6 space-y-3.5">
+                <p class="text-xs text-slate-600 leading-relaxed" id="delete-area-msg">
+                    Are you sure you want to permanently delete area <strong id="delete-area-target-name" class="text-slate-900 font-bold"></strong>? All houses, tenants, documents, and files inside it will be removed from disk.
+                </p>
+                <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 space-y-1.5">
+                    <div class="flex items-start gap-2">
+                        <span class="text-sm flex-shrink-0 mt-0.5">⚠️</span>
+                        <span data-i18n="delete_area.warning">All database records and physical files belonging to this area and its houses will be permanently deleted.</span>
+                    </div>
+                    <div id="delete-area-house-count-info" class="font-semibold text-amber-900 ps-6"></div>
+                </div>
+                <div class="space-y-1.5 pt-1">
+                    <label for="delete-area-confirm-input" class="text-xs font-semibold text-slate-700 block" id="delete-area-confirm-label">
+                        To confirm deletion, type <span id="delete-area-phrase-hint" class="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-rose-700 font-bold select-all"></span> in the field below:
+                    </label>
+                    <input id="delete-area-confirm-input" type="text" autocomplete="off" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-rose-500 focus:outline-none bg-slate-50 focus:bg-white font-mono" placeholder="Type confirmation phrase..." data-i18n-placeholder="delete_area.confirm_placeholder" />
+                </div>
+                <div id="delete-area-status" class="text-xs font-medium text-rose-600 hidden"></div>
+            </div>
+            <div class="px-6 py-3.5 border-t border-slate-100 bg-slate-50/70 flex justify-end gap-3">
+                <button id="delete-area-cancel" type="button" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors shadow-2xs cursor-pointer" data-i18n="common.cancel">Cancel</button>
+                <button id="delete-area-confirm-btn" type="button" disabled class="px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all shadow-sm shadow-rose-500/25 flex items-center gap-2 cursor-pointer">
+                    <span id="delete-area-spinner" class="hidden animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full"></span>
+                    <span id="delete-area-btn-text" data-i18n="delete_area.btn_confirm">🗑️ Delete Area Permanently</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Area Modal -->
+    <div id="add-area-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center hidden p-4" tabindex="-1" role="dialog" aria-labelledby="add-area-modal-title" aria-modal="true">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-md w-full flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/70">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center shadow-2xs">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900 tracking-tight" id="add-area-modal-title" data-i18n="add_area.title">Add New Area</h3>
+                        <p id="add-area-subtitle" class="text-xs text-slate-500" data-i18n="add_area.subtitle">Register a residential area and scaffold its storage folder.</p>
+                    </div>
+                </div>
+                <button id="add-area-close" type="button" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" aria-label="Close" data-i18n-aria="common.close">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <form id="add-area-form" class="p-6 space-y-4">
+                <div>
+                    <label for="add-area-name-input" class="block text-xs font-bold text-slate-700 mb-1.5">
+                        <span data-i18n="add_area.name">Area Name</span> <span class="text-rose-500">*</span>
+                    </label>
+                    <input id="add-area-name-input" type="text" required placeholder="e.g. Safra E or Al-Malqa" data-i18n-placeholder="add_area.name_placeholder" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 focus:bg-white font-medium" />
+                </div>
+                <div>
+                    <label for="add-area-code-input" class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="add_area.code">Area Code (Optional)</label>
+                    <input id="add-area-code-input" type="text" placeholder="e.g. SE" data-i18n-placeholder="add_area.code_placeholder" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 focus:bg-white font-medium" />
+                </div>
+                <div id="add-area-status" class="p-2.5 rounded-lg text-xs font-medium hidden"></div>
+            </form>
+            <div class="px-6 py-3.5 border-t border-slate-100 bg-slate-50/70 flex justify-end gap-3">
+                <button id="btn-add-area-cancel" type="button" class="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors shadow-2xs cursor-pointer" data-i18n="common.cancel">Cancel</button>
+                <button id="btn-add-area-submit" type="button" class="px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-sm shadow-blue-500/25 flex items-center gap-2 cursor-pointer">
+                    <span id="add-area-spinner" class="hidden animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full"></span>
+                    <span id="add-area-submit-text" data-i18n="add_area.submit_btn">Create Area</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Add House Modal -->
     <div id="add-house-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center hidden p-4" tabindex="-1">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-md w-full flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
@@ -1675,7 +1799,13 @@
             </div>
             <form id="add-house-form" class="p-6 space-y-4">
                 <div>
-                    <label for="add-house-area-select" class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="add_house.area">Area</label>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label for="add-house-area-select" class="block text-xs font-bold text-slate-700" data-i18n="add_house.area">Area</label>
+                        <button id="btn-add-house-new-area" type="button" class="text-[11px] font-semibold text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1 cursor-pointer">
+                            <span>+</span>
+                            <span data-i18n="add_area.new_area_inline">New Area</span>
+                        </button>
+                    </div>
                     <select id="add-house-area-select" required class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 focus:bg-white font-medium">
                         <!-- Dynamically populated with areas -->
                     </select>
@@ -1687,10 +1817,6 @@
                 <div>
                     <label for="add-house-tenant-name-input" class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="add_house.initial_tenant">Initial Tenant Name (Optional)</label>
                     <input id="add-house-tenant-name-input" type="text" placeholder="e.g. Abdullah Khalid Al-Shammari" data-i18n-placeholder="add_house.initial_tenant_placeholder" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 focus:bg-white font-medium" />
-                </div>
-                <div>
-                    <label for="add-house-tenant-date-input" class="block text-xs font-bold text-slate-700 mb-1.5" data-i18n="add_house.start_date">Start Date (Optional)</label>
-                    <input id="add-house-tenant-date-input" type="date" class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-50 focus:bg-white font-medium" />
                 </div>
                 <div id="add-house-status" class="p-2.5 rounded-lg text-xs font-medium hidden"></div>
             </form>
@@ -2106,32 +2232,230 @@
         </div>
     </div>
 
+    <!-- Storage & Database Path Settings Modal (Admin-only) -->
+    <div id="storage-settings-modal" aria-hidden="true" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 bg-slate-50/70 dark:bg-slate-800/40">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-sm flex-shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 3 3 8 3s8-1 8-3V7M4 7c0 2 3 3 8 3s8-1 8-3M4 7c0-2 3-3 8-3s8 1 8 3m0 5c0 2-3 3-8 3s-8-1-8-3"/></svg>
+                    </div>
+                    <div class="min-w-0">
+                        <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 truncate" data-i18n="storage_settings.modal_title">Storage &amp; Database Paths</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 truncate" data-i18n="storage_settings.modal_subtitle">Configure server locations for the areas archive folder and SQLite database with live reload</p>
+                    </div>
+                </div>
+                <button id="btn-close-storage-settings" type="button" class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center transition-colors cursor-pointer" title="Close" data-i18n-title="common.close">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <form id="storage-settings-form" class="flex-1 overflow-y-auto p-6 space-y-4">
+                <!-- Active Paths Summary -->
+                <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/50 p-3.5 space-y-2">
+                    <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="storage_settings.active_section">Currently Active Locations</div>
+                    <div id="storage-active-summary" class="space-y-2 text-xs text-slate-600 dark:text-slate-300"></div>
+                </div>
+
+                <!-- Feedback / Validation Banner -->
+                <div id="storage-feedback-banner" class="hidden"></div>
+
+                <!-- Areas Folder Path Input -->
+                <div class="space-y-1.5">
+                    <label for="storage-areas-path-input" class="block text-xs font-bold text-slate-800 dark:text-slate-200" data-i18n="storage_settings.areas_label">Areas Archive Folder Path</label>
+                    <div class="flex items-center gap-2">
+                        <input id="storage-areas-path-input" type="text" dir="ltr" required placeholder="D:\areas_v11" class="flex-1 px-3 py-2 text-xs font-mono rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+                        <button id="btn-browse-areas-path" type="button" class="px-3 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer flex-shrink-0">
+                            <span data-i18n="storage_settings.browse_btn">Browse...</span>
+                        </button>
+                    </div>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400" data-i18n="storage_settings.areas_hint">Root directory containing residential area folders, houses, and PDF vaults</p>
+                </div>
+
+                <!-- Database File Path Input -->
+                <div class="space-y-1.5">
+                    <div class="flex items-center justify-between gap-2 flex-wrap">
+                        <label for="storage-db-path-input" class="block text-xs font-bold text-slate-800 dark:text-slate-200" data-i18n="storage_settings.db_label">SQLite Database File Path</label>
+                        <button id="btn-use-areas-db-path" type="button" class="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer" data-i18n="storage_settings.use_areas_db_btn">Use organizer.db inside Areas Folder</button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input id="storage-db-path-input" type="text" dir="ltr" required placeholder="D:\areas_v11\organizer.db" class="flex-1 px-3 py-2 text-xs font-mono rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+                        <button id="btn-browse-db-path" type="button" class="px-3 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer flex-shrink-0">
+                            <span data-i18n="storage_settings.browse_btn">Browse...</span>
+                        </button>
+                    </div>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400" data-i18n="storage_settings.db_hint">Full file path to the SQLite database file (organizer.db)</p>
+                </div>
+
+                <!-- Inline Server Directory & .db Browser -->
+                <div id="storage-browser-panel" class="hidden rounded-xl border border-blue-200 dark:border-blue-800/70 bg-slate-50 dark:bg-slate-950/80 p-3 space-y-2.5">
+                    <div class="flex items-center justify-between gap-2 flex-wrap">
+                        <span class="text-xs font-bold text-slate-800 dark:text-slate-200" data-i18n="storage_settings.browser_title">Server Directory Browser</span>
+                        <div class="flex items-center gap-1.5">
+                            <button id="btn-storage-browser-up" type="button" class="px-2.5 py-1 text-[11px] font-semibold rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 disabled:opacity-40 cursor-pointer">
+                                <span data-i18n="storage_settings.browser_up">Up</span>
+                            </button>
+                            <button id="btn-storage-browser-select-current" type="button" class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-blue-600 hover:bg-blue-700 text-white cursor-pointer">
+                                <span data-i18n="storage_settings.browser_select_folder">Use Current Folder</span>
+                            </button>
+                            <button id="btn-storage-browser-close" type="button" class="px-2 py-1 text-[11px] font-semibold rounded-lg text-slate-500 hover:bg-slate-200/70 dark:hover:bg-slate-800 cursor-pointer">✕</button>
+                        </div>
+                    </div>
+                    <div id="storage-browser-roots" class="flex flex-wrap gap-1.5"></div>
+                    <div id="storage-browser-current-path" dir="ltr" class="px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 font-mono text-[11px] text-slate-700 dark:text-slate-200 break-all"></div>
+                    <div id="storage-browser-entries" class="max-h-48 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/70 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-1"></div>
+                </div>
+
+                <!-- Create Missing Folder / DB Option -->
+                <label class="flex items-start gap-2.5 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/30 cursor-pointer">
+                    <input id="storage-create-missing-checkbox" type="checkbox" class="mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                    <span class="space-y-0.5">
+                        <span class="block text-xs font-semibold text-slate-800 dark:text-slate-200" data-i18n="storage_settings.create_missing_label">Create folder or initialize a new database if missing</span>
+                        <span class="block text-[11px] text-slate-500 dark:text-slate-400" data-i18n="storage_settings.create_missing_hint">Enable only when starting a brand-new empty archive; leave unchecked when pointing to an existing archive.</span>
+                    </span>
+                </label>
+
+                <!-- Modal Footer -->
+                <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2 flex-wrap">
+                    <button id="btn-validate-storage-paths" type="button" class="px-3.5 py-2 text-xs font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200 dark:border-blue-800/70 rounded-xl transition-colors cursor-pointer">
+                        <span data-i18n="storage_settings.verify_btn">Verify Paths</span>
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <button id="btn-cancel-storage-settings" type="button" class="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                            <span data-i18n="common.cancel">Cancel</span>
+                        </button>
+                        <button id="btn-save-storage-paths" type="submit" class="px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm shadow-blue-500/25 transition-colors cursor-pointer">
+                            <span data-i18n="storage_settings.save_btn">Save &amp; Apply Now</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- User & Role Management Modal (SuperUser-only) -->
+    <div id="user-management-modal" class="fixed inset-0 z-[130] hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="user-management-title" aria-hidden="true">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 max-w-2xl w-full overflow-hidden max-h-[92vh] flex flex-col">
+            <!-- Header -->
+            <div class="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/40 flex-shrink-0">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/70 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0 border border-amber-200 dark:border-amber-800/60">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    </div>
+                    <div class="min-w-0">
+                        <h3 id="user-management-title" class="text-base font-bold text-slate-900 dark:text-slate-100 truncate" data-i18n="user_mgmt.title">User &amp; Role Management</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400" data-i18n="user_mgmt.subtitle">Manage user accounts and assign Admin or Regular User permissions. Strictly one Super User exists in the system.</p>
+                    </div>
+                </div>
+                <button id="btn-close-user-management" type="button" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors cursor-pointer" aria-label="Close">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <!-- Scrollable Body -->
+            <div class="p-5 space-y-4 overflow-y-auto flex-1">
+                <!-- 3-Tier Role Hierarchy Overview -->
+                <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/30 p-3.5 space-y-2.5">
+                    <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="user_mgmt.role_legend_title">Permission Tiers</div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                        <div class="p-2.5 rounded-lg border border-amber-200 dark:border-amber-800/70 bg-amber-50/60 dark:bg-amber-950/30 space-y-0.5">
+                            <div class="font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1">👑 <span data-i18n="user_mgmt.tier_super_label">Super User (1 only)</span></div>
+                            <p class="text-[11px] text-amber-700/90 dark:text-amber-200/80 leading-snug" data-i18n="user_mgmt.tier_super_desc">Full archive control + exclusive user &amp; permission management.</p>
+                        </div>
+                        <div class="p-2.5 rounded-lg border border-emerald-200 dark:border-emerald-800/70 bg-emerald-50/60 dark:bg-emerald-950/30 space-y-0.5">
+                            <div class="font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1">🛡️ <span data-i18n="user_mgmt.tier_admin_label">Admin</span></div>
+                            <p class="text-[11px] text-emerald-700/90 dark:text-emerald-200/80 leading-snug" data-i18n="user_mgmt.tier_admin_desc">Full archive &amp; delete access, cannot manage users or permissions.</p>
+                        </div>
+                        <div class="p-2.5 rounded-lg border border-blue-200 dark:border-blue-800/70 bg-blue-50/60 dark:bg-blue-950/30 space-y-0.5">
+                            <div class="font-bold text-blue-800 dark:text-blue-300 flex items-center gap-1">👤 <span data-i18n="user_mgmt.tier_regular_label">Regular User</span></div>
+                            <p class="text-[11px] text-blue-700/90 dark:text-blue-200/80 leading-snug" data-i18n="user_mgmt.tier_regular_desc">Browse, search, and upload documents only (no delete or settings).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feedback Banner -->
+                <div id="user-mgmt-feedback" class="hidden"></div>
+
+                <!-- Add New User Form -->
+                <form id="user-mgmt-create-form" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 space-y-3">
+                    <div class="text-xs font-bold text-slate-800 dark:text-slate-100" data-i18n="user_mgmt.add_section_title">Add New User Account</div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div class="space-y-1">
+                            <label for="user-mgmt-username-input" class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300" data-i18n="user_mgmt.username_label">Username (Login ID)</label>
+                            <input id="user-mgmt-username-input" type="text" dir="ltr" required class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. Ali" data-i18n-placeholder="user_mgmt.username_placeholder" />
+                        </div>
+                        <div class="space-y-1">
+                            <label for="user-mgmt-displayname-input" class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300" data-i18n="user_mgmt.display_name_label">Display Name</label>
+                            <input id="user-mgmt-displayname-input" type="text" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. Ali Hassan" data-i18n-placeholder="user_mgmt.display_name_placeholder" />
+                        </div>
+                        <div class="space-y-1">
+                            <label for="user-mgmt-password-input" class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300" data-i18n="user_mgmt.password_label">Password</label>
+                            <input id="user-mgmt-password-input" type="password" dir="ltr" required minlength="4" class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Minimum 4 characters" data-i18n-placeholder="user_mgmt.password_placeholder" />
+                        </div>
+                        <div class="space-y-1">
+                            <label for="user-mgmt-role-select" class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300" data-i18n="user_mgmt.role_label">Role</label>
+                            <select id="user-mgmt-role-select" class="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-pointer">
+                                <option value="Contributor" data-i18n="user_mgmt.role_regular_option">Regular User (Read &amp; Upload)</option>
+                                <option value="Admin" data-i18n="user_mgmt.role_admin_option">Admin (Full Access)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex justify-end pt-1">
+                        <button id="btn-user-mgmt-create" type="submit" class="px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm shadow-blue-500/25 transition-colors cursor-pointer">
+                            <span data-i18n="user_mgmt.add_user_btn">Add User</span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Registered Accounts List -->
+                <div class="space-y-2.5">
+                    <div class="flex items-center justify-between gap-2">
+                        <h4 class="text-xs font-bold text-slate-800 dark:text-slate-100" data-i18n="user_mgmt.users_section_title">Registered Accounts</h4>
+                        <span id="user-mgmt-count-badge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">0</span>
+                    </div>
+                    <div id="user-mgmt-list" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex justify-end flex-shrink-0">
+                <button id="btn-done-user-management" type="button" class="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                    <span data-i18n="common.close">Close</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Local Vendor Scripts -->
     <script src="lib/pdfjs/pdf.min.js"></script>
     <script src="lib/tesseract/tesseract.min.js"></script>
 
     <!-- Modular Application Scripts -->
-    <script src="js/api.js?v=260911-29"></script>
-    <script src="js/auth-manager.js?v=260917-01"></script>
+    <script src="js/api.js?v=261101-03"></script>
+    <script src="js/auth-manager.js?v=261101-04"></script>
     <script src="js/login-motion.js?v=260920-01"></script>
     <script src="js/resizer.js?v=260911-29"></script>
     <script src="js/pdf-preview.js?v=260911-34"></script>
     <script src="js/command-palette.js?v=260911-34"></script>
-    <script src="js/tenant-manager.js?v=260911-34"></script>
+    <script src="js/tenant-manager.js?v=261101-02"></script>
     <script src="js/doc-manager.js?v=260918-01"></script>
     <script src="js/doc-viewer.js?v=260918-04"></script>
     <script src="js/doc-page-editor.js?v=260915-01"></script>
-    <script src="js/db-inspector.js?v=260911-29"></script>
-    <script src="js/area-grid.js?v=260912-01"></script>
+    <script src="js/db-inspector.js?v=261101-03"></script>
+    <script src="js/storage-settings.js?v=261101-03"></script>
+    <script src="js/user-management.js?v=261101-04"></script>
+    <script src="js/area-grid.js?v=261101-02"></script>
     <script src="js/house-profile.js?v=260911-29"></script>
     <script src="js/timeline-view.js?v=260911-34"></script>
     <script src="js/categories-view.js?v=260912-02"></script>
-    <script src="js/sidebar.js?v=260911-29"></script>
-    <script src="js/router.js?v=260911-29"></script>
+    <script src="js/sidebar.js?v=261101-02"></script>
+    <script src="js/router.js?v=261101-02"></script>
     <script src="js/ingest-station.js?v=260911-29"></script>
     <script src="js/keyboard-shortcuts.js?v=260911-29"></script>
     <script src="js/theme-manager.js?v=260912-03"></script>
-    <script src="js/i18n.js?v=260924-01"></script>
-    <script src="js/app.js?v=260912-03"></script>
+    <script src="js/i18n.js?v=261101-04"></script>
+    <script src="js/app.js?v=261101-04"></script>
 </body>
 </html>
