@@ -342,6 +342,14 @@
                                 <p id="dropdown-role-desc" class="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed"></p>
                             </div>
 
+                            <button id="btn-open-user-management" type="button" class="hidden w-full px-3 py-2 text-xs font-semibold text-amber-800 dark:text-amber-300 bg-amber-50/80 dark:bg-amber-950/40 hover:bg-amber-100/80 dark:hover:bg-amber-900/50 rounded-xl border border-amber-200 dark:border-amber-800/70 transition-colors flex items-center justify-between gap-2 cursor-pointer" title="Users &amp; Permissions" data-i18n-title="user_mgmt.menu_btn">
+                                <span class="flex items-center gap-2 min-w-0">
+                                    <svg class="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                    <span class="truncate" data-i18n="user_mgmt.menu_btn">Users &amp; Permissions</span>
+                                </span>
+                                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-200/70 dark:bg-amber-900/70 text-amber-900 dark:text-amber-200 flex-shrink-0">👑</span>
+                            </button>
+
                             <button id="btn-open-storage-settings" type="button" class="w-full px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/70 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-700 dark:hover:text-blue-300 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors flex items-center justify-between gap-2 cursor-pointer" title="Storage &amp; Database Paths" data-i18n-title="storage_settings.menu_btn">
                                 <span class="flex items-center gap-2 min-w-0">
                                     <svg class="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 3 3 8 3s8-1 8-3V7M4 7c0 2 3 3 8 3s8-1 8-3M4 7c0-2 3-3 8-3s8 1 8 3m0 5c0 2-3 3-8 3s-8-1-8-3"/></svg>
@@ -2327,13 +2335,106 @@
         </div>
     </div>
 
+    <!-- User & Role Management Modal (SuperUser-only) -->
+    <div id="user-management-modal" class="fixed inset-0 z-[130] hidden bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="user-management-title" aria-hidden="true">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 max-w-2xl w-full overflow-hidden max-h-[92vh] flex flex-col">
+            <!-- Header -->
+            <div class="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/40 flex-shrink-0">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/70 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0 border border-amber-200 dark:border-amber-800/60">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    </div>
+                    <div class="min-w-0">
+                        <h3 id="user-management-title" class="text-base font-bold text-slate-900 dark:text-slate-100 truncate" data-i18n="user_mgmt.title">User &amp; Role Management</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400" data-i18n="user_mgmt.subtitle">Manage user accounts and assign Admin or Regular User permissions. Strictly one Super User exists in the system.</p>
+                    </div>
+                </div>
+                <button id="btn-close-user-management" type="button" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors cursor-pointer" aria-label="Close">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            <!-- Scrollable Body -->
+            <div class="p-5 space-y-4 overflow-y-auto flex-1">
+                <!-- 3-Tier Role Hierarchy Overview -->
+                <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/30 p-3.5 space-y-2.5">
+                    <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400" data-i18n="user_mgmt.role_legend_title">Permission Tiers</div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                        <div class="p-2.5 rounded-lg border border-amber-200 dark:border-amber-800/70 bg-amber-50/60 dark:bg-amber-950/30 space-y-0.5">
+                            <div class="font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1">👑 <span data-i18n="user_mgmt.tier_super_label">Super User (1 only)</span></div>
+                            <p class="text-[11px] text-amber-700/90 dark:text-amber-200/80 leading-snug" data-i18n="user_mgmt.tier_super_desc">Full archive control + exclusive user &amp; permission management.</p>
+                        </div>
+                        <div class="p-2.5 rounded-lg border border-emerald-200 dark:border-emerald-800/70 bg-emerald-50/60 dark:bg-emerald-950/30 space-y-0.5">
+                            <div class="font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1">🛡️ <span data-i18n="user_mgmt.tier_admin_label">Admin</span></div>
+                            <p class="text-[11px] text-emerald-700/90 dark:text-emerald-200/80 leading-snug" data-i18n="user_mgmt.tier_admin_desc">Full archive &amp; delete access, cannot manage users or permissions.</p>
+                        </div>
+                        <div class="p-2.5 rounded-lg border border-blue-200 dark:border-blue-800/70 bg-blue-50/60 dark:bg-blue-950/30 space-y-0.5">
+                            <div class="font-bold text-blue-800 dark:text-blue-300 flex items-center gap-1">👤 <span data-i18n="user_mgmt.tier_regular_label">Regular User</span></div>
+                            <p class="text-[11px] text-blue-700/90 dark:text-blue-200/80 leading-snug" data-i18n="user_mgmt.tier_regular_desc">Browse, search, and upload documents only (no delete or settings).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feedback Banner -->
+                <div id="user-mgmt-feedback" class="hidden"></div>
+
+                <!-- Add New User Form -->
+                <form id="user-mgmt-create-form" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 space-y-3">
+                    <div class="text-xs font-bold text-slate-800 dark:text-slate-100" data-i18n="user_mgmt.add_section_title">Add New User Account</div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div class="space-y-1">
+                            <label for="user-mgmt-username-input" class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300" data-i18n="user_mgmt.username_label">Username (Login ID)</label>
+                            <input id="user-mgmt-username-input" type="text" dir="ltr" required class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. Ali" data-i18n-placeholder="user_mgmt.username_placeholder" />
+                        </div>
+                        <div class="space-y-1">
+                            <label for="user-mgmt-displayname-input" class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300" data-i18n="user_mgmt.display_name_label">Display Name</label>
+                            <input id="user-mgmt-displayname-input" type="text" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. Ali Hassan" data-i18n-placeholder="user_mgmt.display_name_placeholder" />
+                        </div>
+                        <div class="space-y-1">
+                            <label for="user-mgmt-password-input" class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300" data-i18n="user_mgmt.password_label">Password</label>
+                            <input id="user-mgmt-password-input" type="password" dir="ltr" required minlength="4" class="w-full px-3 py-2 text-xs font-mono rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Minimum 4 characters" data-i18n-placeholder="user_mgmt.password_placeholder" />
+                        </div>
+                        <div class="space-y-1">
+                            <label for="user-mgmt-role-select" class="block text-[11px] font-semibold text-slate-600 dark:text-slate-300" data-i18n="user_mgmt.role_label">Role</label>
+                            <select id="user-mgmt-role-select" class="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-pointer">
+                                <option value="Contributor" data-i18n="user_mgmt.role_regular_option">Regular User (Read &amp; Upload)</option>
+                                <option value="Admin" data-i18n="user_mgmt.role_admin_option">Admin (Full Access)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex justify-end pt-1">
+                        <button id="btn-user-mgmt-create" type="submit" class="px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm shadow-blue-500/25 transition-colors cursor-pointer">
+                            <span data-i18n="user_mgmt.add_user_btn">Add User</span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Registered Accounts List -->
+                <div class="space-y-2.5">
+                    <div class="flex items-center justify-between gap-2">
+                        <h4 class="text-xs font-bold text-slate-800 dark:text-slate-100" data-i18n="user_mgmt.users_section_title">Registered Accounts</h4>
+                        <span id="user-mgmt-count-badge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">0</span>
+                    </div>
+                    <div id="user-mgmt-list" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex justify-end flex-shrink-0">
+                <button id="btn-done-user-management" type="button" class="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer">
+                    <span data-i18n="common.close">Close</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Local Vendor Scripts -->
     <script src="lib/pdfjs/pdf.min.js"></script>
     <script src="lib/tesseract/tesseract.min.js"></script>
 
     <!-- Modular Application Scripts -->
     <script src="js/api.js?v=261101-03"></script>
-    <script src="js/auth-manager.js?v=261101-03"></script>
+    <script src="js/auth-manager.js?v=261101-04"></script>
     <script src="js/login-motion.js?v=260920-01"></script>
     <script src="js/resizer.js?v=260911-29"></script>
     <script src="js/pdf-preview.js?v=260911-34"></script>
@@ -2344,6 +2445,7 @@
     <script src="js/doc-page-editor.js?v=260915-01"></script>
     <script src="js/db-inspector.js?v=261101-03"></script>
     <script src="js/storage-settings.js?v=261101-03"></script>
+    <script src="js/user-management.js?v=261101-04"></script>
     <script src="js/area-grid.js?v=261101-02"></script>
     <script src="js/house-profile.js?v=260911-29"></script>
     <script src="js/timeline-view.js?v=260911-34"></script>
@@ -2353,7 +2455,7 @@
     <script src="js/ingest-station.js?v=260911-29"></script>
     <script src="js/keyboard-shortcuts.js?v=260911-29"></script>
     <script src="js/theme-manager.js?v=260912-03"></script>
-    <script src="js/i18n.js?v=261101-03"></script>
-    <script src="js/app.js?v=261101-03"></script>
+    <script src="js/i18n.js?v=261101-04"></script>
+    <script src="js/app.js?v=261101-04"></script>
 </body>
 </html>

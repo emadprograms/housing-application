@@ -93,6 +93,9 @@
         if (typeof window.initStorageSettings === 'function') {
             window.initStorageSettings();
         }
+        if (typeof window.initUserManagement === 'function') {
+            window.initUserManagement();
+        }
         if (typeof window.setupResizer === 'function') {
             window.setupResizer('resizer-1', 'main-sidebar', false);
             window.setupResizer('resizer-2', 'document-list-panel', true);
