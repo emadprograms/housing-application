@@ -55,6 +55,10 @@ public interface IFileOrganizerRepository
     Task<User?> GetUserByUsernameAsync(string username);
     Task<User?> GetUserByIdAsync(int id);
     Task<IReadOnlyList<UserDto>> GetAllUsersAsync();
+    Task<(bool Success, string? ErrorMessage, UserDto? User)> CreateUserAsync(CreateUserRequestDto request);
+    Task<(bool Success, string? ErrorMessage, UserDto? User)> UpdateUserAsync(int userId, UpdateUserRequestDto request);
+    Task<(bool Success, string? ErrorMessage)> DeleteUserAsync(int userId, int? actingUserId = null);
+    Task<(bool Success, string? ErrorMessage, UserDto? NewSuperUser)> TransferSuperUserAsync(int targetUserId);
 
     // Helpers for database seeding and testing
     Task<Area> AddAreaAsync(string areaId, string? code = null);

@@ -3753,7 +3753,11 @@ WHERE (house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHous
         if (string.IsNullOrWhiteSpace(username)) return null;
         await using var conn = await _connectionFactory.CreateConnectionAsync();
         return await conn.QuerySingleOrDefaultAsync<User>(
-            "SELECT id, username, display_name AS DisplayName, password_hash AS PasswordHash, salt, role, created_at AS CreatedAt, is_active AS IsActive FROM users WHERE LOWER(username) = LOWER(@Username) AND is_active = 1;",
+            @"SELECT id, username, display_name AS DisplayName, password_hash AS PasswordHash, salt, role,
+                     created_at AS CreatedAt, is_active AS IsActive,
+                     COALESCE(has_custom_password, 0) AS HasCustomPassword
+              FROM users
+              WHERE LOWER(username) = LOWER(@Username) AND is_active = 1;",
             new { Username = username.Trim() });
     }
 
@@ -3761,7 +3765,11 @@ WHERE (house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHous
     {
         await using var conn = await _connectionFactory.CreateConnectionAsync();
         return await conn.QuerySingleOrDefaultAsync<User>(
-            "SELECT id, username, display_name AS DisplayName, password_hash AS PasswordHash, salt, role, created_at AS CreatedAt, is_active AS IsActive FROM users WHERE id = @Id AND is_active = 1;",
+            @"SELECT id, username, display_name AS DisplayName, password_hash AS PasswordHash, salt, role,
+                     created_at AS CreatedAt, is_active AS IsActive,
+                     COALESCE(has_custom_password, 0) AS HasCustomPassword
+              FROM users
+              WHERE id = @Id AND is_active = 1;",
             new { Id = id });
     }
 
@@ -3769,14 +3777,290 @@ WHERE (house_id = @HouseId OR house_id = @CleanHouseId OR house_id = @TargetHous
     {
         await using var conn = await _connectionFactory.CreateConnectionAsync();
         var users = await conn.QueryAsync<User>(
-            "SELECT id, username, display_name AS DisplayName, password_hash AS PasswordHash, salt, role, created_at AS CreatedAt, is_active AS IsActive FROM users WHERE is_active = 1 ORDER BY CASE WHEN role = 'Admin' THEN 1 ELSE 2 END, id ASC;");
-        return users.Select(u => new UserDto
+            @"SELECT id, username, display_name AS DisplayName, password_hash AS PasswordHash, salt, role,
+                     created_at AS CreatedAt, is_active AS IsActive,
+                     COALESCE(has_custom_password, 0) AS HasCustomPassword
+              FROM users
+              WHERE is_active = 1
+              ORDER BY CASE WHEN role = 'SuperUser' THEN 0 WHEN role = 'Admin' THEN 1 ELSE 2 END, id ASC;");
+        return users.Select(ToUserDto).ToList();
+    }
+
+    private static UserDto ToUserDto(User u) => new()
+    {
+        Id = u.Id,
+        Username = u.Username,
+        DisplayName = u.DisplayName,
+        Role = u.Role,
+        CreatedAt = u.CreatedAt
+    };
+
+    private static (bool Valid, string NormalizedRole, string? ErrorMessage) ValidateAssignableRole(string? rawRole)
+    {
+        var trimmed = (rawRole ?? "Contributor").Trim();
+        if (string.Equals(trimmed, "SuperUser", StringComparison.OrdinalIgnoreCase))
         {
-            Id = u.Id,
-            Username = u.Username,
-            DisplayName = u.DisplayName,
-            Role = u.Role
-        }).ToList();
+            return (false, string.Empty, "There can only be one Super User. Use Transfer Super User to assign Super User ownership.");
+        }
+
+        if (string.Equals(trimmed, "Admin", StringComparison.OrdinalIgnoreCase))
+        {
+            return (true, "Admin", null);
+        }
+
+        if (string.Equals(trimmed, "Contributor", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(trimmed, "Regular", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(trimmed, "RegularUser", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(trimmed, "User", StringComparison.OrdinalIgnoreCase))
+        {
+            return (true, "Contributor", null);
+        }
+
+        return (false, string.Empty, $"Unsupported role '{trimmed}'. Allowed roles are Admin or Contributor (Regular User).");
+    }
+
+    public async Task<(bool Success, string? ErrorMessage, UserDto? User)> CreateUserAsync(CreateUserRequestDto request)
+    {
+        var cleanUsername = (request.Username ?? string.Empty).Trim();
+        if (cleanUsername.Length < 2 || cleanUsername.Length > 40)
+        {
+            return (false, "Username must be between 2 and 40 characters.", null);
+        }
+
+        if (cleanUsername.Any(char.IsWhiteSpace) || cleanUsername.Any(char.IsControl))
+        {
+            return (false, "Username cannot contain spaces or control characters.", null);
+        }
+
+        var cleanPassword = (request.Password ?? string.Empty).Trim();
+        if (cleanPassword.Length < 4)
+        {
+            return (false, "Password must be at least 4 characters.", null);
+        }
+
+        var (validRole, normalizedRole, roleErr) = ValidateAssignableRole(request.Role);
+        if (!validRole)
+        {
+            return (false, roleErr, null);
+        }
+
+        var cleanDisplayName = string.IsNullOrWhiteSpace(request.DisplayName)
+            ? cleanUsername
+            : request.DisplayName.Trim();
+
+        await using var conn = await _connectionFactory.CreateConnectionAsync();
+        var existing = await conn.QuerySingleOrDefaultAsync<(int Id, int IsActive)>(
+            "SELECT id, is_active FROM users WHERE LOWER(username) = LOWER(@Username);",
+            new { Username = cleanUsername });
+
+        var (hash, salt) = PasswordHasher.HashPassword(cleanPassword);
+
+        if (existing.Id > 0)
+        {
+            if (existing.IsActive == 1)
+            {
+                return (false, $"Username '{cleanUsername}' already exists.", null);
+            }
+
+            await conn.ExecuteAsync(
+                @"UPDATE users
+                  SET username = @Username,
+                      display_name = @DisplayName,
+                      password_hash = @Hash,
+                      salt = @Salt,
+                      role = @Role,
+                      is_active = 1,
+                      has_custom_password = 1
+                  WHERE id = @Id;",
+                new
+                {
+                    Id = existing.Id,
+                    Username = cleanUsername,
+                    DisplayName = cleanDisplayName,
+                    Hash = hash,
+                    Salt = salt,
+                    Role = normalizedRole
+                });
+
+            var reactivated = await GetUserByIdAsync(existing.Id);
+            return reactivated != null
+                ? (true, null, ToUserDto(reactivated))
+                : (false, "Failed to load reactivated user.", null);
+        }
+
+        var newId = await conn.ExecuteScalarAsync<int>(
+            @"INSERT INTO users (username, display_name, password_hash, salt, role, is_active, has_custom_password)
+              VALUES (@Username, @DisplayName, @Hash, @Salt, @Role, 1, 1);
+              SELECT last_insert_rowid();",
+            new
+            {
+                Username = cleanUsername,
+                DisplayName = cleanDisplayName,
+                Hash = hash,
+                Salt = salt,
+                Role = normalizedRole
+            });
+
+        var created = await GetUserByIdAsync(newId);
+        return created != null
+            ? (true, null, ToUserDto(created))
+            : (false, "Failed to load newly created user.", null);
+    }
+
+    public async Task<(bool Success, string? ErrorMessage, UserDto? User)> UpdateUserAsync(int userId, UpdateUserRequestDto request)
+    {
+        var existing = await GetUserByIdAsync(userId);
+        if (existing == null)
+        {
+            return (false, "User not found.", null);
+        }
+
+        var nextRole = existing.Role;
+        if (!string.IsNullOrWhiteSpace(request.Role))
+        {
+            if (string.Equals(existing.Role, "SuperUser", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.Equals(request.Role.Trim(), "SuperUser", StringComparison.OrdinalIgnoreCase))
+                {
+                    return (false, "Cannot demote the Super User directly. Transfer the Super User role to another account first so there is always one Super User.", null);
+                }
+            }
+            else
+            {
+                var (validRole, normalizedRole, roleErr) = ValidateAssignableRole(request.Role);
+                if (!validRole)
+                {
+                    return (false, roleErr, null);
+                }
+                nextRole = normalizedRole;
+            }
+        }
+
+        var nextDisplayName = string.IsNullOrWhiteSpace(request.DisplayName)
+            ? existing.DisplayName
+            : request.DisplayName.Trim();
+
+        var nextHash = existing.PasswordHash;
+        var nextSalt = existing.Salt;
+        var nextHasCustomPass = existing.HasCustomPassword;
+
+        if (!string.IsNullOrWhiteSpace(request.Password))
+        {
+            var cleanPassword = request.Password.Trim();
+            if (cleanPassword.Length < 4)
+            {
+                return (false, "Password must be at least 4 characters.", null);
+            }
+
+            (nextHash, nextSalt) = PasswordHasher.HashPassword(cleanPassword);
+            nextHasCustomPass = 1;
+        }
+
+        await using var conn = await _connectionFactory.CreateConnectionAsync();
+        await conn.ExecuteAsync(
+            @"UPDATE users
+              SET display_name = @DisplayName,
+                  role = @Role,
+                  password_hash = @Hash,
+                  salt = @Salt,
+                  has_custom_password = @HasCustomPassword
+              WHERE id = @Id AND is_active = 1;",
+            new
+            {
+                Id = userId,
+                DisplayName = nextDisplayName,
+                Role = nextRole,
+                Hash = nextHash,
+                Salt = nextSalt,
+                HasCustomPassword = nextHasCustomPass
+            });
+
+        var updated = await GetUserByIdAsync(userId);
+        return updated != null
+            ? (true, null, ToUserDto(updated))
+            : (false, "Failed to reload updated user.", null);
+    }
+
+    public async Task<(bool Success, string? ErrorMessage)> DeleteUserAsync(int userId, int? actingUserId = null)
+    {
+        var existing = await GetUserByIdAsync(userId);
+        if (existing == null)
+        {
+            return (false, "User not found.");
+        }
+
+        if (string.Equals(existing.Role, "SuperUser", StringComparison.OrdinalIgnoreCase))
+        {
+            return (false, "The Super User account cannot be deleted. Transfer the Super User role to another account first.");
+        }
+
+        if (actingUserId.HasValue && actingUserId.Value == userId)
+        {
+            return (false, "You cannot delete your own active account.");
+        }
+
+        await using var conn = await _connectionFactory.CreateConnectionAsync();
+        var affected = await conn.ExecuteAsync(
+            "DELETE FROM users WHERE id = @Id AND role != 'SuperUser';",
+            new { Id = userId });
+
+        return affected > 0
+            ? (true, null)
+            : (false, "Failed to delete user.");
+    }
+
+    public async Task<(bool Success, string? ErrorMessage, UserDto? NewSuperUser)> TransferSuperUserAsync(int targetUserId)
+    {
+        var target = await GetUserByIdAsync(targetUserId);
+        if (target == null)
+        {
+            return (false, "Target user not found.", null);
+        }
+
+        if (string.Equals(target.Role, "SuperUser", StringComparison.OrdinalIgnoreCase))
+        {
+            return (true, null, ToUserDto(target));
+        }
+
+        await using var conn = await _connectionFactory.CreateConnectionAsync();
+        await using var tx = await conn.BeginTransactionAsync();
+
+        try
+        {
+            // Step 1: Demote current SuperUser to Admin first so idx_users_single_superuser stays satisfied
+            await conn.ExecuteAsync(
+                "UPDATE users SET role = 'Admin' WHERE role = 'SuperUser' AND is_active = 1;",
+                transaction: tx);
+
+            // Step 2: Promote target user to SuperUser
+            var promoted = await conn.ExecuteAsync(
+                "UPDATE users SET role = 'SuperUser' WHERE id = @TargetId AND is_active = 1;",
+                new { TargetId = targetUserId },
+                tx);
+
+            // Step 3: Verify exact cardinality == 1 before committing
+            var activeSuperCount = await conn.ExecuteScalarAsync<int>(
+                "SELECT COUNT(*) FROM users WHERE role = 'SuperUser' AND is_active = 1;",
+                transaction: tx);
+
+            if (promoted != 1 || activeSuperCount != 1)
+            {
+                await tx.RollbackAsync();
+                return (false, "Failed to transfer Super User role while preserving single-SuperUser invariant.", null);
+            }
+
+            await tx.CommitAsync();
+        }
+        catch (Exception ex)
+        {
+            await tx.RollbackAsync();
+            return (false, $"Failed to transfer Super User role: {ex.Message}", null);
+        }
+
+        var updatedTarget = await GetUserByIdAsync(targetUserId);
+        return updatedTarget != null
+            ? (true, null, ToUserDto(updatedTarget))
+            : (false, "Failed to reload new Super User.", null);
     }
 }
 
