@@ -1630,6 +1630,92 @@ public class FileOrganizerRepository : IFileOrganizerRepository
         };
     }
 
+    public async Task<bool> DeleteAreaAsync(string areaId, string? areasRoot = null)
+    {
+        var cleanAreaId = areaId?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(cleanAreaId))
+        {
+            return false;
+        }
+
+        if (cleanAreaId is "." or ".." ||
+            cleanAreaId.EndsWith('.') ||
+            cleanAreaId.IndexOfAny(InvalidAreaNameChars) >= 0 ||
+            cleanAreaId.Any(char.IsControl))
+        {
+            throw new ArgumentException("Area name contains invalid characters.");
+        }
+
+        await using var conn = await _connectionFactory.CreateConnectionAsync();
+        var existingArea = await conn.QueryFirstOrDefaultAsync<Area>(
+            "SELECT id AS Id, code AS Code FROM areas WHERE id = @Id;",
+            new { Id = cleanAreaId });
+
+        if (existingArea == null)
+        {
+            existingArea = await conn.QueryFirstOrDefaultAsync<Area>(
+                "SELECT id AS Id, code AS Code FROM areas WHERE LOWER(id) = LOWER(@Id);",
+                new { Id = cleanAreaId });
+            if (existingArea == null)
+            {
+                return false;
+            }
+        }
+
+        var canonicalAreaId = existingArea.Id;
+
+        await using var tx = await conn.BeginTransactionAsync();
+
+        await conn.ExecuteAsync(
+            "DELETE FROM pages WHERE house_id IN (SELECT id FROM houses WHERE area_id = @AreaId);",
+            new { AreaId = canonicalAreaId }, tx);
+        await conn.ExecuteAsync(
+            "DELETE FROM documents WHERE house_id IN (SELECT id FROM houses WHERE area_id = @AreaId);",
+            new { AreaId = canonicalAreaId }, tx);
+        await conn.ExecuteAsync(
+            "DELETE FROM batches WHERE house_id IN (SELECT id FROM houses WHERE area_id = @AreaId);",
+            new { AreaId = canonicalAreaId }, tx);
+        await conn.ExecuteAsync(
+            "DELETE FROM tenants WHERE house_id IN (SELECT id FROM houses WHERE area_id = @AreaId);",
+            new { AreaId = canonicalAreaId }, tx);
+        await conn.ExecuteAsync(
+            "DELETE FROM houses WHERE area_id = @AreaId;",
+            new { AreaId = canonicalAreaId }, tx);
+        var rows = await conn.ExecuteAsync(
+            "DELETE FROM areas WHERE id = @AreaId;",
+            new { AreaId = canonicalAreaId }, tx);
+
+        await tx.CommitAsync();
+
+        var resolvedAreasRoot = !string.IsNullOrEmpty(areasRoot)
+            ? areasRoot
+            : (_configuration?["AREAS_ROOT_PATH"] ?? Environment.GetEnvironmentVariable("AREAS_ROOT_PATH") ?? "../areas");
+
+        if (!string.IsNullOrWhiteSpace(resolvedAreasRoot))
+        {
+            try
+            {
+                var fullRoot = Path.GetFullPath(resolvedAreasRoot);
+                var rootWithSep = fullRoot.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+                var candidateNames = new[] { canonicalAreaId, cleanAreaId }.Distinct(StringComparer.Ordinal);
+                foreach (var candidate in candidateNames)
+                {
+                    var areaDir = Path.GetFullPath(Path.Combine(fullRoot, candidate));
+                    if (areaDir.StartsWith(rootWithSep, StringComparison.OrdinalIgnoreCase) && Directory.Exists(areaDir))
+                    {
+                        Directory.Delete(areaDir, recursive: true);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Ignore directory deletion errors so database deletion still completes cleanly
+            }
+        }
+
+        return rows > 0;
+    }
+
     public async Task<CreateHouseResponseDto> CreateHouseAsync(
         string areaId,
         string houseId,

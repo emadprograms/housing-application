@@ -391,6 +391,41 @@ app.MapPost("/api/areas", async (
     }
 });
 
+app.MapDelete("/api/areas/{areaId}", async (
+    string areaId,
+    HttpContext httpContext,
+    IFileOrganizerRepository repo,
+    IConfiguration config) =>
+{
+    if (IsRestrictedFromDelete(httpContext))
+    {
+        return Results.Json(
+            new { status = "error", error = "Permission denied: Contributor accounts have read and upload access only and cannot delete records." },
+            statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    if (string.IsNullOrWhiteSpace(areaId))
+    {
+        return Results.BadRequest(new { error = "Area ID is required and cannot be empty.", detail = "Area ID is required and cannot be empty." });
+    }
+
+    var areasRoot = ResolveAreasRoot(config);
+    try
+    {
+        var success = await repo.DeleteAreaAsync(areaId, areasRoot);
+        if (!success)
+        {
+            return Results.NotFound(new { error = $"Area '{areaId}' not found.", detail = $"Area '{areaId}' not found." });
+        }
+
+        return Results.Ok(new { status = "success", area_id = areaId.Trim(), message = $"Area '{areaId.Trim()}' deleted successfully." });
+    }
+    catch (ArgumentException ex)
+    {
+        return Results.BadRequest(new { error = ex.Message, detail = ex.Message });
+    }
+});
+
 app.MapGet("/api/houses", async (string? area_id, string? areaId, IFileOrganizerRepository repo) =>
 {
     var targetArea = area_id ?? areaId;

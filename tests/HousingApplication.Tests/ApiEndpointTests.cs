@@ -1031,6 +1031,54 @@ public class ApiEndpointTests : IClassFixture<ApiTestFixture>, IAsyncLifetime
     }
 
     [Fact]
+    public async Task DeleteArea_DeletesAreaHousesDocumentsAndDirectory_AndEnforcesAdminRbac()
+    {
+        var areaName = $"DeleteTest {Guid.NewGuid():N}";
+        var createAreaRes = await _client.PostAsJsonAsync("/api/areas", new CreateAreaRequestDto
+        {
+            AreaId = areaName,
+            Code = "DT"
+        });
+        Assert.Equal(HttpStatusCode.OK, createAreaRes.StatusCode);
+
+        var houseId = $"H-{Guid.NewGuid():N}"[..8];
+        var createHouseRes = await _client.PostAsJsonAsync($"/api/areas/{Uri.EscapeDataString(areaName)}/houses", new CreateHouseRequestDto
+        {
+            HouseId = houseId,
+            InitialTenantName = "أحمد محمد",
+            StartDate = "2025-01-01"
+        });
+        Assert.Equal(HttpStatusCode.OK, createHouseRes.StatusCode);
+
+        var areaDir = Path.Combine(_fixture.AreasRoot, areaName);
+        Assert.True(Directory.Exists(areaDir));
+
+        // Contributor cannot delete area (403 Forbidden)
+        using var contributorReq = new HttpRequestMessage(HttpMethod.Delete, $"/api/areas/{Uri.EscapeDataString(areaName)}");
+        contributorReq.Headers.Add("X-User-Role", "Contributor");
+        contributorReq.Headers.Add("X-User", "Nawaf");
+        var forbiddenRes = await _client.SendAsync(contributorReq);
+        Assert.Equal(HttpStatusCode.Forbidden, forbiddenRes.StatusCode);
+        Assert.True(Directory.Exists(areaDir));
+
+        // Admin deletes area successfully (200 OK)
+        var deleteRes = await _client.DeleteAsync($"/api/areas/{Uri.EscapeDataString(areaName)}");
+        Assert.Equal(HttpStatusCode.OK, deleteRes.StatusCode);
+        Assert.False(Directory.Exists(areaDir));
+
+        // Verify area and house are removed from /api/tree
+        var treeRes = await _client.GetAsync("/api/tree");
+        Assert.Equal(HttpStatusCode.OK, treeRes.StatusCode);
+        var tree = await treeRes.Content.ReadFromJsonAsync<List<TreeAreaDto>>();
+        Assert.NotNull(tree);
+        Assert.DoesNotContain(tree, a => a.Name == areaName);
+
+        // Deleting non-existent area returns 404 NotFound
+        var missingRes = await _client.DeleteAsync($"/api/areas/{Uri.EscapeDataString(areaName)}");
+        Assert.Equal(HttpStatusCode.NotFound, missingRes.StatusCode);
+    }
+
+    [Fact]
     public async Task CreateHouse_ReturnsCreatedHouseAndDirectories()
     {
         var request = new CreateHouseRequestDto
