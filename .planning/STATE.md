@@ -1,13 +1,13 @@
 ---
-gsd_state_version: 1.0
+gsd_state_version: "1.0"
 milestone: v18.1
-milestone_name: UI & Localization Consistency Polish
 current_phase: "128: Automated Localization Suite & Full Regression Verification"
 status: completed
-last_updated: "2026-09-24T08:47:55.749Z"
-last_activity: 2026-09-24
-last_activity_desc: Milestone v18.1 completed and archived
-state_head: a455ec13e3228fabf6cb560725390841e4b06dda
+last_updated: "2026-11-01T05:04:56.898Z"
+last_activity: 2026-11-01
+last_activity_desc: Quick task 261101-6bf completed (Delete Area and Delete House UI)
+state_head: e9d72e5ed3e4cad06d7c7b536a51f91162403892
+milestone_name: UI & Localization Consistency Polish
 progress:
   total_phases: 4
   completed_phases: 4
@@ -27,7 +27,7 @@ progress:
 Phase: Milestone v18.1 complete
 Plan: —
 Status: Awaiting next milestone
-Last activity: 2026-09-24 — Milestone v18.1 completed and archived
+Last activity: 2026-11-01 — Completed quick task 261101-6bf: Delete Area and Delete House UI
 
 ## Context
 
@@ -116,6 +116,13 @@ Milestone v18.1 resolves remaining small issues, hardcoded strings, and localiza
 - `260920-login-home-page-animated`: Animated Login Home Page with Logo & Preset Removal (QCK-57). Created a dedicated, entertaining Login Home Page as the entry point with floating animated `pictures/logo.png`, pulsing glowing halo, ambient floating glowing orbs, subtle grid background, bold gradient `Housing Application` title, interactive feature badges, and error shake. Completely removed preset user buttons (`#login-presets-container` and user chips) in favor of clean manual authentication. Maintained 100% dual-asset parity across `src/` and `dist/`. All 12 tests in `auth_manager.test.js` passing.
 - `260921-d6n`: Convert Transparent Ministry Logo into Multi-Resolution Icon & Web Favicon (QCK-58). Generated multi-resolution Windows .ico (16, 32, 48, 64, 128, 256) and PNG favicons from logo.png with 100% alpha transparency. Deployed across src/ and dist/win-x64/ wwwroot, updated index.html with favicon/apple-touch-icon tags, and configured <ApplicationIcon> in HousingApplication.Web.csproj. Verified by 20 passing Vitest tests.
 - `260923-cqe`: Document-Driven End Date for Past Tenants & Zero Manual Date Entry (QCK-59). Made past residents' end date 100% document-driven (derived from MAX(primary_date)) across FileOrganizerRepository, updated tenant-manager.js to render tenant-end-input as readonly, eliminated manual user entry in House Settings modal, and added automated backend/frontend test coverage.
+- `261101-6bf`: Delete Area and Discoverable Delete House UI (QCK-60). Added transactional `DeleteAreaAsync` cascade (`pages` -> `documents` -> `batches` -> `tenants` -> `houses` -> `areas` + safe directory removal) and Admin-only `DELETE /api/areas/{areaId}` endpoint, `#delete-area-modal` with typed phrase confirmation and house-count warning, sidebar `.area-delete-btn` & Area Overview `#btn-delete-area-header`, and discoverable Delete House triggers on Area Grid cards (`.house-card-delete-btn`) and House panel header (`#btn-delete-house-quick`). Verified by 752 passing Vitest tests across 53 files and 100% `wwwroot` parity.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 261101-6bf | Delete Area and Delete House UI | 2026-11-01 | e9d72e5 | [261101-6bf-delete-area-and-delete-house-ui](./quick/261101-6bf-delete-area-and-delete-house-ui/) |
 
 ## Deferred Items
 
