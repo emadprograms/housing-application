@@ -96,13 +96,20 @@
                     }
                 }
 
-                // Handle 403 Forbidden (RBAC Delete Guards)
+                // Handle 403 Forbidden (RBAC Guards)
                 if (response.status === 403) {
                     const urlStr = typeof resource === 'string' ? resource : resource.url || '';
                     if (urlStr.includes('/api/')) {
                         if (typeof window.showToast === 'function') {
                             const isEn = window.i18n && window.i18n.getLanguage() === 'en';
-                            window.showToast(isEn ? 'Deletion is restricted for Contributor accounts.' : 'عذراً: ليس لديك صلاحية حذف الوثائق أو العناصر (قراءة ورفع فقط)', 'error');
+                            if (urlStr.includes('/api/settings/')) {
+                                const msg = (window.i18n && typeof window.i18n.t === 'function')
+                                    ? window.i18n.t('storage_settings.admin_only_error')
+                                    : (isEn ? 'Administrator privileges are required to modify storage paths.' : 'هذه الإعدادات متاحة لمدير النظام فقط.');
+                                window.showToast(msg, 'error');
+                            } else {
+                                window.showToast(isEn ? 'Deletion is restricted for Contributor accounts.' : 'عذراً: ليس لديك صلاحية حذف الوثائق أو العناصر (قراءة ورفع فقط)', 'error');
+                            }
                         }
                     }
                 }
@@ -635,6 +642,15 @@
                 } else {
                     dropdownRoleDesc.textContent = window.i18n ? window.i18n.t('auth.contributor_desc') : 'صلاحيات محدودة: قراءة واستعراض ورفع الوثائق. خاصية الحذف محجوبة بالكامل.';
                 }
+            }
+
+            const storageMenuBtn = document.getElementById('btn-open-storage-settings');
+            if (storageMenuBtn) {
+                storageMenuBtn.classList.toggle('hidden', !isAdmin);
+            }
+            const dbChangePathsBtn = document.getElementById('db-change-paths-btn');
+            if (dbChangePathsBtn) {
+                dbChangePathsBtn.classList.toggle('hidden', !isAdmin);
             }
         }
 

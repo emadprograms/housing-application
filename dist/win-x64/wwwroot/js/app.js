@@ -90,6 +90,9 @@
         if (typeof window.initDbInspector === 'function') {
             window.initDbInspector();
         }
+        if (typeof window.initStorageSettings === 'function') {
+            window.initStorageSettings();
+        }
         if (typeof window.setupResizer === 'function') {
             window.setupResizer('resizer-1', 'main-sidebar', false);
             window.setupResizer('resizer-2', 'document-list-panel', true);

@@ -10,6 +10,15 @@
         const dbRefreshBtn = document.getElementById('db-refresh-btn');
         if (dbRefreshBtn) dbRefreshBtn.addEventListener('click', () => loadDbInspector());
 
+        const dbChangePathsBtn = document.getElementById('db-change-paths-btn');
+        if (dbChangePathsBtn) {
+            dbChangePathsBtn.addEventListener('click', () => {
+                if (typeof window.openStorageSettingsModal === 'function') {
+                    window.openStorageSettingsModal();
+                }
+            });
+        }
+
         const dbTableSearch = document.getElementById('db-table-search');
         if (dbTableSearch) {
             dbTableSearch.addEventListener('input', (e) => {
