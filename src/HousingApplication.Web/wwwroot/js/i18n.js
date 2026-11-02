@@ -568,9 +568,22 @@
             'storage_settings.outdated_binary_error': 'الخادم الحالي يعمل بنسخة قديمة من الملف التنفيذي. يرجى تشغيل scripts\\build-windows.bat مرة واحدة لتفعيل إعدادات المسارات.',
 
             // User & Role Management (SuperUser-only)
+            'house_profile.settings_tooltip': 'إعدادات المنزل',
+            'categories.title': 'التصنيف',
+            'doc.select_preview': 'اختر مستنداً للمعاينة',
+            'doc_action.notes': '📝 ملاحظات إضافية',
             'user_mgmt.menu_btn': 'إدارة المستخدمين والصلاحيات',
+            'user_mgmt.title': 'إدارة المستخدمين والصلاحيات',
+            'user_mgmt.subtitle': 'إضافة أو حذف الحسابات وتعديل الصلاحيات، مع وجود مشرف عام واحد فقط في النظام.',
             'user_mgmt.modal_title': 'إدارة المستخدمين والصلاحيات',
             'user_mgmt.modal_subtitle': 'إضافة أو حذف الحسابات وتحديد الأدوار مع ضمان وجود مشرف عام واحد فقط في النظام',
+            'user_mgmt.role_legend_title': 'مستويات الصلاحيات في النظام',
+            'user_mgmt.tier_super_label': 'مشرف عام (حساب واحد فقط)',
+            'user_mgmt.tier_super_desc': 'صلاحيات كاملة للأرشيف والحذف وإدارة المستخدمين والصلاحيات حصرياً.',
+            'user_mgmt.tier_admin_label': 'مدير نظام',
+            'user_mgmt.tier_admin_desc': 'صلاحيات كاملة للأرشيف والحذف وإعدادات المسارات دون إدارة المستخدمين.',
+            'user_mgmt.tier_regular_label': 'مستخدم عادي',
+            'user_mgmt.tier_regular_desc': 'تصفح الأرشيف والبحث ورفع الوثائق فقط (دون الحذف أو الإعدادات).',
             'user_mgmt.tier_superuser': 'مشرف عام واحد فقط: صلاحيات كاملة مع إدارة المستخدمين والأدوار',
             'user_mgmt.tier_admin': 'مدير نظام: صلاحيات كاملة للوثائق والمنازل والحذف دون تغيير صلاحيات المستخدمين',
             'user_mgmt.tier_regular': 'مستخدم عادي: قراءة واستعراض ورفع الوثائق فقط دون الحذف',
@@ -586,6 +599,7 @@
             'user_mgmt.role_regular_option': 'مستخدم عادي (قراءة ورفع فقط)',
             'user_mgmt.add_user_btn': 'إضافة المستخدم',
             'user_mgmt.adding_btn': 'جاري الإضافة...',
+            'user_mgmt.users_section_title': 'الحسابات المسجلة في النظام',
             'user_mgmt.users_list_title': 'الحسابات المسجلة في النظام',
             'user_mgmt.unique_superuser_tag': 'المشرف العام الوحيد',
             'user_mgmt.reset_password_btn': 'تغيير كلمة المرور',
@@ -1163,9 +1177,22 @@
             'storage_settings.outdated_binary_error': 'The running server binary predates this feature. Run scripts\\build-windows.bat once to enable path configuration.',
 
             // User & Role Management (SuperUser-only)
+            'house_profile.settings_tooltip': 'House Settings',
+            'categories.title': 'Category',
+            'doc.select_preview': 'Select a document to preview',
+            'doc_action.notes': '📝 Additional Notes',
             'user_mgmt.menu_btn': 'Manage Users & Permissions',
+            'user_mgmt.title': 'User & Permission Management',
+            'user_mgmt.subtitle': 'Manage user accounts and assign Admin or Regular User permissions. Strictly one Super User exists in the system.',
             'user_mgmt.modal_title': 'User & Permission Management',
             'user_mgmt.modal_subtitle': 'Add or remove accounts and assign roles with a strictly enforced single Super User',
+            'user_mgmt.role_legend_title': 'Permission Tiers',
+            'user_mgmt.tier_super_label': 'Super User (1 only)',
+            'user_mgmt.tier_super_desc': 'Full archive control + exclusive user & permission management.',
+            'user_mgmt.tier_admin_label': 'Admin',
+            'user_mgmt.tier_admin_desc': 'Full archive, delete & storage settings access; cannot manage users.',
+            'user_mgmt.tier_regular_label': 'Regular User',
+            'user_mgmt.tier_regular_desc': 'Browse, search, and upload documents only (no delete or settings).',
             'user_mgmt.tier_superuser': 'Super User (1 only): Full system control plus user & permission management',
             'user_mgmt.tier_admin': 'Admin: Full document, house & delete access (cannot modify user permissions)',
             'user_mgmt.tier_regular': 'Regular User: Read and upload documents only (deletion restricted)',
@@ -1181,6 +1208,7 @@
             'user_mgmt.role_regular_option': 'Regular User (Read & Upload)',
             'user_mgmt.add_user_btn': 'Add User',
             'user_mgmt.adding_btn': 'Adding...',
+            'user_mgmt.users_section_title': 'Registered Accounts',
             'user_mgmt.users_list_title': 'Registered Accounts',
             'user_mgmt.unique_superuser_tag': 'Sole Super User',
             'user_mgmt.reset_password_btn': 'Reset Password',
@@ -1276,6 +1304,14 @@
         }
     }
 
+    function hasTranslationKey(key) {
+        if (!key) return false;
+        const langDict = translations[currentLang] || translations[DEFAULT_LANG];
+        if (langDict && key in langDict) return true;
+        const defaultDict = translations[DEFAULT_LANG];
+        return Boolean(defaultDict && key in defaultDict);
+    }
+
     function applyTranslations(root = null) {
         if (typeof document === 'undefined') return;
         const target = root || document;
@@ -1284,7 +1320,7 @@
         const elements = target.querySelectorAll('[data-i18n]');
         elements.forEach(el => {
             const key = el.getAttribute('data-i18n');
-            if (key) {
+            if (key && hasTranslationKey(key)) {
                 const text = t(key);
                 if (text) el.textContent = text;
             }
@@ -1294,7 +1330,7 @@
         const titleElements = target.querySelectorAll('[data-i18n-title]');
         titleElements.forEach(el => {
             const key = el.getAttribute('data-i18n-title');
-            if (key) {
+            if (key && hasTranslationKey(key)) {
                 const val = t(key);
                 if (val) el.setAttribute('title', val);
             }
@@ -1304,7 +1340,7 @@
         const placeholderElements = target.querySelectorAll('[data-i18n-placeholder]');
         placeholderElements.forEach(el => {
             const key = el.getAttribute('data-i18n-placeholder');
-            if (key) {
+            if (key && hasTranslationKey(key)) {
                 const val = t(key);
                 if (val) el.setAttribute('placeholder', val);
             }
@@ -1314,7 +1350,7 @@
         const ariaElements = target.querySelectorAll('[data-i18n-aria]');
         ariaElements.forEach(el => {
             const key = el.getAttribute('data-i18n-aria');
-            if (key) {
+            if (key && hasTranslationKey(key)) {
                 const val = t(key);
                 if (val) el.setAttribute('aria-label', val);
             }

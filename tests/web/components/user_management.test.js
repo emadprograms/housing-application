@@ -528,4 +528,43 @@ describe('3-Tier RBAC (SuperUser, Admin, Regular User) & In-App User Management'
             expect(mockUsersDb.find(u => u.id === 5).role).toBe('Contributor');
         });
     });
+
+    it('resolves every data-i18n key in index.html and renders zero raw user_mgmt.* keys in Arabic or English', async () => {
+        const attrRegex = /data-i18n(?:-(?:title|placeholder|aria))?="([^"]+)"/g;
+        const arDict = window.i18n.translations.ar;
+        const enDict = window.i18n.translations.en;
+
+        let match;
+        while ((match = attrRegex.exec(indexHtmlContent)) !== null) {
+            const key = match[1];
+            expect(arDict[key], `Missing AR translation for ${key}`).toBeTruthy();
+            expect(enDict[key], `Missing EN translation for ${key}`).toBeTruthy();
+        }
+
+        const distI18nPath = path.join(rootDir, 'dist/win-x64/wwwroot/js/i18n.js');
+        expect(fs.readFileSync(distI18nPath, 'utf-8')).toBe(i18nJsContent);
+
+        window.authManager.applyUpdatedCurrentUser({
+            id: 1,
+            username: 'Emad',
+            displayName: 'Emad',
+            role: 'SuperUser',
+            canDelete: true
+        });
+
+        window.i18n.setLanguage('ar');
+        await window.openUserManagementModal();
+        const modalArText = document.getElementById('user-management-modal').textContent;
+        expect(modalArText).not.toContain('user_mgmt.');
+        expect(modalArText).toContain('إدارة المستخدمين والصلاحيات');
+        expect(modalArText).toContain('مستويات الصلاحيات في النظام');
+        expect(modalArText).toContain('مشرف عام (حساب واحد فقط)');
+
+        window.i18n.setLanguage('en');
+        const modalEnText = document.getElementById('user-management-modal').textContent;
+        expect(modalEnText).not.toContain('user_mgmt.');
+        expect(modalEnText).toContain('User & Permission Management');
+        expect(modalEnText).toContain('Permission Tiers');
+        expect(modalEnText).toContain('Super User (1 only)');
+    });
 });

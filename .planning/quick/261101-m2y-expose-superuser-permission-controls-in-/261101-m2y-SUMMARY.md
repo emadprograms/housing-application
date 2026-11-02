@@ -34,11 +34,16 @@ completed: 2026-11-01
      - **User & Permission Management (Super User Only)** (amber badge on SuperUser row; locked badge on non-SuperUser rows with adjacent **Make Super User** ownership transfer button)
    - Synchronized permission checkbox toggles seamlessly with the underlying `Admin` / `Contributor` role tier via `PUT /api/users/{id}` (and dual `display_name` / `displayName` payload support for `SnakeCaseLower` JSON binding).
 
-3. **Legacy Binary Resilience & Race-Free Session Check (`auth-manager.js` + `user-management.js`)**:
+3. **Complete i18n Key Parity & Fallback Protection (`i18n.js` + `user-management.js`)**:
+   - Resolved all mismatched `data-i18n` keys inside `#user-management-modal` (`user_mgmt.title`, `user_mgmt.subtitle`, `user_mgmt.role_legend_title`, `user_mgmt.tier_super_label`, `user_mgmt.tier_super_desc`, `user_mgmt.tier_admin_label`, `user_mgmt.tier_admin_desc`, `user_mgmt.tier_regular_label`, `user_mgmt.tier_regular_desc`, `user_mgmt.users_section_title`) plus 4 remaining `index.html` keys (`house_profile.settings_tooltip`, `categories.title`, `doc.select_preview`, `doc_action.notes`) across both Arabic (`ar`) and English (`en`).
+   - Added `hasTranslationKey()` guard inside `applyTranslations()` in `i18n.js` and fallback preservation in `tr()` so human-readable HTML text is never overwritten by a raw dotted key string, and bumped script cache-busting query params to `?v=261101-06`.
+
+4. **Legacy Binary Resilience & Race-Free Session Check (`auth-manager.js` + `user-management.js`)**:
    - Updated `checkSession()` and `login()` to recognize both `is_super_user` / `can_manage_users` (snake_case from `Program.cs`) and `isSuperUser` / `canManageUsers`, while preserving caller-injected `currentUser` snapshots against in-flight session checks.
    - Added `housing_rbac_directory_v1` fallback when running against an older binary lacking `/api/users` (`404`/`405`), immediately promoting `Emad` to `SuperUser` and rendering the full interactive user/permission list alongside build instructions.
 
 ## Verification
 
 - Synchronized `src/HousingApplication.Web/wwwroot/` -> `dist/win-x64/wwwroot/` (`diff -rq` clean) on top of `182c479`.
-- Full Vitest suite: **56/56 test files (775/775 tests) passing**.
+- Full `data-i18n*` HTML & JS audit: 0 missing keys in `ar` or `en`.
+- Full Vitest suite: **56/56 test files (776/776 tests) passing**.

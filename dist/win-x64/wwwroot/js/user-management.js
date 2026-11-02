@@ -32,7 +32,7 @@
     function tr(key, fallback) {
         if (typeof window !== 'undefined' && window.i18n && typeof window.i18n.t === 'function') {
             const val = window.i18n.t(key, fallback || '');
-            return val || fallback || key;
+            if (val && val !== key) return val;
         }
         return fallback || key;
     }
