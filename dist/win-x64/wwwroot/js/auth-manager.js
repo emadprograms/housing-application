@@ -823,11 +823,8 @@
                 }
                 const userMgmtBtnOut = document.getElementById('btn-open-user-management');
                 if (userMgmtBtnOut) userMgmtBtnOut.classList.add('hidden');
-                const navUserMgmtBtnOut = document.getElementById('btn-navbar-user-management');
-                if (navUserMgmtBtnOut) {
-                    navUserMgmtBtnOut.classList.add('hidden');
-                    navUserMgmtBtnOut.classList.remove('flex');
-                }
+                const adminActionsDividerOut = document.getElementById('dropdown-admin-actions-group');
+                if (adminActionsDividerOut) adminActionsDividerOut.classList.add('hidden');
                 return;
             }
 
@@ -894,14 +891,13 @@
             if (userMgmtBtn) {
                 userMgmtBtn.classList.toggle('hidden', !isSuperUser);
             }
-            const navUserMgmtBtn = document.getElementById('btn-navbar-user-management');
-            if (navUserMgmtBtn) {
-                navUserMgmtBtn.classList.toggle('hidden', !isSuperUser);
-                navUserMgmtBtn.classList.toggle('flex', isSuperUser);
-            }
             const storageMenuBtn = document.getElementById('btn-open-storage-settings');
             if (storageMenuBtn) {
                 storageMenuBtn.classList.toggle('hidden', !isAdmin);
+            }
+            const adminActionsGroup = document.getElementById('dropdown-admin-actions-group');
+            if (adminActionsGroup) {
+                adminActionsGroup.classList.toggle('hidden', !isAdmin);
             }
             const dbChangePathsBtn = document.getElementById('db-change-paths-btn');
             if (dbChangePathsBtn) {

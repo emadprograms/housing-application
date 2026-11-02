@@ -464,13 +464,25 @@ describe('3-Tier RBAC (SuperUser, Admin, Regular User) & In-App User Management'
         expect(window.authManager.isSuperUser()).toBe(true);
         expect(window.authManager.canManageUsers()).toBe(true);
 
-        const navBtn = document.getElementById('btn-navbar-user-management');
+        // Manage Users & Permissions lives exclusively inside #user-profile-dropdown (NEVER in the title bar)
+        expect(document.getElementById('btn-navbar-user-management')).toBeNull();
+        const userDropdown = document.getElementById('user-profile-dropdown');
+        expect(userDropdown).not.toBeNull();
+        expect(userDropdown.querySelector('#dropdown-role-desc')).not.toBeNull();
+        expect(userDropdown.querySelector('#btn-open-user-management')).not.toBeNull();
+        expect(userDropdown.querySelector('#btn-open-storage-settings')).not.toBeNull();
+        expect(userDropdown.querySelector('#btn-switch-user')).not.toBeNull();
+        expect(userDropdown.querySelector('#btn-logout')).not.toBeNull();
+
         const menuBtn = document.getElementById('btn-open-user-management');
-        expect(navBtn.classList.contains('hidden')).toBe(false);
         expect(menuBtn.classList.contains('hidden')).toBe(false);
 
-        // Clicking the top-navbar Users & Permissions button opens the modal and renders all users + permission checkboxes
-        navBtn.click();
+        // Clicking #user-profile-btn opens the user dialog, and clicking #btn-open-user-management opens the modal & closes the dropdown
+        document.getElementById('user-profile-btn').click();
+        expect(userDropdown.classList.contains('hidden')).toBe(false);
+
+        menuBtn.click();
+        expect(userDropdown.classList.contains('hidden')).toBe(true);
         await vi.waitFor(() => {
             expect(document.querySelectorAll('#user-mgmt-list [data-user-id]').length).toBeGreaterThanOrEqual(3);
         });

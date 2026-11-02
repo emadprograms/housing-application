@@ -113,12 +113,6 @@
             menuBtn.classList.toggle('hidden', !canManage);
         }
 
-        const navBtn = document.getElementById('btn-navbar-user-management');
-        if (navBtn) {
-            navBtn.classList.toggle('hidden', !canManage);
-            navBtn.classList.toggle('flex', canManage);
-        }
-
         if (!canManage) {
             const modal = document.getElementById('user-management-modal');
             if (modal && !modal.classList.contains('hidden')) {
@@ -803,14 +797,6 @@
         const openBtn = document.getElementById('btn-open-user-management');
         if (openBtn) {
             openBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                openUserManagementModal();
-            });
-        }
-
-        const navOpenBtn = document.getElementById('btn-navbar-user-management');
-        if (navOpenBtn) {
-            navOpenBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 openUserManagementModal();
             });

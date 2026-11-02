@@ -308,12 +308,6 @@
                     <!-- Subtle Vertical Divider -->
                     <div class="header-divider h-5 w-px bg-slate-200/90 dark:bg-slate-700 mx-0.5 select-none flex-shrink-0" aria-hidden="true"></div>
 
-                    <!-- SuperUser Quick Trigger: Users & Permissions -->
-                    <button id="btn-navbar-user-management" type="button" class="hidden items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-amber-200 dark:border-amber-800/70 bg-amber-50/90 dark:bg-amber-950/50 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-800 dark:text-amber-300 transition-all text-xs font-bold shadow-2xs cursor-pointer flex-shrink-0" title="Users &amp; Permissions" data-i18n-title="user_mgmt.menu_btn" aria-label="Users &amp; Permissions">
-                        <svg class="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                        <span class="hidden lg:inline truncate max-w-[140px]" data-i18n="user_mgmt.menu_btn">Users &amp; Permissions</span>
-                    </button>
-
                     <!-- User Profile & Session Controls -->
                     <div id="user-profile-wrapper" class="relative flex items-center flex-shrink-0">
                         <button id="user-profile-btn" type="button" class="flex items-center gap-1.5 sm:gap-2 pl-2 pr-2.5 py-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/70 transition-all text-xs shadow-2xs cursor-pointer select-none group" aria-haspopup="true" aria-expanded="false" title="User Profile & Permissions" data-i18n-title="nav.user_profile">
@@ -326,9 +320,10 @@
                             </div>
                             <svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-transform duration-150 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
-                        <!-- Dropdown Menu -->
-                        <div id="user-profile-dropdown" class="hidden absolute right-0 top-full mt-2 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-50 p-3 space-y-3 backdrop-blur-lg">
-                            <div class="flex items-center gap-3 p-2 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-800">
+                        <!-- User Profile, Permissions & Administration Dialog -->
+                        <div id="user-profile-dropdown" class="hidden absolute right-0 rtl:right-auto rtl:left-0 top-full mt-2 w-76 sm:w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-50 p-3.5 space-y-3 backdrop-blur-lg">
+                            <!-- Current User Identity -->
+                            <div class="flex items-center gap-3 p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-800">
                                 <div id="dropdown-avatar-badge" class="w-10 h-10 rounded-xl bg-blue-600 text-white font-bold text-base flex items-center justify-center shadow-sm flex-shrink-0">
                                     U
                                 </div>
@@ -340,30 +335,36 @@
                                 </div>
                             </div>
 
-                            <div class="p-2.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800/80 text-[11px] text-slate-600 dark:text-slate-300 space-y-1">
-                                <div class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                                    <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                    <span data-i18n="common.permissions">Permissions</span>
+                            <!-- Unified Permissions & System Administration Group -->
+                            <div class="p-2.5 bg-slate-50/90 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800/80 text-[11px] text-slate-600 dark:text-slate-300 space-y-2">
+                                <div class="space-y-1">
+                                    <div class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                                        <span data-i18n="common.permissions">Permissions</span>
+                                    </div>
+                                    <p id="dropdown-role-desc" class="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed"></p>
                                 </div>
-                                <p id="dropdown-role-desc" class="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed"></p>
+
+                                <div id="dropdown-admin-actions-group" class="space-y-1.5 pt-1 border-t border-slate-200/70 dark:border-slate-700/60">
+                                    <button id="btn-open-user-management" type="button" class="hidden w-full px-3 py-2 text-xs font-semibold text-amber-800 dark:text-amber-300 bg-amber-50/90 dark:bg-amber-950/50 hover:bg-amber-100 dark:hover:bg-amber-900/60 rounded-xl border border-amber-200 dark:border-amber-800/70 transition-colors flex items-center justify-between gap-2 cursor-pointer" title="Users &amp; Permissions" data-i18n-title="user_mgmt.menu_btn">
+                                        <span class="flex items-center gap-2 min-w-0">
+                                            <svg class="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                            <span class="truncate" data-i18n="user_mgmt.menu_btn">Users &amp; Permissions</span>
+                                        </span>
+                                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-200/70 dark:bg-amber-900/70 text-amber-900 dark:text-amber-200 flex-shrink-0">👑</span>
+                                    </button>
+
+                                    <button id="btn-open-storage-settings" type="button" class="w-full px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800/90 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-700 dark:hover:text-blue-300 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors flex items-center justify-between gap-2 cursor-pointer" title="Storage &amp; Database Paths" data-i18n-title="storage_settings.menu_btn">
+                                        <span class="flex items-center gap-2 min-w-0">
+                                            <svg class="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 3 3 8 3s8-1 8-3V7M4 7c0 2 3 3 8 3s8-1 8-3M4 7c0-2 3-3 8-3s8 1 8 3m0 5c0 2-3 3-8 3s-8-1-8-3"/></svg>
+                                            <span class="truncate" data-i18n="storage_settings.menu_btn">Storage &amp; Database Paths</span>
+                                        </span>
+                                        <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                    </button>
+                                </div>
                             </div>
 
-                            <button id="btn-open-user-management" type="button" class="hidden w-full px-3 py-2 text-xs font-semibold text-amber-800 dark:text-amber-300 bg-amber-50/80 dark:bg-amber-950/40 hover:bg-amber-100/80 dark:hover:bg-amber-900/50 rounded-xl border border-amber-200 dark:border-amber-800/70 transition-colors flex items-center justify-between gap-2 cursor-pointer" title="Users &amp; Permissions" data-i18n-title="user_mgmt.menu_btn">
-                                <span class="flex items-center gap-2 min-w-0">
-                                    <svg class="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                    <span class="truncate" data-i18n="user_mgmt.menu_btn">Users &amp; Permissions</span>
-                                </span>
-                                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-200/70 dark:bg-amber-900/70 text-amber-900 dark:text-amber-200 flex-shrink-0">👑</span>
-                            </button>
-
-                            <button id="btn-open-storage-settings" type="button" class="w-full px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/70 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-700 dark:hover:text-blue-300 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors flex items-center justify-between gap-2 cursor-pointer" title="Storage &amp; Database Paths" data-i18n-title="storage_settings.menu_btn">
-                                <span class="flex items-center gap-2 min-w-0">
-                                    <svg class="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 3 3 8 3s8-1 8-3V7M4 7c0 2 3 3 8 3s8-1 8-3M4 7c0-2 3-3 8-3s8 1 8 3m0 5c0 2-3 3-8 3s-8-1-8-3"/></svg>
-                                    <span class="truncate" data-i18n="storage_settings.menu_btn">Storage &amp; Database Paths</span>
-                                </span>
-                                <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                            </button>
-
+                            <!-- Account Session Actions -->
                             <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
                                 <button id="btn-switch-user" type="button" class="px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
                                     <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
@@ -2440,7 +2441,7 @@
 
     <!-- Modular Application Scripts -->
     <script src="js/api.js?v=261101-03"></script>
-    <script src="js/auth-manager.js?v=261101-06"></script>
+    <script src="js/auth-manager.js?v=261102-01"></script>
     <script src="js/login-motion.js?v=260920-01"></script>
     <script src="js/resizer.js?v=260911-29"></script>
     <script src="js/pdf-preview.js?v=260911-34"></script>
@@ -2451,7 +2452,7 @@
     <script src="js/doc-page-editor.js?v=260915-01"></script>
     <script src="js/db-inspector.js?v=261101-03"></script>
     <script src="js/storage-settings.js?v=261101-03"></script>
-    <script src="js/user-management.js?v=261101-06"></script>
+    <script src="js/user-management.js?v=261102-01"></script>
     <script src="js/area-grid.js?v=261101-02"></script>
     <script src="js/house-profile.js?v=260911-29"></script>
     <script src="js/timeline-view.js?v=260911-34"></script>
@@ -2461,7 +2462,7 @@
     <script src="js/ingest-station.js?v=260911-29"></script>
     <script src="js/keyboard-shortcuts.js?v=260911-29"></script>
     <script src="js/theme-manager.js?v=260912-03"></script>
-    <script src="js/i18n.js?v=261101-06"></script>
-    <script src="js/app.js?v=261101-06"></script>
+    <script src="js/i18n.js?v=261102-01"></script>
+    <script src="js/app.js?v=261102-01"></script>
 </body>
 </html>
