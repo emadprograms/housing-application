@@ -100,9 +100,11 @@ describe('Delete Area & Discoverable Delete House UI (Quick Task 261101-6bf)', (
     vi.restoreAllMocks();
   });
 
-  it('includes Delete Area modal, navbar Delete Area trigger, House header quick Delete trigger, and dark-mode CSS', () => {
+  it('includes Delete Area modal, sidebar Delete Area triggers (with zero title-bar button), House header quick Delete trigger, and dark-mode CSS', () => {
     expect(document.getElementById('delete-area-modal')).not.toBeNull();
-    expect(document.getElementById('btn-delete-area-header')).not.toBeNull();
+    expect(document.getElementById('btn-delete-area-header')).toBeNull();
+    expect(document.querySelector('#top-navbar .area-delete-btn')).toBeNull();
+    expect(document.querySelectorAll('#main-sidebar .area-delete-btn').length).toBe(2);
     expect(document.getElementById('btn-delete-house-quick')).not.toBeNull();
 
     expect(cssContent).toContain('html.dark #delete-area-modal > div');
@@ -111,6 +113,7 @@ describe('Delete Area & Discoverable Delete House UI (Quick Task 261101-6bf)', (
     expect(cssContent).toContain('html.dark #delete-area-cancel');
     expect(cssContent).toContain('html.dark #delete-area-modal-close');
     expect(cssContent).toContain('.area-delete-btn');
+    expect(cssContent).toContain('.area-item-row');
     expect(cssContent).toContain('.house-card-delete-btn');
   });
 
@@ -147,10 +150,10 @@ describe('Delete Area & Discoverable Delete House UI (Quick Task 261101-6bf)', (
     expect(document.getElementById('delete-area-phrase-hint').textContent).toBe('delete Safra D');
   });
 
-  it('enforces typed phrase confirmation and deletes active area with fallback to remaining area', async () => {
-    const headerBtn = document.getElementById('btn-delete-area-header');
-    expect(headerBtn.classList.contains('hidden')).toBe(false);
-    headerBtn.click();
+  it('enforces typed phrase confirmation and deletes active area via sidebar trigger with fallback to remaining area', async () => {
+    const safraCDeleteBtn = document.querySelector('.area-delete-btn[data-area-name="Safra C"]');
+    expect(safraCDeleteBtn).not.toBeNull();
+    safraCDeleteBtn.click();
 
     const modal = document.getElementById('delete-area-modal');
     const confirmInput = document.getElementById('delete-area-confirm-input');
@@ -219,7 +222,6 @@ describe('Delete Area & Discoverable Delete House UI (Quick Task 261101-6bf)', (
     expect(window.currentArea).toBeNull();
     expect(document.getElementById('welcome-panel').classList.contains('hidden')).toBe(false);
     expect(document.getElementById('area-grid-panel').classList.contains('hidden')).toBe(true);
-    expect(document.getElementById('btn-delete-area-header').classList.contains('hidden')).toBe(true);
     expect(document.getElementById('sidebar-empty-add-area-btn')).not.toBeNull();
   });
 
@@ -278,7 +280,7 @@ describe('Delete Area & Discoverable Delete House UI (Quick Task 261101-6bf)', (
     expect(document.querySelectorAll('.house-card').length).toBe(1);
   });
 
-  it('opens Delete House modal in one click from #btn-delete-house-quick inside House view and hides #btn-delete-area-header', () => {
+  it('opens Delete House modal in one click from #btn-delete-house-quick inside House view', () => {
     window.renderHouseProfile = vi.fn();
     window.openHouseFromGrid('Safra C', '500');
     global.currentArea = 'Safra C';
@@ -286,7 +288,6 @@ describe('Delete Area & Discoverable Delete House UI (Quick Task 261101-6bf)', (
     window.currentArea = 'Safra C';
     window.currentHouse = '500';
 
-    expect(document.getElementById('btn-delete-area-header').classList.contains('hidden')).toBe(true);
     const quickBtn = document.getElementById('btn-delete-house-quick');
     expect(quickBtn.classList.contains('hidden')).toBe(false);
 
@@ -306,7 +307,6 @@ describe('Delete Area & Discoverable Delete House UI (Quick Task 261101-6bf)', (
 
     expect(document.querySelectorAll('.area-delete-btn').length).toBe(0);
     expect(document.querySelectorAll('.house-card-delete-btn').length).toBe(0);
-    expect(document.getElementById('btn-delete-area-header').classList.contains('hidden')).toBe(true);
     expect(document.getElementById('btn-delete-house-quick').classList.contains('hidden')).toBe(true);
 
     // Programmatic invocation is also blocked with error toast
@@ -329,7 +329,6 @@ describe('Delete Area & Discoverable Delete House UI (Quick Task 261101-6bf)', (
 
     expect(document.querySelectorAll('.area-delete-btn').length).toBe(2);
     expect(document.querySelectorAll('.house-card-delete-btn').length).toBe(2);
-    expect(document.getElementById('btn-delete-area-header').classList.contains('hidden')).toBe(false);
     expect(document.getElementById('btn-delete-house-quick').classList.contains('hidden')).toBe(false);
   });
 });

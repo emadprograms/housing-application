@@ -60,16 +60,11 @@
                 gridViewPopover.classList.add('hidden');
             }
             const gridAreaStats = document.getElementById('grid-area-stats');
-            const deleteAreaHeaderBtn = document.getElementById('btn-delete-area-header');
             const gridTenureLegend = document.getElementById('grid-tenure-legend');
             const gridHouseSortContainer = document.getElementById('grid-house-sort-container');
             const gridIntegrityToolbar = document.getElementById('grid-integrity-toolbar');
             const openAddHouseBtn = document.getElementById('open-add-house-modal-btn');
             if (gridAreaStats) gridAreaStats.classList.add('hidden');
-            if (deleteAreaHeaderBtn) {
-                deleteAreaHeaderBtn.classList.add('hidden');
-                deleteAreaHeaderBtn.classList.remove('flex');
-            }
             if (gridTenureLegend) {
                 gridTenureLegend.classList.add('hidden');
                 gridTenureLegend.classList.remove('flex', 'grid');
@@ -332,16 +327,11 @@
             gridViewPopover.classList.add('hidden');
         }
         const gridAreaStats = document.getElementById('grid-area-stats');
-        const deleteAreaHeaderBtn = document.getElementById('btn-delete-area-header');
         const gridTenureLegend = document.getElementById('grid-tenure-legend');
         const gridHouseSortContainer = document.getElementById('grid-house-sort-container');
         const gridIntegrityToolbar = document.getElementById('grid-integrity-toolbar');
         const openAddHouseBtn = document.getElementById('open-add-house-modal-btn');
         if (gridAreaStats) gridAreaStats.classList.add('hidden');
-        if (deleteAreaHeaderBtn) {
-            deleteAreaHeaderBtn.classList.add('hidden');
-            deleteAreaHeaderBtn.classList.remove('flex');
-        }
         if (typeof window !== 'undefined' && typeof window.syncDeleteHouseQuickBtn === 'function') {
             window.syncDeleteHouseQuickBtn();
         }

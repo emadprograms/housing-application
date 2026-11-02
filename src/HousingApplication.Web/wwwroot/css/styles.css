@@ -1841,3 +1841,15 @@ body.is-dragging-file .category-folder-card * {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", "Helvetica Neue", Arial, sans-serif;
 }
 
+/* Per-row sidebar Delete Area button visibility (isolated from #main-sidebar .group) */
+.area-item-row .area-delete-btn {
+    opacity: 0;
+}
+
+.area-item-row:hover .area-delete-btn,
+.area-item-row:focus-within .area-delete-btn,
+.area-item-row.is-active-area .area-delete-btn {
+    opacity: 1;
+}
+
+

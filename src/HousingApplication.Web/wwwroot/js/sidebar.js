@@ -132,11 +132,6 @@
             if (emptyAddBtn) {
                 emptyAddBtn.onclick = () => openAddAreaModal();
             }
-            const headerDelBtn = document.getElementById('btn-delete-area-header');
-            if (headerDelBtn) {
-                headerDelBtn.classList.add('hidden');
-                headerDelBtn.classList.remove('flex');
-            }
             return;
         }
 
@@ -149,12 +144,13 @@
         const ul = document.createElement('ul');
         ul.className = 'space-y-1';
         tree.forEach(areaNode => {
+            const isAreaActive = Boolean(activeArea === areaNode.name && areaGridPanel && !areaGridPanel.classList.contains('hidden'));
             const li = document.createElement('li');
-            li.className = 'group flex items-center gap-1';
+            li.className = isAreaActive ? 'area-item-row is-active-area flex items-center gap-1' : 'area-item-row flex items-center gap-1';
             const btn = document.createElement('button');
             btn.className = 'area-grid-btn flex-1 min-w-0 text-left px-3 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:bg-slate-800 hover:text-white focus:outline-none flex items-center justify-between transition-colors border border-transparent cursor-pointer';
             btn.dataset.areaName = areaNode.name;
-            if (activeArea === areaNode.name && areaGridPanel && !areaGridPanel.classList.contains('hidden')) {
+            if (isAreaActive) {
                 btn.classList.add('bg-slate-800', 'text-white', 'border-slate-700');
                 btn.classList.remove('text-slate-300');
             }
@@ -179,7 +175,7 @@
             if (!staticReadOnly && canDelete) {
                 const delBtn = document.createElement('button');
                 delBtn.type = 'button';
-                delBtn.className = 'area-delete-btn opacity-0 group-hover:opacity-100 focus:opacity-100 p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-950/60 transition-all flex-shrink-0 cursor-pointer';
+                delBtn.className = 'area-delete-btn p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-950/60 transition-all flex-shrink-0 cursor-pointer';
                 delBtn.dataset.areaName = areaNode.name;
                 delBtn.title = deleteAreaLabel;
                 delBtn.setAttribute('aria-label', deleteAreaLabel);
@@ -849,7 +845,6 @@
                         'resizer-2',
                         'stats-badge',
                         'grid-area-stats',
-                        'btn-delete-area-header',
                         'grid-tenure-legend',
                         'grid-house-sort-container',
                         'grid-view-options-wrapper',
@@ -902,14 +897,6 @@
     }
 
     function initDeleteAreaModal() {
-        const headerBtn = document.getElementById('btn-delete-area-header');
-        if (headerBtn) {
-            headerBtn.onclick = (e) => {
-                e.preventDefault();
-                openDeleteAreaModal();
-            };
-        }
-
         const closeBtn = document.getElementById('delete-area-modal-close');
         if (closeBtn) closeBtn.onclick = closeDeleteAreaModal;
 

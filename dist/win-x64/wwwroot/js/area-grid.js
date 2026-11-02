@@ -825,16 +825,6 @@
             gridAreaStats.textContent = `${rawHouses.length} Houses`;
             gridAreaStats.classList.remove('hidden');
         }
-        const deleteAreaHeaderBtn = document.getElementById('btn-delete-area-header');
-        if (deleteAreaHeaderBtn) {
-            const staticReadOnly = (typeof isStaticMode !== 'undefined' && isStaticMode) || (typeof window !== 'undefined' && Boolean(window.isStaticMode));
-            const canDelete = (typeof window !== 'undefined' && window.authManager && typeof window.authManager.hasDeletePermission === 'function')
-                ? window.authManager.hasDeletePermission()
-                : true;
-            const showDeleteAreaBtn = !staticReadOnly && canDelete;
-            deleteAreaHeaderBtn.classList.toggle('hidden', !showDeleteAreaBtn);
-            deleteAreaHeaderBtn.classList.toggle('flex', showDeleteAreaBtn);
-        }
         if (gridTenureLegend) {
             gridTenureLegend.classList.remove('hidden');
             gridTenureLegend.classList.add('flex');
@@ -1260,16 +1250,11 @@
         }
         closeGridViewOptions();
         const gridAreaStats = document.getElementById('grid-area-stats');
-        const deleteAreaHeaderBtn = document.getElementById('btn-delete-area-header');
         const gridTenureLegend = document.getElementById('grid-tenure-legend');
         const gridHouseSortContainer = document.getElementById('grid-house-sort-container');
         const gridIntegrityToolbar = document.getElementById('grid-integrity-toolbar');
         const openAddHouseBtn = document.getElementById('open-add-house-modal-btn');
         if (gridAreaStats) gridAreaStats.classList.add('hidden');
-        if (deleteAreaHeaderBtn) {
-            deleteAreaHeaderBtn.classList.add('hidden');
-            deleteAreaHeaderBtn.classList.remove('flex');
-        }
         if (typeof window !== 'undefined' && typeof window.syncDeleteHouseQuickBtn === 'function') {
             window.syncDeleteHouseQuickBtn();
         }
@@ -1551,12 +1536,6 @@
             const isPanelActive = Boolean(areaGridPanel && !areaGridPanel.classList.contains('hidden'));
             if (targetNode && isPanelActive) {
                 renderAreaGrid(targetNode);
-            } else {
-                const deleteAreaHeaderBtn = document.getElementById('btn-delete-area-header');
-                if (deleteAreaHeaderBtn) {
-                    deleteAreaHeaderBtn.classList.add('hidden');
-                    deleteAreaHeaderBtn.classList.remove('flex');
-                }
             }
         };
         window.addEventListener('auth:user-changed', window._areaGridAuthHandler);
