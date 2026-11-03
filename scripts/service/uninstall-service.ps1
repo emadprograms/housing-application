@@ -1,3 +1,7 @@
+param(
+    [switch]$Unattended
+)
+
 # Windows Background Service Uninstaller for Housing Application
 $ErrorActionPreference = "Stop"
 
@@ -5,8 +9,16 @@ $ErrorActionPreference = "Stop"
 $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $isAdmin) {
     Write-Host "Requesting Administrator privileges..." -ForegroundColor Yellow
-    Start-Process powershell.exe -Verb RunAs -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`""
-    exit
+    $argList = "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`""
+    if ($Unattended) { $argList += " -Unattended" }
+    try {
+        $shell = New-Object -ComObject Shell.Application
+        $shell.ShellExecute("powershell.exe", $argList, "", "runas", 1)
+        exit 0
+    } catch {
+        $proc = Start-Process powershell.exe -Verb RunAs -ArgumentList $argList -PassThru -Wait
+        exit $proc.ExitCode
+    }
 }
 
 $TaskName = "HousingApplicationService"
@@ -26,4 +38,6 @@ Get-Process -Name "FileOrganizer.Web" -ErrorAction SilentlyContinue | Stop-Proce
 Write-Host "`n==========================================================" -ForegroundColor Green
 Write-Host "  Service stopped and completely uninstalled.            " -ForegroundColor Green
 Write-Host "==========================================================`n" -ForegroundColor Green
-Read-Host "Press Enter to finish..."
+if (-not $Unattended) {
+    Read-Host "Press Enter to finish..."
+}

@@ -1,3 +1,9 @@
+param(
+    [string]$AreasRoot = "",
+    [string]$DbPath = "",
+    [switch]$Unattended
+)
+
 # Windows 24/7 Background Service Installer for Housing Application
 $ErrorActionPreference = "Stop"
 
@@ -5,8 +11,18 @@ $ErrorActionPreference = "Stop"
 $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $isAdmin) {
     Write-Host "Requesting Administrator privileges..." -ForegroundColor Yellow
-    Start-Process powershell.exe -Verb RunAs -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`""
-    exit
+    $argList = "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`""
+    if ($AreasRoot) { $argList += " -AreasRoot `"$AreasRoot`"" }
+    if ($DbPath) { $argList += " -DbPath `"$DbPath`"" }
+    if ($Unattended) { $argList += " -Unattended" }
+    try {
+        $shell = New-Object -ComObject Shell.Application
+        $shell.ShellExecute("powershell.exe", $argList, "", "runas", 1)
+        exit 0
+    } catch {
+        $proc = Start-Process powershell.exe -Verb RunAs -ArgumentList $argList -PassThru -Wait
+        exit $proc.ExitCode
+    }
 }
 
 # Repository root (parent of scripts/service/)
@@ -20,18 +36,39 @@ Write-Host "==========================================================" -Foregro
 Write-Host "Please specify where your document archives and database are located." -ForegroundColor White
 Write-Host "(You can copy & paste the paths or drag-and-drop folders into this window)`n" -ForegroundColor DarkGray
 
+# Load existing configuration if available
+$ConfigFilePath = Join-Path $RepoRoot "config.paths.json"
+if (Test-Path $ConfigFilePath) {
+    try {
+        $cfg = Get-Content $ConfigFilePath -Raw | ConvertFrom-Json
+        if (-not $DbPath -and $cfg.organizer_db_path -and (Test-Path $cfg.organizer_db_path)) {
+            $DbPath = $cfg.organizer_db_path
+        }
+        if (-not $AreasRoot -and $cfg.areas_root_path -and (Test-Path $cfg.areas_root_path)) {
+            $AreasRoot = $cfg.areas_root_path
+        }
+    } catch {}
+}
+
 # 1. Ask for areas_v11 folder (check relative sibling/repo folders first, then D:\ / C:\)
 $defaultAreas = "D:\areas_v11"
 if (Test-Path "$RepoRoot\..\areas_v11") {
     $defaultAreas = (Resolve-Path "$RepoRoot\..\areas_v11").Path
 } elseif (Test-Path "$RepoRoot\areas_v11") {
     $defaultAreas = (Resolve-Path "$RepoRoot\areas_v11").Path
+} elseif (Test-Path "$env:USERPROFILE\Documents\Programs\areas_v11") {
+    $defaultAreas = "$env:USERPROFILE\Documents\Programs\areas_v11"
+} elseif (Test-Path "$env:USERPROFILE\Documents\GitHub\areas_v11") {
+    $defaultAreas = "$env:USERPROFILE\Documents\GitHub\areas_v11"
 } elseif (-not (Test-Path $defaultAreas)) {
     if (Test-Path "C:\areas_v11") { $defaultAreas = "C:\areas_v11" }
     elseif (Test-Path "$RepoRoot\areas") { $defaultAreas = "$RepoRoot\areas" }
 }
 
-$AreasRoot = ""
+if (-not $AreasRoot -and $Unattended) {
+    $AreasRoot = $defaultAreas
+}
+
 while (-not $AreasRoot) {
     Write-Host "[1/2] Directory of 'areas_v11' folder:" -ForegroundColor Yellow
     Write-Host "      Default: $defaultAreas" -ForegroundColor DarkGray
@@ -54,7 +91,10 @@ Write-Host "      -> Selected Areas Directory: $AreasRoot`n" -ForegroundColor Gr
 
 # 2. Ask for organizer.db location (file or containing folder)
 $defaultDb = Join-Path $AreasRoot "organizer.db"
-$DbPath = ""
+if (-not $DbPath -and $Unattended) {
+    $DbPath = $defaultDb
+}
+
 while (-not $DbPath) {
     Write-Host "[2/2] Location of 'organizer.db' (file path OR containing folder):" -ForegroundColor Yellow
     Write-Host "      Default: $defaultDb" -ForegroundColor DarkGray
@@ -95,10 +135,13 @@ Write-Host "  Areas Folder: $AreasRoot" -ForegroundColor White
 Write-Host "  Database:     $DbPath" -ForegroundColor White
 Write-Host "  Web Port:     $Port" -ForegroundColor White
 Write-Host "----------------------------------------------------------" -ForegroundColor DarkGray
-$proceed = Read-Host "Proceed with service installation? (Y/N) [Default: Y]"
-if ($proceed -match '^[Nn]') {
-    Write-Host "Installation canceled." -ForegroundColor Yellow
-    exit 0
+
+if (-not $Unattended) {
+    $proceed = Read-Host "Proceed with service installation? (Y/N) [Default: Y]"
+    if ($proceed -match '^[Nn]') {
+        Write-Host "Installation canceled." -ForegroundColor Yellow
+        exit 0
+    }
 }
 
 # Save paths into config.paths.json at the repository root for persistent reference
@@ -114,7 +157,7 @@ $WorkingDir = Join-Path $RepoRoot "dist\win-x64"
 
 if (-not (Test-Path $ExePath)) {
     Write-Error "Executable not found at '$ExePath'!"
-    Read-Host "Press Enter to exit..."
+    if (-not $Unattended) { Read-Host "Press Enter to exit..." }
     exit 1
 }
 
@@ -180,4 +223,6 @@ if ($LocalIp) {
     Write-Host "Other PCs:     http://${LocalIp}:$Port" -ForegroundColor Yellow
 }
 Write-Host "==========================================================`n" -ForegroundColor Green
-Read-Host "Press Enter to finish..."
+if (-not $Unattended) {
+    Read-Host "Press Enter to finish..."
+}

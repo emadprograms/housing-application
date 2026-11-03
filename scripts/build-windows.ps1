@@ -5,7 +5,8 @@ $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $ProjectPath = Join-Path $RepoRoot "src\HousingApplication.Web\HousingApplication.Web.csproj"
 $OutputDir = Join-Path $RepoRoot "dist\win-x64"
 
-if (-not (Get-Command dotnet -ErrorAction SilentlyContinue) -and (Test-Path "$env:USERPROFILE\.dotnet\dotnet.exe")) {
+if (Test-Path "$env:USERPROFILE\.dotnet\dotnet.exe") {
+    $env:DOTNET_ROOT = "$env:USERPROFILE\.dotnet"
     $env:PATH = "$env:USERPROFILE\.dotnet;" + $env:PATH
 }
 
